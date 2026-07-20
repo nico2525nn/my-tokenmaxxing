@@ -1,0 +1,8 @@
+node_modules/
+bun.lock
+ccusage_data.json
+server.log
+tc.js
+temp_*.js
+tmpc.js
+screenshot_*.webp

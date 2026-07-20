@@ -1,0 +1,1497 @@
+{
+  "daily": [
+    {
+      "agent": "all",
+      "agents": [
+        {
+          "agent": "codex",
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 9650560,
+          "inputTokens": 876490,
+          "modelBreakdowns": [
+            {
+              "cacheCreationTokens": 0,
+              "cacheReadTokens": 9650560,
+              "inputTokens": 876490,
+              "modelName": "gpt-5.4",
+              "outputTokens": 118299
+            }
+          ],
+          "modelsUsed": [
+            "gpt-5.4"
+          ],
+          "outputTokens": 118299,
+          "totalTokens": 10645349
+        }
+      ],
+      "cacheCreationTokens": 0,
+      "cacheReadTokens": 9650560,
+      "inputTokens": 876490,
+      "metadata": {
+        "agents": [
+          "codex"
+        ]
+      },
+      "modelBreakdowns": [
+        {
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 9650560,
+          "inputTokens": 876490,
+          "modelName": "gpt-5.4",
+          "outputTokens": 118299
+        }
+      ],
+      "modelsUsed": [
+        "gpt-5.4"
+      ],
+      "outputTokens": 118299,
+      "period": "2026-04-05",
+      "totalTokens": 10645349
+    },
+    {
+      "agent": "all",
+      "agents": [
+        {
+          "agent": "codex",
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 848384,
+          "inputTokens": 83327,
+          "modelBreakdowns": [
+            {
+              "cacheCreationTokens": 0,
+              "cacheReadTokens": 848384,
+              "inputTokens": 83327,
+              "modelName": "gpt-5.4",
+              "outputTokens": 5774
+            }
+          ],
+          "modelsUsed": [
+            "gpt-5.4"
+          ],
+          "outputTokens": 5774,
+          "totalTokens": 937485
+        }
+      ],
+      "cacheCreationTokens": 0,
+      "cacheReadTokens": 848384,
+      "inputTokens": 83327,
+      "metadata": {
+        "agents": [
+          "codex"
+        ]
+      },
+      "modelBreakdowns": [
+        {
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 848384,
+          "inputTokens": 83327,
+          "modelName": "gpt-5.4",
+          "outputTokens": 5774
+        }
+      ],
+      "modelsUsed": [
+        "gpt-5.4"
+      ],
+      "outputTokens": 5774,
+      "period": "2026-04-06",
+      "totalTokens": 937485
+    },
+    {
+      "agent": "all",
+      "agents": [
+        {
+          "agent": "codex",
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 8128512,
+          "inputTokens": 467250,
+          "modelBreakdowns": [
+            {
+              "cacheCreationTokens": 0,
+              "cacheReadTokens": 8128512,
+              "inputTokens": 467250,
+              "modelName": "gpt-5.4",
+              "outputTokens": 41389
+            }
+          ],
+          "modelsUsed": [
+            "gpt-5.4"
+          ],
+          "outputTokens": 41389,
+          "totalTokens": 8637151
+        }
+      ],
+      "cacheCreationTokens": 0,
+      "cacheReadTokens": 8128512,
+      "inputTokens": 467250,
+      "metadata": {
+        "agents": [
+          "codex"
+        ]
+      },
+      "modelBreakdowns": [
+        {
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 8128512,
+          "inputTokens": 467250,
+          "modelName": "gpt-5.4",
+          "outputTokens": 41389
+        }
+      ],
+      "modelsUsed": [
+        "gpt-5.4"
+      ],
+      "outputTokens": 41389,
+      "period": "2026-04-08",
+      "totalTokens": 8637151
+    },
+    {
+      "agent": "all",
+      "agents": [
+        {
+          "agent": "codex",
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 9067136,
+          "inputTokens": 647078,
+          "modelBreakdowns": [
+            {
+              "cacheCreationTokens": 0,
+              "cacheReadTokens": 3532032,
+              "inputTokens": 349719,
+              "modelName": "gpt-5.4",
+              "outputTokens": 72922
+            },
+            {
+              "cacheCreationTokens": 0,
+              "cacheReadTokens": 5535104,
+              "inputTokens": 297359,
+              "modelName": "gpt-5.3-codex",
+              "outputTokens": 18371
+            }
+          ],
+          "modelsUsed": [
+            "gpt-5.3-codex",
+            "gpt-5.4"
+          ],
+          "outputTokens": 91293,
+          "totalTokens": 9805507
+        }
+      ],
+      "cacheCreationTokens": 0,
+      "cacheReadTokens": 9067136,
+      "inputTokens": 647078,
+      "metadata": {
+        "agents": [
+          "codex"
+        ]
+      },
+      "modelBreakdowns": [
+        {
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 3532032,
+          "inputTokens": 349719,
+          "modelName": "gpt-5.4",
+          "outputTokens": 72922
+        },
+        {
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 5535104,
+          "inputTokens": 297359,
+          "modelName": "gpt-5.3-codex",
+          "outputTokens": 18371
+        }
+      ],
+      "modelsUsed": [
+        "gpt-5.3-codex",
+        "gpt-5.4"
+      ],
+      "outputTokens": 91293,
+      "period": "2026-04-12",
+      "totalTokens": 9805507
+    },
+    {
+      "agent": "all",
+      "agents": [
+        {
+          "agent": "codex",
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 2199680,
+          "inputTokens": 324088,
+          "modelBreakdowns": [
+            {
+              "cacheCreationTokens": 0,
+              "cacheReadTokens": 2030976,
+              "inputTokens": 312902,
+              "modelName": "gpt-5.4",
+              "outputTokens": 19729
+            },
+            {
+              "cacheCreationTokens": 0,
+              "cacheReadTokens": 168704,
+              "inputTokens": 11186,
+              "modelName": "gpt-5.3-codex",
+              "outputTokens": 774
+            }
+          ],
+          "modelsUsed": [
+            "gpt-5.3-codex",
+            "gpt-5.4"
+          ],
+          "outputTokens": 20503,
+          "totalTokens": 2544271
+        }
+      ],
+      "cacheCreationTokens": 0,
+      "cacheReadTokens": 2199680,
+      "inputTokens": 324088,
+      "metadata": {
+        "agents": [
+          "codex"
+        ]
+      },
+      "modelBreakdowns": [
+        {
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 2030976,
+          "inputTokens": 312902,
+          "modelName": "gpt-5.4",
+          "outputTokens": 19729
+        },
+        {
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 168704,
+          "inputTokens": 11186,
+          "modelName": "gpt-5.3-codex",
+          "outputTokens": 774
+        }
+      ],
+      "modelsUsed": [
+        "gpt-5.3-codex",
+        "gpt-5.4"
+      ],
+      "outputTokens": 20503,
+      "period": "2026-04-24",
+      "totalTokens": 2544271
+    },
+    {
+      "agent": "all",
+      "agents": [
+        {
+          "agent": "codex",
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 497280,
+          "inputTokens": 165476,
+          "modelBreakdowns": [
+            {
+              "cacheCreationTokens": 0,
+              "cacheReadTokens": 497280,
+              "inputTokens": 165476,
+              "modelName": "gpt-5.4",
+              "outputTokens": 31283
+            }
+          ],
+          "modelsUsed": [
+            "gpt-5.4"
+          ],
+          "outputTokens": 31283,
+          "totalTokens": 694039
+        },
+        {
+          "agent": "opencode",
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 263676,
+          "inputTokens": 2795663,
+          "modelBreakdowns": [
+            {
+              "cacheCreationTokens": 0,
+              "cacheReadTokens": 263676,
+              "inputTokens": 2795663,
+              "modelName": "moonshotai/kimi-k2.6",
+              "outputTokens": 42384
+            }
+          ],
+          "modelsUsed": [
+            "moonshotai/kimi-k2.6"
+          ],
+          "outputTokens": 42384,
+          "totalTokens": 3107854
+        }
+      ],
+      "cacheCreationTokens": 0,
+      "cacheReadTokens": 760956,
+      "inputTokens": 2961139,
+      "metadata": {
+        "agents": [
+          "codex",
+          "opencode"
+        ]
+      },
+      "modelBreakdowns": [
+        {
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 263676,
+          "inputTokens": 2795663,
+          "modelName": "moonshotai/kimi-k2.6",
+          "outputTokens": 42384
+        },
+        {
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 497280,
+          "inputTokens": 165476,
+          "modelName": "gpt-5.4",
+          "outputTokens": 31283
+        }
+      ],
+      "modelsUsed": [
+        "gpt-5.4",
+        "moonshotai/kimi-k2.6"
+      ],
+      "outputTokens": 73667,
+      "period": "2026-04-25",
+      "totalTokens": 3801893
+    },
+    {
+      "agent": "all",
+      "agents": [
+        {
+          "agent": "opencode",
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 205513,
+          "inputTokens": 2117843,
+          "modelBreakdowns": [
+            {
+              "cacheCreationTokens": 0,
+              "cacheReadTokens": 205513,
+              "inputTokens": 2117843,
+              "modelName": "moonshotai/kimi-k2.6",
+              "outputTokens": 34250
+            }
+          ],
+          "modelsUsed": [
+            "moonshotai/kimi-k2.6"
+          ],
+          "outputTokens": 34250,
+          "totalTokens": 2359702
+        }
+      ],
+      "cacheCreationTokens": 0,
+      "cacheReadTokens": 205513,
+      "inputTokens": 2117843,
+      "metadata": {
+        "agents": [
+          "opencode"
+        ]
+      },
+      "modelBreakdowns": [
+        {
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 205513,
+          "inputTokens": 2117843,
+          "modelName": "moonshotai/kimi-k2.6",
+          "outputTokens": 34250
+        }
+      ],
+      "modelsUsed": [
+        "moonshotai/kimi-k2.6"
+      ],
+      "outputTokens": 34250,
+      "period": "2026-04-26",
+      "totalTokens": 2359702
+    },
+    {
+      "agent": "all",
+      "agents": [
+        {
+          "agent": "opencode",
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 17592704,
+          "inputTokens": 358748,
+          "modelBreakdowns": [
+            {
+              "cacheCreationTokens": 0,
+              "cacheReadTokens": 17592704,
+              "inputTokens": 358748,
+              "modelName": "deepseek/deepseek-v4-pro",
+              "outputTokens": 29671
+            }
+          ],
+          "modelsUsed": [
+            "deepseek/deepseek-v4-pro"
+          ],
+          "outputTokens": 29671,
+          "totalTokens": 18008429
+        }
+      ],
+      "cacheCreationTokens": 0,
+      "cacheReadTokens": 17592704,
+      "inputTokens": 358748,
+      "metadata": {
+        "agents": [
+          "opencode"
+        ]
+      },
+      "modelBreakdowns": [
+        {
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 17592704,
+          "inputTokens": 358748,
+          "modelName": "deepseek/deepseek-v4-pro",
+          "outputTokens": 29671
+        }
+      ],
+      "modelsUsed": [
+        "deepseek/deepseek-v4-pro"
+      ],
+      "outputTokens": 29671,
+      "period": "2026-05-05",
+      "totalTokens": 18008429
+    },
+    {
+      "agent": "all",
+      "agents": [
+        {
+          "agent": "opencode",
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 4266112,
+          "inputTokens": 13158,
+          "modelBreakdowns": [
+            {
+              "cacheCreationTokens": 0,
+              "cacheReadTokens": 4266112,
+              "inputTokens": 13158,
+              "modelName": "deepseek/deepseek-v4-pro",
+              "outputTokens": 4820
+            }
+          ],
+          "modelsUsed": [
+            "deepseek/deepseek-v4-pro"
+          ],
+          "outputTokens": 4820,
+          "totalTokens": 4287802
+        }
+      ],
+      "cacheCreationTokens": 0,
+      "cacheReadTokens": 4266112,
+      "inputTokens": 13158,
+      "metadata": {
+        "agents": [
+          "opencode"
+        ]
+      },
+      "modelBreakdowns": [
+        {
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 4266112,
+          "inputTokens": 13158,
+          "modelName": "deepseek/deepseek-v4-pro",
+          "outputTokens": 4820
+        }
+      ],
+      "modelsUsed": [
+        "deepseek/deepseek-v4-pro"
+      ],
+      "outputTokens": 4820,
+      "period": "2026-05-06",
+      "totalTokens": 4287802
+    },
+    {
+      "agent": "all",
+      "agents": [
+        {
+          "agent": "codex",
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 11257984,
+          "inputTokens": 325410,
+          "modelBreakdowns": [
+            {
+              "cacheCreationTokens": 0,
+              "cacheReadTokens": 11257984,
+              "inputTokens": 325410,
+              "modelName": "gpt-5.5",
+              "outputTokens": 38833
+            }
+          ],
+          "modelsUsed": [
+            "gpt-5.5"
+          ],
+          "outputTokens": 38833,
+          "totalTokens": 11622227
+        },
+        {
+          "agent": "opencode",
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 37549184,
+          "inputTokens": 515265,
+          "modelBreakdowns": [
+            {
+              "cacheCreationTokens": 0,
+              "cacheReadTokens": 37549184,
+              "inputTokens": 515265,
+              "modelName": "deepseek/deepseek-v4-flash",
+              "outputTokens": 50166
+            }
+          ],
+          "modelsUsed": [
+            "deepseek/deepseek-v4-flash"
+          ],
+          "outputTokens": 50166,
+          "totalTokens": 38168539
+        }
+      ],
+      "cacheCreationTokens": 0,
+      "cacheReadTokens": 48807168,
+      "inputTokens": 840675,
+      "metadata": {
+        "agents": [
+          "codex",
+          "opencode"
+        ]
+      },
+      "modelBreakdowns": [
+        {
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 11257984,
+          "inputTokens": 325410,
+          "modelName": "gpt-5.5",
+          "outputTokens": 38833
+        },
+        {
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 37549184,
+          "inputTokens": 515265,
+          "modelName": "deepseek/deepseek-v4-flash",
+          "outputTokens": 50166
+        }
+      ],
+      "modelsUsed": [
+        "deepseek/deepseek-v4-flash",
+        "gpt-5.5"
+      ],
+      "outputTokens": 88999,
+      "period": "2026-05-09",
+      "totalTokens": 49790766
+    },
+    {
+      "agent": "all",
+      "agents": [
+        {
+          "agent": "codex",
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 160640,
+          "inputTokens": 1481,
+          "modelBreakdowns": [
+            {
+              "cacheCreationTokens": 0,
+              "cacheReadTokens": 160640,
+              "inputTokens": 1481,
+              "modelName": "gpt-5.5",
+              "outputTokens": 119
+            }
+          ],
+          "modelsUsed": [
+            "gpt-5.5"
+          ],
+          "outputTokens": 119,
+          "totalTokens": 162240
+        },
+        {
+          "agent": "opencode",
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 16333184,
+          "inputTokens": 546664,
+          "modelBreakdowns": [
+            {
+              "cacheCreationTokens": 0,
+              "cacheReadTokens": 16333184,
+              "inputTokens": 546664,
+              "modelName": "deepseek/deepseek-v4-flash",
+              "outputTokens": 28023
+            }
+          ],
+          "modelsUsed": [
+            "deepseek/deepseek-v4-flash"
+          ],
+          "outputTokens": 28023,
+          "totalTokens": 16926994
+        }
+      ],
+      "cacheCreationTokens": 0,
+      "cacheReadTokens": 16493824,
+      "inputTokens": 548145,
+      "metadata": {
+        "agents": [
+          "codex",
+          "opencode"
+        ]
+      },
+      "modelBreakdowns": [
+        {
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 16333184,
+          "inputTokens": 546664,
+          "modelName": "deepseek/deepseek-v4-flash",
+          "outputTokens": 28023
+        },
+        {
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 160640,
+          "inputTokens": 1481,
+          "modelName": "gpt-5.5",
+          "outputTokens": 119
+        }
+      ],
+      "modelsUsed": [
+        "deepseek/deepseek-v4-flash",
+        "gpt-5.5"
+      ],
+      "outputTokens": 28142,
+      "period": "2026-05-10",
+      "totalTokens": 17089234
+    },
+    {
+      "agent": "all",
+      "agents": [
+        {
+          "agent": "opencode",
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 16590848,
+          "inputTokens": 818398,
+          "modelBreakdowns": [
+            {
+              "cacheCreationTokens": 0,
+              "cacheReadTokens": 16590848,
+              "inputTokens": 818398,
+              "modelName": "deepseek/deepseek-v4-flash",
+              "outputTokens": 32880
+            }
+          ],
+          "modelsUsed": [
+            "deepseek/deepseek-v4-flash"
+          ],
+          "outputTokens": 32880,
+          "totalTokens": 17461975
+        }
+      ],
+      "cacheCreationTokens": 0,
+      "cacheReadTokens": 16590848,
+      "inputTokens": 818398,
+      "metadata": {
+        "agents": [
+          "opencode"
+        ]
+      },
+      "modelBreakdowns": [
+        {
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 16590848,
+          "inputTokens": 818398,
+          "modelName": "deepseek/deepseek-v4-flash",
+          "outputTokens": 32880
+        }
+      ],
+      "modelsUsed": [
+        "deepseek/deepseek-v4-flash"
+      ],
+      "outputTokens": 32880,
+      "period": "2026-05-11",
+      "totalTokens": 17461975
+    },
+    {
+      "agent": "all",
+      "agents": [
+        {
+          "agent": "opencode",
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 50341504,
+          "inputTokens": 2010038,
+          "modelBreakdowns": [
+            {
+              "cacheCreationTokens": 0,
+              "cacheReadTokens": 50341504,
+              "inputTokens": 2010038,
+              "modelName": "deepseek/deepseek-v4-flash",
+              "outputTokens": 59997
+            }
+          ],
+          "modelsUsed": [
+            "deepseek/deepseek-v4-flash"
+          ],
+          "outputTokens": 59997,
+          "totalTokens": 52501304
+        }
+      ],
+      "cacheCreationTokens": 0,
+      "cacheReadTokens": 50341504,
+      "inputTokens": 2010038,
+      "metadata": {
+        "agents": [
+          "opencode"
+        ]
+      },
+      "modelBreakdowns": [
+        {
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 50341504,
+          "inputTokens": 2010038,
+          "modelName": "deepseek/deepseek-v4-flash",
+          "outputTokens": 59997
+        }
+      ],
+      "modelsUsed": [
+        "deepseek/deepseek-v4-flash"
+      ],
+      "outputTokens": 59997,
+      "period": "2026-05-12",
+      "totalTokens": 52501304
+    },
+    {
+      "agent": "all",
+      "agents": [
+        {
+          "agent": "opencode",
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 37368576,
+          "inputTokens": 1375811,
+          "modelBreakdowns": [
+            {
+              "cacheCreationTokens": 0,
+              "cacheReadTokens": 37368576,
+              "inputTokens": 1375811,
+              "modelName": "deepseek/deepseek-v4-flash",
+              "outputTokens": 19681
+            }
+          ],
+          "modelsUsed": [
+            "deepseek/deepseek-v4-flash"
+          ],
+          "outputTokens": 19681,
+          "totalTokens": 38791240
+        }
+      ],
+      "cacheCreationTokens": 0,
+      "cacheReadTokens": 37368576,
+      "inputTokens": 1375811,
+      "metadata": {
+        "agents": [
+          "opencode"
+        ]
+      },
+      "modelBreakdowns": [
+        {
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 37368576,
+          "inputTokens": 1375811,
+          "modelName": "deepseek/deepseek-v4-flash",
+          "outputTokens": 19681
+        }
+      ],
+      "modelsUsed": [
+        "deepseek/deepseek-v4-flash"
+      ],
+      "outputTokens": 19681,
+      "period": "2026-05-21",
+      "totalTokens": 38791240
+    },
+    {
+      "agent": "all",
+      "agents": [
+        {
+          "agent": "opencode",
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 13655680,
+          "inputTokens": 1284114,
+          "modelBreakdowns": [
+            {
+              "cacheCreationTokens": 0,
+              "cacheReadTokens": 13655680,
+              "inputTokens": 1284114,
+              "modelName": "deepseek/deepseek-v4-flash",
+              "outputTokens": 8654
+            }
+          ],
+          "modelsUsed": [
+            "deepseek/deepseek-v4-flash"
+          ],
+          "outputTokens": 8654,
+          "totalTokens": 14952498
+        }
+      ],
+      "cacheCreationTokens": 0,
+      "cacheReadTokens": 13655680,
+      "inputTokens": 1284114,
+      "metadata": {
+        "agents": [
+          "opencode"
+        ]
+      },
+      "modelBreakdowns": [
+        {
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 13655680,
+          "inputTokens": 1284114,
+          "modelName": "deepseek/deepseek-v4-flash",
+          "outputTokens": 8654
+        }
+      ],
+      "modelsUsed": [
+        "deepseek/deepseek-v4-flash"
+      ],
+      "outputTokens": 8654,
+      "period": "2026-05-22",
+      "totalTokens": 14952498
+    },
+    {
+      "agent": "all",
+      "agents": [
+        {
+          "agent": "codex",
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 10250368,
+          "inputTokens": 523781,
+          "modelBreakdowns": [
+            {
+              "cacheCreationTokens": 0,
+              "cacheReadTokens": 10250368,
+              "inputTokens": 523781,
+              "modelName": "gpt-5.5",
+              "outputTokens": 35169
+            }
+          ],
+          "modelsUsed": [
+            "gpt-5.5"
+          ],
+          "outputTokens": 35169,
+          "totalTokens": 10809318
+        },
+        {
+          "agent": "opencode",
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 23387072,
+          "inputTokens": 2577700,
+          "modelBreakdowns": [
+            {
+              "cacheCreationTokens": 0,
+              "cacheReadTokens": 23367616,
+              "inputTokens": 1625611,
+              "modelName": "xiaomi/mimo-v2.5",
+              "outputTokens": 52475
+            },
+            {
+              "cacheCreationTokens": 0,
+              "cacheReadTokens": 19456,
+              "inputTokens": 952089,
+              "modelName": "mimo-v2.5-free",
+              "outputTokens": 1209
+            }
+          ],
+          "modelsUsed": [
+            "mimo-v2.5-free",
+            "xiaomi/mimo-v2.5"
+          ],
+          "outputTokens": 53684,
+          "totalTokens": 26032549
+        }
+      ],
+      "cacheCreationTokens": 0,
+      "cacheReadTokens": 33637440,
+      "inputTokens": 3101481,
+      "metadata": {
+        "agents": [
+          "codex",
+          "opencode"
+        ]
+      },
+      "modelBreakdowns": [
+        {
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 10250368,
+          "inputTokens": 523781,
+          "modelName": "gpt-5.5",
+          "outputTokens": 35169
+        },
+        {
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 23367616,
+          "inputTokens": 1625611,
+          "modelName": "xiaomi/mimo-v2.5",
+          "outputTokens": 52475
+        },
+        {
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 19456,
+          "inputTokens": 952089,
+          "modelName": "mimo-v2.5-free",
+          "outputTokens": 1209
+        }
+      ],
+      "modelsUsed": [
+        "gpt-5.5",
+        "mimo-v2.5-free",
+        "xiaomi/mimo-v2.5"
+      ],
+      "outputTokens": 88853,
+      "period": "2026-05-29",
+      "totalTokens": 36841867
+    },
+    {
+      "agent": "all",
+      "agents": [
+        {
+          "agent": "opencode",
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 3022784,
+          "inputTokens": 508219,
+          "modelBreakdowns": [
+            {
+              "cacheCreationTokens": 0,
+              "cacheReadTokens": 3022784,
+              "inputTokens": 508219,
+              "modelName": "xiaomi/mimo-v2.5",
+              "outputTokens": 30041
+            }
+          ],
+          "modelsUsed": [
+            "xiaomi/mimo-v2.5"
+          ],
+          "outputTokens": 30041,
+          "totalTokens": 3564286
+        },
+        {
+          "agent": "pi",
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 6296640,
+          "inputTokens": 189273,
+          "modelBreakdowns": [
+            {
+              "cacheCreationTokens": 0,
+              "cacheReadTokens": 6296640,
+              "inputTokens": 189273,
+              "modelName": "[pi] xiaomi/mimo-v2.5",
+              "outputTokens": 58836
+            }
+          ],
+          "modelsUsed": [
+            "[pi] xiaomi/mimo-v2.5"
+          ],
+          "outputTokens": 58836,
+          "totalTokens": 6544749
+        }
+      ],
+      "cacheCreationTokens": 0,
+      "cacheReadTokens": 9319424,
+      "inputTokens": 697492,
+      "metadata": {
+        "agents": [
+          "opencode",
+          "pi"
+        ]
+      },
+      "modelBreakdowns": [
+        {
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 3022784,
+          "inputTokens": 508219,
+          "modelName": "xiaomi/mimo-v2.5",
+          "outputTokens": 30041
+        },
+        {
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 6296640,
+          "inputTokens": 189273,
+          "modelName": "[pi] xiaomi/mimo-v2.5",
+          "outputTokens": 58836
+        }
+      ],
+      "modelsUsed": [
+        "[pi] xiaomi/mimo-v2.5",
+        "xiaomi/mimo-v2.5"
+      ],
+      "outputTokens": 88877,
+      "period": "2026-05-30",
+      "totalTokens": 10109035
+    },
+    {
+      "agent": "all",
+      "agents": [
+        {
+          "agent": "pi",
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 9748224,
+          "inputTokens": 60741,
+          "modelBreakdowns": [
+            {
+              "cacheCreationTokens": 0,
+              "cacheReadTokens": 9748224,
+              "inputTokens": 60741,
+              "modelName": "[pi] xiaomi/mimo-v2.5",
+              "outputTokens": 34944
+            }
+          ],
+          "modelsUsed": [
+            "[pi] xiaomi/mimo-v2.5"
+          ],
+          "outputTokens": 34944,
+          "totalTokens": 9843909
+        }
+      ],
+      "cacheCreationTokens": 0,
+      "cacheReadTokens": 9748224,
+      "inputTokens": 60741,
+      "metadata": {
+        "agents": [
+          "pi"
+        ]
+      },
+      "modelBreakdowns": [
+        {
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 9748224,
+          "inputTokens": 60741,
+          "modelName": "[pi] xiaomi/mimo-v2.5",
+          "outputTokens": 34944
+        }
+      ],
+      "modelsUsed": [
+        "[pi] xiaomi/mimo-v2.5"
+      ],
+      "outputTokens": 34944,
+      "period": "2026-05-31",
+      "totalTokens": 9843909
+    },
+    {
+      "agent": "all",
+      "agents": [
+        {
+          "agent": "pi",
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 8865984,
+          "inputTokens": 47583,
+          "modelBreakdowns": [
+            {
+              "cacheCreationTokens": 0,
+              "cacheReadTokens": 8865984,
+              "inputTokens": 47583,
+              "modelName": "[pi] xiaomi/mimo-v2.5",
+              "outputTokens": 25377
+            }
+          ],
+          "modelsUsed": [
+            "[pi] xiaomi/mimo-v2.5"
+          ],
+          "outputTokens": 25377,
+          "totalTokens": 8938944
+        }
+      ],
+      "cacheCreationTokens": 0,
+      "cacheReadTokens": 8865984,
+      "inputTokens": 47583,
+      "metadata": {
+        "agents": [
+          "pi"
+        ]
+      },
+      "modelBreakdowns": [
+        {
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 8865984,
+          "inputTokens": 47583,
+          "modelName": "[pi] xiaomi/mimo-v2.5",
+          "outputTokens": 25377
+        }
+      ],
+      "modelsUsed": [
+        "[pi] xiaomi/mimo-v2.5"
+      ],
+      "outputTokens": 25377,
+      "period": "2026-06-02",
+      "totalTokens": 8938944
+    },
+    {
+      "agent": "all",
+      "agents": [
+        {
+          "agent": "pi",
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 20558208,
+          "inputTokens": 413994,
+          "modelBreakdowns": [
+            {
+              "cacheCreationTokens": 0,
+              "cacheReadTokens": 20558208,
+              "inputTokens": 413994,
+              "modelName": "[pi] xiaomi/mimo-v2.5",
+              "outputTokens": 290343
+            }
+          ],
+          "modelsUsed": [
+            "[pi] xiaomi/mimo-v2.5"
+          ],
+          "outputTokens": 290343,
+          "totalTokens": 21262545
+        }
+      ],
+      "cacheCreationTokens": 0,
+      "cacheReadTokens": 20558208,
+      "inputTokens": 413994,
+      "metadata": {
+        "agents": [
+          "pi"
+        ]
+      },
+      "modelBreakdowns": [
+        {
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 20558208,
+          "inputTokens": 413994,
+          "modelName": "[pi] xiaomi/mimo-v2.5",
+          "outputTokens": 290343
+        }
+      ],
+      "modelsUsed": [
+        "[pi] xiaomi/mimo-v2.5"
+      ],
+      "outputTokens": 290343,
+      "period": "2026-06-03",
+      "totalTokens": 21262545
+    },
+    {
+      "agent": "all",
+      "agents": [
+        {
+          "agent": "pi",
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 1832192,
+          "inputTokens": 95318,
+          "modelBreakdowns": [
+            {
+              "cacheCreationTokens": 0,
+              "cacheReadTokens": 1832192,
+              "inputTokens": 95318,
+              "modelName": "[pi] xiaomi/mimo-v2.5",
+              "outputTokens": 7709
+            }
+          ],
+          "modelsUsed": [
+            "[pi] xiaomi/mimo-v2.5"
+          ],
+          "outputTokens": 7709,
+          "totalTokens": 1935219
+        }
+      ],
+      "cacheCreationTokens": 0,
+      "cacheReadTokens": 1832192,
+      "inputTokens": 95318,
+      "metadata": {
+        "agents": [
+          "pi"
+        ]
+      },
+      "modelBreakdowns": [
+        {
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 1832192,
+          "inputTokens": 95318,
+          "modelName": "[pi] xiaomi/mimo-v2.5",
+          "outputTokens": 7709
+        }
+      ],
+      "modelsUsed": [
+        "[pi] xiaomi/mimo-v2.5"
+      ],
+      "outputTokens": 7709,
+      "period": "2026-06-05",
+      "totalTokens": 1935219
+    },
+    {
+      "agent": "all",
+      "agents": [
+        {
+          "agent": "codex",
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 8947840,
+          "inputTokens": 978176,
+          "modelBreakdowns": [
+            {
+              "cacheCreationTokens": 0,
+              "cacheReadTokens": 8947840,
+              "inputTokens": 978176,
+              "modelName": "deepseek/deepseek-v4-flash",
+              "outputTokens": 87201
+            }
+          ],
+          "modelsUsed": [
+            "deepseek/deepseek-v4-flash"
+          ],
+          "outputTokens": 87201,
+          "totalTokens": 10013217
+        },
+        {
+          "agent": "pi",
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 11345152,
+          "inputTokens": 8254273,
+          "modelBreakdowns": [
+            {
+              "cacheCreationTokens": 0,
+              "cacheReadTokens": 8555264,
+              "inputTokens": 8165361,
+              "modelName": "[pi] deepseek/deepseek-v4-flash",
+              "outputTokens": 42736
+            },
+            {
+              "cacheCreationTokens": 0,
+              "cacheReadTokens": 2789888,
+              "inputTokens": 88912,
+              "modelName": "[pi] xiaomi/mimo-v2.5",
+              "outputTokens": 21447
+            }
+          ],
+          "modelsUsed": [
+            "[pi] xiaomi/mimo-v2.5",
+            "[pi] deepseek/deepseek-v4-flash"
+          ],
+          "outputTokens": 64183,
+          "totalTokens": 19663608
+        }
+      ],
+      "cacheCreationTokens": 0,
+      "cacheReadTokens": 20292992,
+      "inputTokens": 9232449,
+      "metadata": {
+        "agents": [
+          "codex",
+          "pi"
+        ]
+      },
+      "modelBreakdowns": [
+        {
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 8555264,
+          "inputTokens": 8165361,
+          "modelName": "[pi] deepseek/deepseek-v4-flash",
+          "outputTokens": 42736
+        },
+        {
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 8947840,
+          "inputTokens": 978176,
+          "modelName": "deepseek/deepseek-v4-flash",
+          "outputTokens": 87201
+        },
+        {
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 2789888,
+          "inputTokens": 88912,
+          "modelName": "[pi] xiaomi/mimo-v2.5",
+          "outputTokens": 21447
+        }
+      ],
+      "modelsUsed": [
+        "[pi] deepseek/deepseek-v4-flash",
+        "[pi] xiaomi/mimo-v2.5",
+        "deepseek/deepseek-v4-flash"
+      ],
+      "outputTokens": 151384,
+      "period": "2026-06-06",
+      "totalTokens": 29676825
+    },
+    {
+      "agent": "all",
+      "agents": [
+        {
+          "agent": "codex",
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 0,
+          "inputTokens": 13305,
+          "modelBreakdowns": [
+            {
+              "cacheCreationTokens": 0,
+              "cacheReadTokens": 0,
+              "inputTokens": 13305,
+              "modelName": "deepseek/deepseek-v4-flash",
+              "outputTokens": 93
+            }
+          ],
+          "modelsUsed": [
+            "deepseek/deepseek-v4-flash"
+          ],
+          "outputTokens": 93,
+          "totalTokens": 13398
+        }
+      ],
+      "cacheCreationTokens": 0,
+      "cacheReadTokens": 0,
+      "inputTokens": 13305,
+      "metadata": {
+        "agents": [
+          "codex"
+        ]
+      },
+      "modelBreakdowns": [
+        {
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 0,
+          "inputTokens": 13305,
+          "modelName": "deepseek/deepseek-v4-flash",
+          "outputTokens": 93
+        }
+      ],
+      "modelsUsed": [
+        "deepseek/deepseek-v4-flash"
+      ],
+      "outputTokens": 93,
+      "period": "2026-06-13",
+      "totalTokens": 13398
+    },
+    {
+      "agent": "all",
+      "agents": [
+        {
+          "agent": "codex",
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 220160,
+          "inputTokens": 125859,
+          "modelBreakdowns": [
+            {
+              "cacheCreationTokens": 0,
+              "cacheReadTokens": 220160,
+              "inputTokens": 125859,
+              "modelName": "deepseek/deepseek-v4-flash",
+              "outputTokens": 24900
+            }
+          ],
+          "modelsUsed": [
+            "deepseek/deepseek-v4-flash"
+          ],
+          "outputTokens": 24900,
+          "totalTokens": 370919
+        }
+      ],
+      "cacheCreationTokens": 0,
+      "cacheReadTokens": 220160,
+      "inputTokens": 125859,
+      "metadata": {
+        "agents": [
+          "codex"
+        ]
+      },
+      "modelBreakdowns": [
+        {
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 220160,
+          "inputTokens": 125859,
+          "modelName": "deepseek/deepseek-v4-flash",
+          "outputTokens": 24900
+        }
+      ],
+      "modelsUsed": [
+        "deepseek/deepseek-v4-flash"
+      ],
+      "outputTokens": 24900,
+      "period": "2026-06-14",
+      "totalTokens": 370919
+    },
+    {
+      "agent": "all",
+      "agents": [
+        {
+          "agent": "codex",
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 712320,
+          "inputTokens": 84584,
+          "modelBreakdowns": [
+            {
+              "cacheCreationTokens": 0,
+              "cacheReadTokens": 712320,
+              "inputTokens": 84584,
+              "modelName": "gpt-5.5",
+              "outputTokens": 10063
+            }
+          ],
+          "modelsUsed": [
+            "gpt-5.5"
+          ],
+          "outputTokens": 10063,
+          "totalTokens": 806967
+        }
+      ],
+      "cacheCreationTokens": 0,
+      "cacheReadTokens": 712320,
+      "inputTokens": 84584,
+      "metadata": {
+        "agents": [
+          "codex"
+        ]
+      },
+      "modelBreakdowns": [
+        {
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 712320,
+          "inputTokens": 84584,
+          "modelName": "gpt-5.5",
+          "outputTokens": 10063
+        }
+      ],
+      "modelsUsed": [
+        "gpt-5.5"
+      ],
+      "outputTokens": 10063,
+      "period": "2026-07-09",
+      "totalTokens": 806967
+    },
+    {
+      "agent": "all",
+      "agents": [
+        {
+          "agent": "codex",
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 2552064,
+          "inputTokens": 198602,
+          "modelBreakdowns": [
+            {
+              "cacheCreationTokens": 0,
+              "cacheReadTokens": 2552064,
+              "inputTokens": 198602,
+              "modelName": "gpt-5.6-terra",
+              "outputTokens": 17584
+            }
+          ],
+          "modelsUsed": [
+            "gpt-5.6-terra"
+          ],
+          "outputTokens": 17584,
+          "totalTokens": 2768250
+        }
+      ],
+      "cacheCreationTokens": 0,
+      "cacheReadTokens": 2552064,
+      "inputTokens": 198602,
+      "metadata": {
+        "agents": [
+          "codex"
+        ]
+      },
+      "modelBreakdowns": [
+        {
+          "cacheCreationTokens": 0,
+          "cacheReadTokens": 2552064,
+          "inputTokens": 198602,
+          "modelName": "gpt-5.6-terra",
+          "outputTokens": 17584
+        }
+      ],
+      "modelsUsed": [
+        "gpt-5.6-terra"
+      ],
+      "outputTokens": 17584,
+      "period": "2026-07-10",
+      "totalTokens": 2768250
+    }
+  ],
+  "totals": {
+    "cacheCreationTokens": 0,
+    "cacheReadTokens": 343716165,
+    "inputTokens": 28797710,
+    "outputTokens": 1398146,
+    "totalTokens": 374182484
+  }
+}
