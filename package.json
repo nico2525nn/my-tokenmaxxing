@@ -1,0 +1,12 @@
+{
+  "name": "my-tokenmaxxing",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "bun --watch server/index.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0"
+  }
+}
