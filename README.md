@@ -4,8 +4,9 @@ AIエージェント（Codex, OpenCode, OMP, ZCode, Reasonix など）のLLMト�
 
 ## 機能
 
-- **8種類のデータソース**からトークン使用量を自動収集
+- **9種類のデータソース**からトークン使用量を自動収集
   - ccusage（Codex, OpenCode, Claude, Gemini, Copilot, pi）
+  - OpenCode2（session_v2 SQLite）
   - OMP（Oh My Pi）セッションJSONL
   - ZCode SQLiteデータベース
   - Reasonix telemetry.json
@@ -52,6 +53,7 @@ http://localhost:3642?name=YourName&avatar=https://example.com/avatar.png
 |--------|-------------|------|
 | Codex | `ccusage codex daily` | ✅ |
 | OpenCode | `ccusage opencode daily` | ✅ |
+| OpenCode2 | `~/.local/share/opencode/opencode.db` (session_v2) | ✅ |
 | pi | `ccusage pi daily` | ✅ |
 | Claude | `ccusage claude daily` | ⚠️ 要セットアップ |
 | Gemini | `ccusage gemini daily` | ⚠️ 要セットアップ |
@@ -66,7 +68,7 @@ http://localhost:3642?name=YourName&avatar=https://example.com/avatar.png
 my-tokenmaxxing/
   server/
     index.js           # Expressサーバー（API + 静的ファイル）
-    data-fetcher.js    # データ収集（ccusage / OMP / ZCode / Reasonix）
+    data-fetcher.js    # データ収集（ccusage / OpenCode2 / OMP / ZCode / Reasonix）
   public/
     index.html         # ダッシュボードUI
   token-reading-logic.md  # データ読み取り仕様書
