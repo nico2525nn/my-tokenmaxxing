@@ -53,9 +53,16 @@ app.get("/api/refresh", async (_req, res) => {
   }
 });
 
-// Serve static frontend
+// Serve static frontend (no caching so edits always show on reload)
 const publicDir = join(__dirname, "..", "public");
-app.use(express.static(publicDir));
+app.use(express.static(publicDir, {
+  etag: false,
+  lastModified: false,
+  maxAge: 0,
+  setHeaders: (res) => {
+    res.set("Cache-Control", "no-store");
+  },
+}));
 
 // SPA fallback
 app.get("*", (_req, res) => {
