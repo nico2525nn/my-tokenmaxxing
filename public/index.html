@@ -50,7 +50,9 @@ canvas#tokenChart{width:100%!important;max-height:320px}
 .breakdown-bar{display:flex;height:1.5rem;overflow:hidden;margin-bottom:.5rem}
 .breakdown-segment{transition:width .3s ease}
 .breakdown-items{display:flex;flex-direction:column;gap:.375rem}
-.breakdown-item{display:flex;align-items:center;justify-content:space-between;font-size:.8125rem;gap:.5rem}
+.breakdown-item{display:flex;align-items:center;justify-content:space-between;font-size:.8125rem;gap:.5rem;cursor:pointer;user-select:none;padding:.125rem .25rem}
+.breakdown-item:hover{color:var(--fg)}
+.breakdown-item.off{opacity:.3;text-decoration:line-through}
 .breakdown-item .model-name{display:flex;align-items:center;gap:.375rem;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .breakdown-item .dot{width:10px;height:10px;flex-shrink:0}
 .breakdown-item .model-tokens{color:var(--muted-fg);font-variant-numeric:tabular-nums;white-space:nowrap;flex-shrink:0}
@@ -236,7 +238,10 @@ function renderBreakdown(records) {
   let h='<p class="breakdown-title">Model Breakdown</p><div class="breakdown-bar">';
   sorted.forEach(function(x){h+='<div class="breakdown-segment" style="width:'+((x[1]/total*100).toFixed(1))+'%;background:'+getModelColor(x[0])+'"></div>';});
   h+='</div><div class="breakdown-items">';
-  sorted.slice(0,10).forEach(function(x){h+='<div class="breakdown-item"><span class="model-name"><span class="dot" style="background:'+getModelColor(x[0])+'"></span>'+x[0]+'</span><span class="model-tokens">'+fmt(x[1])+' ('+((x[1]/total*100).toFixed(1))+'%) &middot; in '+fmt(i[x[0]])+' / out '+fmt(o[x[0]])+'</span></div>';});
+  sorted.slice(0,10).forEach(function(x){
+    const off=hiddenModels.has(x[0])?' off':'';
+    h+='<div class="breakdown-item'+off+'" onclick="toggleModel(\''+x[0].replace(/'/g,"\\'")+'\')"><span class="model-name"><span class="dot" style="background:'+getModelColor(x[0])+'"></span>'+x[0]+'</span><span class="model-tokens">'+fmt(x[1])+' ('+((x[1]/total*100).toFixed(1))+'%) &middot; in '+fmt(i[x[0]])+' / out '+fmt(o[x[0]])+'</span></div>';
+  });
   h+='</div>'; el.innerHTML=h;
 }
 
@@ -249,6 +254,7 @@ function toggleSource(x) {
 function toggleModel(m) {
   hiddenModels.has(m) ? hiddenModels.delete(m) : hiddenModels.add(m);
   drawChart(); // redraw chart only
+  renderBreakdown(ALL_RECORDS.filter(function(r){return !hiddenSources.has(r.source);})); // sync dim state
 }
 
 // ---- chart (stacked bars, grouped periods) ----
