@@ -216,9 +216,35 @@ FROM model_usage
 
 5. `usage.totalTokens` がない行はスキップ
 
-**コスト**: あり（`sessionCostUsd` に実際のコストが記録されている；`sessionCost` をフォールバックとして使用）
+### 9. OpenCode2 — ローカルリーダー
+
+**対応ソフト**: [OpenCode 2](https://opencode.ai/v2/docs)（ベータ版、`opencode2` バイナリ）
+
+**データ取得方式**: 直接 SQLite 読み取り（`bun:sqlite`）
+
+**読み取り元**: `~/.local/share/opencode/opencode.db`
+
+**クエリ**:
+
+```sql
+SELECT time_created, model, tokens_input, tokens_output,
+       tokens_reasoning, tokens_cache_read, tokens_cache_write
+FROM session_v2
+```
+
+**パース方法**:
+
+- `session_v2` テーブルからトークン列が存在する全行を取得
+- `time_created` (epoch ms) から日付 (YYYY-MM-DD) を算出
+- `model` は JSON 文字列（`{"id":"deepseek-v4-flash","providerID":"opencode-go","variant":"max"}`）なので `id` を抽出
+- `tokens_reasoning` は `outputTokens` に合算
+- 日付・モデルごとに集約
+
+**コスト**: あり（`cost` 列に記録されているが表示には使用しない）
 
 ---
+
+## 集約 (`aggregate.ts`)
 
 ## 集約 (`aggregate.ts`)
 

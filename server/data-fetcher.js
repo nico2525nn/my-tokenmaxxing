@@ -238,6 +238,67 @@ function fetchFromReasonix() {
   console.log(`[fetcher] Reasonix: ${results.length} entries`);
   return results;
 }
+/**
+ * Read OpenCode2 session data from the shared opencode SQLite DB.
+ * OpenCode2 (beta, `opencode2` binary) stores sessions in session_v2.
+ */
+async function fetchFromOpenCode2() {
+  console.log("[fetcher] Fetching from OpenCode2...");
+  const dbPath = join(HOME, ".local", "share", "opencode", "opencode.db");
+  if (!existsSync(dbPath)) {
+    console.log("[fetcher] OpenCode2 db not found");
+    return [];
+  }
+
+  try {
+    if (!BUN_SQLITE) return [];
+    const { Database } = BUN_SQLITE;
+    const db = new Database(dbPath, { readonly: true });
+    const rows = db.query(`
+      SELECT time_created, model, tokens_input, tokens_output,
+             tokens_reasoning, tokens_cache_read, tokens_cache_write
+      FROM session_v2
+      WHERE tokens_input IS NOT NULL OR tokens_output IS NOT NULL
+            OR tokens_cache_read IS NOT NULL OR tokens_cache_write IS NOT NULL
+    `).all();
+    db.close();
+
+    const results = [];
+    for (const r of rows) {
+      const date = new Date(r.time_created || 0).toISOString().slice(0, 10);
+      if (!date || date === "1970-01-01") continue;
+      let model = "unknown";
+      try {
+        const parsed = JSON.parse(r.model || "{}");
+        if (parsed && typeof parsed.id === "string") model = parsed.id;
+        else if (typeof r.model === "string") model = r.model;
+      } catch {
+        if (typeof r.model === "string") model = r.model;
+      }
+      const input = Number(r.tokens_input) || 0;
+      const output = Number(r.tokens_output) || 0;
+      const reasoning = Number(r.tokens_reasoning) || 0;
+      const cacheRead = Number(r.tokens_cache_read) || 0;
+      const cacheWrite = Number(r.tokens_cache_write) || 0;
+      if (input + output + reasoning + cacheRead + cacheWrite === 0) continue;
+      results.push({
+        period: date,
+        agent: "opencode2",
+        modelName: normalizeModel(model),
+        inputTokens: input,
+        outputTokens: output + reasoning,
+        cacheReadTokens: cacheRead,
+        cacheCreationTokens: cacheWrite,
+        totalTokens: input + output + reasoning + cacheRead + cacheWrite,
+      });
+    }
+    console.log(`[fetcher] OpenCode2: ${results.length} sessions`);
+    return results;
+  } catch (e) {
+    console.error("[fetcher] OpenCode2 failed:", e.message);
+    return [];
+  }
+}
 
 function collectFiles(dir, files, ext) {
   try {
@@ -278,6 +339,7 @@ export async function aggregateAllData() {
   const ompEntries = fetchFromOmp();
   const zcodeEntries = await fetchFromZCode();
   const reasonixEntries = fetchFromReasonix();
+  const opencode2Entries = await fetchFromOpenCode2();
   const allRecords = [];
 
   // Process ccusage format into records
@@ -364,6 +426,19 @@ export async function aggregateAllData() {
     allRecords.push({
       date: e.period,
       source: "reasonix",
+      model: e.modelName,
+      inputTokens: e.inputTokens,
+      outputTokens: e.outputTokens,
+      cacheReadTokens: e.cacheReadTokens,
+      cacheCreationTokens: e.cacheCreationTokens,
+      totalTokens: e.totalTokens,
+    });
+  }
+  // Add OpenCode2 entries
+  for (const e of opencode2Entries) {
+    allRecords.push({
+      date: e.period,
+      source: "opencode2",
       model: e.modelName,
       inputTokens: e.inputTokens,
       outputTokens: e.outputTokens,
