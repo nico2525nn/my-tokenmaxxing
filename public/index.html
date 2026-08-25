@@ -32,13 +32,19 @@ body{font-family:var(--font);background:var(--bg);color:var(--fg);min-height:100
 .chart-title{font-size:1rem;font-weight:500}
 canvas#tokenChart{width:100%!important;max-height:320px}
 .chart-legend{display:flex;flex-wrap:wrap;gap:.75rem;margin-top:.75rem;justify-content:center}
-.legend-item{display:flex;align-items:center;gap:.375rem;font-size:.75rem;color:var(--muted-fg);cursor:pointer}
-.legend-item:hover{color:var(--fg)}.legend-dot{width:8px;height:8px;flex-shrink:0}
+.legend-item{display:flex;align-items:center;gap:.375rem;font-size:.75rem;color:var(--muted-fg);cursor:pointer;user-select:none;padding:.125rem .25rem}
+.legend-item:hover{color:var(--fg)}
+.legend-item.off{opacity:.3;text-decoration:line-through}
+.legend-dot{width:8px;height:8px;flex-shrink:0}
 .sources-section{padding:1.25rem;border-top:1px solid var(--border)}
 .sources-title{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.05em;color:var(--muted-fg);margin-bottom:.75rem}
 .sources-list{display:flex;flex-wrap:wrap;gap:.5rem}
-.source-badge{display:inline-flex;align-items:center;gap:.375rem;padding:.25rem .625rem;font-size:.75rem;border:1px solid var(--border);background:var(--card);color:var(--muted-fg)}
+.source-badge{display:inline-flex;align-items:center;gap:.375rem;padding:.25rem .625rem;font-size:.75rem;border:1px solid var(--border);background:var(--card);color:var(--muted-fg);cursor:pointer;user-select:none}
+.source-badge:hover{border-color:var(--accent)}
 .source-badge.active{color:var(--fg);border-color:var(--accent)}
+.source-badge.off{opacity:.3;text-decoration:line-through}
+.source-badge.nodata{opacity:.25;cursor:default}
+.source-badge.nodata:hover{border-color:var(--border)}
 .breakdown-section{padding:1.25rem;border-top:1px solid var(--border)}
 .breakdown-title{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.05em;color:var(--muted-fg);margin-bottom:.75rem}
 .breakdown-bar{display:flex;height:1.5rem;overflow:hidden;margin-bottom:.5rem}
@@ -84,6 +90,14 @@ let colorIdx = 0;
 let userName = localStorage.getItem('tmx_name') || 'nico2525nn';
 let avatarUrl = localStorage.getItem('tmx_avatar') || 'https://avatars.githubusercontent.com/u/173241093?v=4';
 
+// Global state (cached, no refetch on toggle)
+let ALL_RECORDS = [];
+let ALL_STATS = null;
+const hiddenModels = new Set();
+const hiddenSources = new Set();
+
+const KNOWN_SOURCES = ['claude','codex','opencode','opencode2','gemini','copilot','omp','zcode','reasonix'];
+
 function normalizeModel(m) {
   let c = (m||'').replace(/^\[.*?\]\s*/,'').trim();
   c = c.replace(/^(openrouter|opencode-zen|opencode|anthropic|google|openai|deepseek|moonshotai|xiaomi|tencent|nemotron|minimax|gemma|nvidia)\/+/g,'');
@@ -118,26 +132,99 @@ function saveEdit() {
   userName=n; avatarUrl=a;
   localStorage.setItem('tmx_name',n); localStorage.setItem('tmx_avatar',a);
   document.querySelector('.edit-overlay')?.remove();
-  loadData();
+  renderAll();
 }
 
-async function loadData() {
-  const app = document.getElementById('app');
-  try {
-    const r = await fetch('/api/stats');
-    if (!r.ok) throw Error('API error');
-    const {stats} = await r.json();
-    renderDash(app,stats);
-    const rr = await fetch('/api/records');
-    if (rr.ok) { const {records}=await rr.json(); renderBreakdown(records); drawChart(stats.daily,records); }
-    else drawChart(stats.daily);
-  } catch(e) {
-    app.innerHTML='<div class="error-box"><p>Failed to load token data</p><p style="font-size:.75rem;color:var(--muted-fg)">'+e.message+'</p><button class="retry-btn" onclick="location.reload()">Retry</button></div>';
+// ---- client-side stats (ported from server computeStats) ----
+function computeStats(records) {
+  const empty = {totalTokens:0,totalInput:0,totalOutput:0,totalCacheRead:0,totalCacheCreation:0,activeDays:0,sessions:0,topModel:'N/A',topModelTokens:0,currentStreak:0,longestStreak:0,sources:[],daily:[],firstDate:'',lastDate:''};
+  if (!records.length) return empty;
+  const s = Object.assign({}, empty);
+  const dates = new Set();
+  const sessionSet = new Set();
+  const modelTotals = {};
+  const dailyMap = {};
+  for (const r of records) {
+    s.totalTokens += r.totalTokens;
+    s.totalInput += r.inputTokens;
+    s.totalOutput += r.outputTokens;
+    s.totalCacheRead += r.cacheReadTokens;
+    s.totalCacheCreation += r.cacheCreationTokens;
+    dates.add(r.date);
+    sessionSet.add(r.date+'|'+r.source+'|'+r.model);
+    const m = normalizeModel(r.model || 'unknown');
+    modelTotals[m] = (modelTotals[m] || 0) + r.totalTokens;
+    if (!dailyMap[r.date]) dailyMap[r.date] = {date:r.date,total:0,byModel:{}};
+    dailyMap[r.date].total += r.totalTokens;
+    dailyMap[r.date].byModel[m] = (dailyMap[r.date].byModel[m] || 0) + r.totalTokens;
   }
+  const sortedDates = [...dates].sort();
+  s.activeDays = sortedDates.length;
+  s.firstDate = sortedDates[0] || '';
+  s.lastDate = sortedDates[sortedDates.length-1] || '';
+  s.sessions = sessionSet.size;
+  const sortedModels = Object.entries(modelTotals).sort((a,b)=>b[1]-a[1]);
+  if (sortedModels.length) { s.topModel = sortedModels[0][0]; s.topModelTokens = sortedModels[0][1]; }
+  s.sources = [...new Set(records.map(r=>r.source))];
+  s.daily = Object.values(dailyMap).sort((a,b)=>a.date.localeCompare(b.date));
+
+  // streaks
+  const today = new Date();
+  let cur = 0;
+  for (let i=0;;i++) {
+    const d = new Date(today); d.setDate(d.getDate()-i);
+    const ds = d.toISOString().slice(0,10);
+    if (sortedDates.includes(ds)) cur++; else if (i>0) break;
+  }
+  s.currentStreak = cur;
+  let best = 0, run = 0;
+  for (let i=0;i<sortedDates.length;i++) {
+    if (i===0) run = 1;
+    else {
+      const diff = (new Date(sortedDates[i]) - new Date(sortedDates[i-1])) / 86400000;
+      run = diff === 1 ? run+1 : 1;
+    }
+    best = Math.max(best, run);
+  }
+  s.longestStreak = best;
+  return s;
 }
 
-function renderDash(app,s) {
-  app.innerHTML='<header class="profile-header"><div class="profile-info"><img src="'+avatarUrl+'" alt="" class="avatar" onerror="this.style.display=\'none\'"><h1 class="username">'+userName+'</h1></div><button class="edit-btn" onclick="showEdit()">Edit Profile</button></header><div class="stats-grid"><div class="stats-inner"><div class="stat-card"><p class="stat-label">Total Tokens</p><p class="stat-value">'+fmt(s.totalTokens)+'</p></div><div class="stat-card"><p class="stat-label">Sessions</p><p class="stat-value">'+s.sessions+'</p></div><div class="stat-card"><p class="stat-label">Top Token Model</p><p class="stat-value small" title="'+s.topModel+'">'+shortModel(s.topModel)+'</p></div><div class="stat-spacer"></div><div class="stat-card"><p class="stat-label">Current Streak</p><p class="stat-value">'+s.currentStreak+'</p></div><div class="stat-card"><p class="stat-label">Longest Streak</p><p class="stat-value">'+s.longestStreak+'</p></div><div class="stat-card"><p class="stat-label">Active Days</p><p class="stat-value">'+s.activeDays+'</p></div><div class="stat-card"><p class="stat-label">Total Input</p><p class="stat-value small">'+fmt(s.totalInput)+'</p></div></div><div class="chart-section"><h2 class="chart-title">Daily Tokens</h2><div class="canvas-wrapper"><canvas id="tokenChart"></canvas></div><div class="chart-legend" id="chartLegend"></div></div></div>'+(s.sources?'<div class="sources-section"><p class="sources-title">Data Sources</p><div class="sources-list">'+['claude','codex','opencode','opencode2','gemini','copilot','omp','zcode','reasonix'].map(function(x){return '<span class="source-badge'+(s.sources.includes(x)?' active':'')+'">'+x+'</span>';}).join('')+'</div></div>':'')+'<div class="breakdown-section" id="modelBreakdown"><p class="breakdown-title">Model Breakdown</p><div class="loading" style="padding:1rem"><div class="spinner"></div><span>Loading...</span></div></div><div class="footer-note">'+s.firstDate+' &ndash; '+s.lastDate+' &middot; '+(s.daily?.length||0)+' active days</div>';
+// ---- render ----
+function renderAll() {
+  const filtered = ALL_RECORDS.filter(r => !hiddenSources.has(r.source));
+  ALL_STATS = computeStats(filtered);
+  renderDash(filtered);
+  renderBreakdown(filtered);
+  drawChart();
+}
+
+function renderDash(records) {
+  const app = document.getElementById('app');
+  const s = ALL_STATS;
+  app.innerHTML='<header class="profile-header"><div class="profile-info"><img src="'+avatarUrl+'" alt="" class="avatar" onerror="this.style.display=\'none\'"><h1 class="username">'+userName+'</h1></div><button class="edit-btn" onclick="showEdit()">Edit Profile</button></header>'
+  +'<div class="stats-grid"><div class="stats-inner">'
+  +'<div class="stat-card"><p class="stat-label">Total Tokens</p><p class="stat-value">'+fmt(s.totalTokens)+'</p></div>'
+  +'<div class="stat-card"><p class="stat-label">Sessions</p><p class="stat-value">'+s.sessions+'</p></div>'
+  +'<div class="stat-card"><p class="stat-label">Top Token Model</p><p class="stat-value small" title="'+s.topModel+'">'+shortModel(s.topModel)+'</p></div>'
+  +'<div class="stat-spacer"></div>'
+  +'<div class="stat-card"><p class="stat-label">Current Streak</p><p class="stat-value">'+s.currentStreak+'</p></div>'
+  +'<div class="stat-card"><p class="stat-label">Longest Streak</p><p class="stat-value">'+s.longestStreak+'</p></div>'
+  +'<div class="stat-card"><p class="stat-label">Active Days</p><p class="stat-value">'+s.activeDays+'</p></div>'
+  +'<div class="stat-card"><p class="stat-label">Total Input</p><p class="stat-value small">'+fmt(s.totalInput)+'</p></div>'
+  +'</div>'
+  +'<div class="chart-section"><h2 class="chart-title">Daily Tokens</h2><div class="canvas-wrapper"><canvas id="tokenChart"></canvas></div><div class="chart-legend" id="chartLegend"></div></div>'
+  +'</div>'
+  +'<div class="sources-section"><p class="sources-title">Harness（クリックで絞り込み）</p><div class="sources-list">'
+  +KNOWN_SOURCES.map(function(x){
+    const has = ALL_RECORDS.some(function(r){return r.source===x;});
+    const off = hiddenSources.has(x);
+    const cls = has ? (off ? 'active off' : 'active') : 'nodata';
+    return '<span class="source-badge '+cls+'" onclick="toggleSource(\''+x+'\')">'+x+'</span>';
+  }).join('')
+  +'</div></div>'
+  +'<div class="breakdown-section" id="modelBreakdown"><p class="breakdown-title">Model Breakdown</p></div>'
+  +'<div class="footer-note">'+s.firstDate+' &ndash; '+s.lastDate+' &middot; '+s.daily.length+' active days</div>';
 }
 
 function renderBreakdown(records) {
@@ -145,6 +232,7 @@ function renderBreakdown(records) {
   const t={},i={},o={};
   for(const r of records){const m=normalizeModel(r.model||'unknown');t[m]=(t[m]||0)+r.totalTokens;i[m]=(i[m]||0)+r.inputTokens;o[m]=(o[m]||0)+r.outputTokens;}
   const sorted=Object.entries(t).sort(function(a,b){return b[1]-a[1];}); const total=sorted.reduce(function(s,x){return s+x[1];},0);
+  if (!total) { el.innerHTML='<p class="breakdown-title">Model Breakdown</p><p style="color:var(--muted-fg);font-size:.8125rem">No data</p>'; return; }
   let h='<p class="breakdown-title">Model Breakdown</p><div class="breakdown-bar">';
   sorted.forEach(function(x){h+='<div class="breakdown-segment" style="width:'+((x[1]/total*100).toFixed(1))+'%;background:'+getModelColor(x[0])+'"></div>';});
   h+='</div><div class="breakdown-items">';
@@ -152,15 +240,26 @@ function renderBreakdown(records) {
   h+='</div>'; el.innerHTML=h;
 }
 
-const hiddenModels=new Set();
-function toggleModel(m){hiddenModels.has(m)?hiddenModels.delete(m):hiddenModels.add(m);loadData();}
+// ---- toggles ----
+function toggleSource(x) {
+  if (!ALL_RECORDS.some(function(r){return r.source===x;})) return; // no data → not toggleable
+  hiddenSources.has(x) ? hiddenSources.delete(x) : hiddenSources.add(x);
+  renderAll(); // recompute stats + breakdown + chart
+}
+function toggleModel(m) {
+  hiddenModels.has(m) ? hiddenModels.delete(m) : hiddenModels.add(m);
+  drawChart(); // redraw chart only
+}
 
-function drawChart(daily,records){
-  if(!daily||!daily.length) return;
+// ---- chart (stacked bars, grouped periods) ----
+function drawChart() {
+  const daily = ALL_STATS ? ALL_STATS.daily : [];
+  if (!daily || !daily.length) return;
   const canvas=document.getElementById('tokenChart'); if(!canvas) return;
   const ctx=canvas.getContext('2d');
-  let modelNames=[];
-  if(records) modelNames=[...new Set(records.map(function(r){return normalizeModel(r.model);}).filter(Boolean))];
+
+  const modelNames=[];
+  if (ALL_RECORDS) modelNames.push(...new Set(ALL_RECORDS.filter(r=>!hiddenSources.has(r.source)).map(function(r){return normalizeModel(r.model);}).filter(Boolean)));
   const mColors={}; modelNames.forEach(function(m){mColors[m]=getModelColor(m);});
 
   // Group: ≤14d → daily bars, else 3-day groups, else weekly
@@ -187,7 +286,11 @@ function drawChart(daily,records){
   ctx.scale(dpr,dpr);
   const pad={top:24,bottom:30,left:50,right:20};
   const pw=w-pad.left-pad.right,ph=h-pad.top-pad.bottom;
-  const maxVal=Math.max(...grps.map(function(g){return g.total;}),1);
+
+  const vModels=modelNames.filter(function(m){return !hiddenModels.has(m);});
+  // scale to visible total only
+  const visTotals=grps.map(function(g){let t=0;for(const m of vModels)t+=g.models[m]||0;return t;});
+  const maxVal=Math.max(...visTotals,1);
   const barW=Math.min(pw/grps.length*0.65,28);
   const gap=(pw-barW*grps.length)/(grps.length+1);
 
@@ -195,10 +298,7 @@ function drawChart(daily,records){
   ctx.font='11px "Geist Sans",sans-serif'; ctx.fillStyle='oklch(58% .005 270)'; ctx.textAlign='right';
   for(let i=0;i<=4;i++){const y=pad.top+(ph/4)*i;ctx.fillText(fmt(maxVal-(maxVal/4)*i),pad.left-8,y+4);ctx.strokeStyle='oklch(24% .005 270)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(pad.left,y);ctx.lineTo(w-pad.right,y);ctx.stroke();}
 
-  const vModels=modelNames.filter(function(m){return !hiddenModels.has(m);});
-  if(vModels.length===0&&modelNames.length>0) vModels.push(modelNames[0]);
-
-  // Stacked bars
+  // Stacked bars (visible models only)
   for(let gi=0;gi<grps.length;gi++){
     const g=grps[gi];
     const x=pad.left+gap+gi*(barW+gap);
@@ -213,7 +313,7 @@ function drawChart(daily,records){
     }
   }
 
-  // X labels (thin every N, skip last to avoid crowding)
+  // X labels
   const ls=grps.length>15?Math.ceil(grps.length/10):1;
   for(let gi=0;gi<grps.length;gi+=ls){
     const x=pad.left+gap+gi*(barW+gap)+barW/2;
@@ -221,14 +321,32 @@ function drawChart(daily,records){
     ctx.fillText(grps[gi].label,x,h-pad.bottom+16);
   }
 
-  // Legend
+  // Legend: ALL models, hidden ones dimmed + strikethrough
   const legend=document.getElementById('chartLegend');
-  if(legend) legend.innerHTML=vModels.map(function(m){return '<span class="legend-item" onclick="toggleModel(\''+m.replace(/'/g,"\\'")+'\')"><span class="legend-dot" style="background:'+mColors[m]+'"></span>'+shortModel(m)+'</span>';}).join('');
+  if(legend) legend.innerHTML=modelNames.map(function(m){
+    const off=hiddenModels.has(m)?' off':'';
+    return '<span class="legend-item'+off+'" onclick="toggleModel(\''+m.replace(/'/g,"\\'")+'\')"><span class="legend-dot" style="background:'+mColors[m]+'"></span>'+shortModel(m)+'</span>';
+  }).join('');
+}
+
+async function loadData() {
+  const app = document.getElementById('app');
+  try {
+    const r = await fetch('/api/records');
+    if (!r.ok) throw Error('API error');
+    const {records} = await r.json();
+    ALL_RECORDS = records || [];
+    hiddenModels.clear();
+    hiddenSources.clear();
+    renderAll();
+  } catch(e) {
+    app.innerHTML='<div class="error-box"><p>Failed to load token data</p><p style="font-size:.75rem;color:var(--muted-fg)">'+e.message+'</p><button class="retry-btn" onclick="location.reload()">Retry</button></div>';
+  }
 }
 
 loadData();
 setInterval(loadData,60000);
-window.addEventListener('resize',function(){setTimeout(loadData,500);});
+window.addEventListener('resize',function(){setTimeout(function(){if(ALL_STATS)drawChart();},300);});
 </script>
 </body>
 </html>
