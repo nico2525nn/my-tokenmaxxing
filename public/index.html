@@ -61,12 +61,12 @@ canvas#tokenChart{display:block;width:100%;height:280px}
 .legend-value{font-family:var(--mono);font-size:.625rem;color:var(--muted-fg);white-space:nowrap}
 .legend-more{margin-top:.45rem;color:var(--muted-fg);font-size:.6875rem}
 .chart-empty{height:280px;display:flex;align-items:center;justify-content:center;color:var(--muted-fg);font-size:.8125rem}
-.details-grid{display:grid;grid-template-columns:minmax(230px,.78fr) minmax(0,1.62fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border)}
+.details-grid{display:grid;grid-template-columns:minmax(0,.6fr) minmax(0,2.4fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border)}
 .detail-panel{min-width:0;background:var(--bg);padding:1.25rem}
 .detail-heading{display:flex;align-items:baseline;justify-content:space-between;gap:.75rem;margin-bottom:1rem}
 .detail-title{font-size:1rem;font-weight:500}
 .detail-hint{font-size:.6875rem;color:var(--muted-fg);white-space:nowrap}
-.sources-list{display:flex;flex-direction:column;width:60%}
+.sources-list{display:flex;flex-direction:column;width:100%}
 .source-chip{display:grid;grid-template-columns:8px minmax(0,1fr) auto;align-items:center;gap:.5rem;width:100%;padding:.52rem .35rem;border:0;border-top:1px solid var(--border);background:transparent;color:var(--muted-fg);font-size:.75rem;text-align:left;cursor:pointer;user-select:none}
 .source-chip:hover{background:var(--card);color:var(--fg)}
 .source-chip.off{opacity:.32;text-decoration:line-through}
@@ -540,7 +540,7 @@ function drawChart() {
 async function loadData() {
   const app = document.getElementById('app');
   try {
-    const response = await fetch('/api/records');
+    const response = await fetch('/api/records', {cache:'no-store'});
     if (!response.ok) throw Error('API error');
     const payload = await response.json();
     ALL_RECORDS = payload.records || [];

@@ -8,6 +8,16 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3642;
 const app = express();
 
+app.disable("etag");
+app.use((_req, res, next) => {
+  res.set({
+    "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+    "Pragma": "no-cache",
+    "Expires": "0",
+  });
+  next();
+});
+
 // Cache
 let cachedData = null;
 let lastFetch = 0;
