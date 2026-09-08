@@ -250,10 +250,11 @@ async function fetchFromOpenCode2() {
     return [];
   }
 
+  let db = null;
   try {
     if (!BUN_SQLITE) return [];
     const { Database } = BUN_SQLITE;
-    const db = new Database(dbPath, { readonly: true });
+    db = new Database(dbPath, { readonly: true });
     const rows = db.query(`
       SELECT time_created, model, tokens_input, tokens_output,
              tokens_reasoning, tokens_cache_read, tokens_cache_write
@@ -261,12 +262,15 @@ async function fetchFromOpenCode2() {
       WHERE tokens_input IS NOT NULL OR tokens_output IS NOT NULL
             OR tokens_cache_read IS NOT NULL OR tokens_cache_write IS NOT NULL
     `).all();
-    db.close();
 
     const results = [];
     for (const r of rows) {
-      const date = new Date(r.time_created || 0).toISOString().slice(0, 10);
-      if (!date || date === "1970-01-01") continue;
+      const rawTime = Number(r.time_created);
+      const timeMs = Number.isFinite(rawTime) ? (rawTime < 1e12 ? rawTime * 1000 : rawTime) : Date.parse(r.time_created);
+      const createdAt = new Date(timeMs);
+      if (Number.isNaN(createdAt.getTime())) continue;
+      const date = createdAt.toISOString().slice(0, 10);
+      if (date === "1970-01-01") continue;
       let model = "unknown";
       try {
         const parsed = JSON.parse(r.model || "{}");
@@ -297,6 +301,8 @@ async function fetchFromOpenCode2() {
   } catch (e) {
     console.error("[fetcher] OpenCode2 failed:", e.message);
     return [];
+  } finally {
+    db?.close();
   }
 }
 
@@ -329,6 +335,12 @@ function normalizeModel(model) {
     clean = parts.join("-");
   }
   return clean;
+}
+
+function isValidDate(value) {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const date = new Date(`${value}T00:00:00Z`);
+  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
 }
 
 /**
@@ -448,10 +460,14 @@ export async function aggregateAllData() {
     });
   }
 
-  console.log(`[fetcher] Total records: ${allRecords.length}`);
+  const records = allRecords.filter(record => isValidDate(record.date));
+  if (records.length !== allRecords.length) {
+    console.warn(`[fetcher] Skipped ${allRecords.length - records.length} records with invalid dates`);
+  }
+  console.log(`[fetcher] Total records: ${records.length}`);
 
-  const stats = computeStats(allRecords);
-  return { records: allRecords, stats };
+  const stats = computeStats(records);
+  return { records, stats };
 }
 
 function computeStats(records) {
@@ -464,6 +480,7 @@ function computeStats(records) {
   const totalCacheCreation = records.reduce((s, r) => s + r.cacheCreationTokens, 0);
 
   const dates = [...new Set(records.map(r => r.date))].sort();
+  const dateSet = new Set(dates);
   const activeDays = dates.length;
 
   // Sessions: count distinct (date, source) combos
@@ -483,15 +500,14 @@ function computeStats(records) {
   const today = new Date();
   const todayStr = today.toISOString().slice(0, 10);
 
-  // Current streak: count consecutive days ending today
-  for (let i = 0; ; i++) {
-    const d = new Date(today);
-    d.setDate(d.getDate() - i);
-    const dStr = d.toISOString().slice(0, 10);
-    if (dates.includes(dStr)) {
-      currentStreak++;
-    } else if (i > 0) {
-      break;
+  // Current streak: only count a run that includes today.
+  if (dateSet.has(todayStr)) {
+    for (let i = 0; ; i++) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const dStr = d.toISOString().slice(0, 10);
+      if (dateSet.has(dStr)) currentStreak++;
+      else break;
     }
   }
 
