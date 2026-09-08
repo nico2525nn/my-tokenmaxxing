@@ -6,353 +6,557 @@
 <title>nico2525nn on tokenmaxxing</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root{--bg:oklch(14% .005 270);--fg:oklch(90% .005 95);--card:oklch(18% .005 270);--muted:oklch(22% .005 270);--muted-fg:oklch(58% .005 270);--border:oklch(24% .005 270);--accent:oklch(50% .005 270);--accent-fg:oklch(90% .005 95);--font:"Geist Sans","Geist",ui-sans-serif,system-ui,sans-serif}
+:root{
+  --bg:oklch(16% .008 270);
+  --fg:oklch(93% .005 95);
+  --card:oklch(18% .008 270);
+  --muted:oklch(22% .012 270);
+  --muted-fg:oklch(58% .005 270);
+  --border:oklch(27% .012 270);
+  --font:"Geist Sans","Geist",ui-sans-serif,system-ui,sans-serif;
+  --mono:"Geist Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
 *{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
 body{font-family:var(--font);background:var(--bg);color:var(--fg);min-height:100vh;-webkit-font-smoothing:antialiased}
-.app-header{max-width:64rem;margin:0 auto;padding:1.25rem 1rem 0}
-.app-header h1{font-size:1.25rem;font-weight:600;letter-spacing:-.025em;color:var(--fg)}
-.container{max-width:64rem;margin:0 auto;min-height:100vh}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit}
+.site-header{position:sticky;top:0;z-index:50;background:oklch(16% .008 270 / .88);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+.site-header-inner{max-width:64rem;height:57px;margin:0 auto;padding:0 1rem;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:1rem}
+.site-brand{font-size:.75rem;font-weight:600;letter-spacing:-.01em;justify-self:start}
+.site-nav{display:flex;align-items:center;justify-content:center;gap:1.5rem;font-size:.75rem;color:var(--muted-fg)}
+.site-nav a:hover{color:var(--fg)}
+.site-actions{display:flex;align-items:center;justify-content:flex-end;gap:.5rem;font-size:.6875rem;color:var(--muted-fg)}
+.site-status{font-family:var(--mono);letter-spacing:.04em;text-transform:uppercase}
+.site-action{padding:.3rem .55rem;border:1px solid var(--border);background:var(--bg);font-size:.6875rem;cursor:pointer}
+.site-action:hover{background:var(--muted);color:var(--fg)}
+.container{max-width:64rem;margin:0 auto;min-height:100vh;border-left:1px solid var(--border);border-right:1px solid var(--border)}
 .profile-header{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:2rem 1rem}
 .profile-info{display:flex;align-items:center;gap:1rem;min-width:0}
 .avatar{width:56px;height:56px;flex-shrink:0;object-fit:cover}
 .username{font-size:1.5rem;font-weight:600;letter-spacing:-.025em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.edit-btn{display:inline-flex;align-items:center;gap:.375rem;padding:.25rem .625rem;font-size:.75rem;border:1px solid var(--border);background:var(--card);color:var(--muted-fg);cursor:pointer}
-.edit-btn:hover{background:var(--muted);color:var(--fg)}
-.stats-grid{display:grid;grid-template-columns:1fr;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--border);gap:1px}
-.stats-inner{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border)}
-@media(min-width:1024px){.stats-inner{grid-template-columns:repeat(4,1fr)}}
-.stat-card{background:var(--bg);padding:1rem;min-width:0}
-.stat-label{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.05em;color:var(--muted-fg)}
-.stat-value{margin-top:.375rem;font-size:1.5rem;font-weight:600;letter-spacing:-.025em;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.stat-value.small{font-size:1.25rem}
-.stat-spacer{background:var(--bg)}@media(min-width:1024px){.stat-spacer{display:block}}
-.chart-section{background:var(--bg);padding:1.25rem}
-.chart-title{font-size:1rem;font-weight:500}
-canvas#tokenChart{width:100%!important;max-height:320px}
-.chart-legend{display:flex;flex-wrap:wrap;gap:.75rem;margin-top:.75rem;justify-content:center}
-.legend-item{display:flex;align-items:center;gap:.375rem;font-size:.75rem;color:var(--muted-fg);cursor:pointer;user-select:none;padding:.125rem .25rem}
+.profile-actions{display:flex;align-items:center;gap:.5rem;flex-shrink:0}
+.profile-action{display:inline-flex;align-items:center;gap:.35rem;padding:.35rem .6rem;font-size:.75rem;border:1px solid var(--border);background:var(--bg);color:var(--muted-fg);cursor:pointer}
+.profile-action:hover{background:var(--muted);color:var(--fg)}
+.stats-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--border);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.stat-card{background:var(--bg);padding:1rem;min-width:0;min-height:76px}
+.stat-label{font-size:.625rem;font-weight:500;text-transform:uppercase;letter-spacing:.055em;color:var(--muted-fg)}
+.stat-value{margin-top:.35rem;font-size:1.25rem;font-weight:600;letter-spacing:-.025em;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.stat-value.small{font-size:1.05rem}
+.dashboard-section{background:var(--bg);padding:1.25rem;border-bottom:1px solid var(--border)}
+.section-title{font-size:1rem;font-weight:500;line-height:1.5}
+.chart-layout{display:flex;align-items:center;gap:1.5rem;margin-top:1rem}
+.chart-canvas{min-width:0;flex:1}
+canvas#tokenChart{display:block;width:100%;height:280px}
+.chart-key{width:190px;flex:0 0 190px;min-width:0}
+.chart-key-list{display:flex;flex-direction:column;gap:.35rem}
+.legend-item{display:grid;grid-template-columns:1rem 8px minmax(0,1fr) auto;align-items:center;gap:.35rem;width:100%;padding:.08rem 0;border:0;background:none;color:var(--muted-fg);font-size:.6875rem;text-align:left;cursor:pointer;user-select:none}
 .legend-item:hover{color:var(--fg)}
 .legend-item.off{opacity:.3;text-decoration:line-through}
+.legend-rank{font-family:var(--mono);font-size:.625rem;color:var(--muted-fg);text-align:right}
 .legend-dot{width:8px;height:8px;flex-shrink:0}
-.sources-section{padding:1.25rem;border-top:1px solid var(--border)}
-.sources-title{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.05em;color:var(--muted-fg);margin-bottom:.75rem}
-.sources-list{display:flex;flex-wrap:wrap;gap:.5rem}
-.source-badge{display:inline-flex;align-items:center;gap:.375rem;padding:.25rem .625rem;font-size:.75rem;border:1px solid var(--border);background:var(--card);color:var(--muted-fg);cursor:pointer;user-select:none}
-.source-badge:hover{border-color:var(--accent)}
-.source-badge.active{color:var(--fg);border-color:var(--accent)}
-.source-badge.off{opacity:.3;text-decoration:line-through}
-.source-badge.nodata{opacity:.25;cursor:default}
-.source-badge.nodata:hover{border-color:var(--border)}
-.breakdown-section{padding:1.25rem;border-top:1px solid var(--border)}
-.breakdown-title{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.05em;color:var(--muted-fg);margin-bottom:.75rem}
-.breakdown-bar{display:flex;height:1.5rem;overflow:hidden;margin-bottom:.5rem}
-.breakdown-segment{transition:width .3s ease}
-.breakdown-items{display:flex;flex-direction:column;gap:.375rem}
-.breakdown-item{display:flex;align-items:center;justify-content:space-between;font-size:.8125rem;gap:.5rem;cursor:pointer;user-select:none;padding:.125rem .25rem}
-.breakdown-item:hover{color:var(--fg)}
+.legend-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.legend-value{font-family:var(--mono);font-size:.625rem;color:var(--muted-fg);white-space:nowrap}
+.legend-more{margin-top:.45rem;color:var(--muted-fg);font-size:.6875rem}
+.chart-empty{height:280px;display:flex;align-items:center;justify-content:center;color:var(--muted-fg);font-size:.8125rem}
+.details-grid{display:grid;grid-template-columns:minmax(230px,.78fr) minmax(0,1.62fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border)}
+.detail-panel{min-width:0;background:var(--bg);padding:1.25rem}
+.detail-heading{display:flex;align-items:baseline;justify-content:space-between;gap:.75rem;margin-bottom:1rem}
+.detail-title{font-size:1rem;font-weight:500}
+.detail-hint{font-size:.6875rem;color:var(--muted-fg);white-space:nowrap}
+.sources-list{display:flex;flex-wrap:wrap;gap:.5rem;align-content:flex-start}
+.source-chip{display:inline-flex;align-items:center;gap:.4rem;padding:.45rem .6rem;border:1px solid var(--border);background:var(--card);color:var(--muted-fg);font-size:.75rem;cursor:pointer;user-select:none}
+.source-chip:hover{border-color:var(--muted-fg);color:var(--fg)}
+.source-chip.off{opacity:.32;text-decoration:line-through}
+.source-dot{width:7px;height:7px;flex-shrink:0}
+.source-count{font-family:var(--mono);font-size:.625rem;color:var(--muted-fg)}
+.empty-detail{color:var(--muted-fg);font-size:.8125rem}
+.breakdown-bar{display:flex;height:1.5rem;overflow:hidden;margin-bottom:.85rem;background:var(--muted)}
+.breakdown-segment{min-width:1px;transition:width .25s ease}
+.breakdown-items{display:flex;flex-direction:column}
+.breakdown-item{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:.75rem;padding:.52rem .35rem;border-top:1px solid var(--border);font-size:.75rem;cursor:pointer;user-select:none}
+.breakdown-item:hover{background:var(--card)}
 .breakdown-item.off{opacity:.3;text-decoration:line-through}
-.breakdown-item .model-name{display:flex;align-items:center;gap:.375rem;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.breakdown-item .dot{width:10px;height:10px;flex-shrink:0}
-.breakdown-item .model-tokens{color:var(--muted-fg);font-variant-numeric:tabular-nums;white-space:nowrap;flex-shrink:0}
-.footer-note{padding:1rem 1.25rem;font-size:.75rem;color:var(--muted-fg);border-top:1px solid var(--border);text-align:center}
-.loading{display:flex;align-items:center;justify-content:center;padding:4rem 1rem;color:var(--muted-fg)}
-.spinner{width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);animation:spin .6s linear infinite;margin-right:.75rem}
+.model-name{display:flex;align-items:center;gap:.5rem;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.model-name .dot{width:8px;height:8px;flex-shrink:0}
+.model-tokens{color:var(--muted-fg);font-family:var(--mono);font-size:.625rem;white-space:nowrap;text-align:right}
+.page-meta{padding:.9rem 1.25rem;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:.6875rem;color:var(--muted-fg);text-align:center}
+.site-footer{max-width:64rem;margin:-1px auto 4rem;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--border);border:1px solid var(--border);font-family:var(--mono);font-size:.6875rem}
+.site-footer a,.site-footer span{display:flex;align-items:center;justify-content:center;min-height:42px;padding:.65rem .5rem;background:var(--bg);color:var(--muted-fg);text-align:center}
+.site-footer a:hover{color:var(--fg);background:var(--card)}
+.loading{display:flex;align-items:center;justify-content:center;padding:5rem 1rem;color:var(--muted-fg)}
+.spinner{width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--fg);animation:spin .6s linear infinite;margin-right:.75rem}
 @keyframes spin{to{transform:rotate(360deg)}}
-.error-box{padding:2rem 1rem;text-align:center;color:var(--muted-fg)}
+.error-box{padding:3rem 1rem;text-align:center;color:var(--muted-fg)}
 .error-box .retry-btn{margin-top:.75rem;padding:.5rem 1rem;border:1px solid var(--border);background:var(--card);color:var(--fg);cursor:pointer;font-size:.875rem}
-.edit-overlay{position:fixed;inset:0;background:oklch(0% 0 0 / 0.6);display:flex;align-items:center;justify-content:center;z-index:100}
+.edit-overlay{position:fixed;inset:0;background:oklch(0% 0 0 / .64);display:flex;align-items:center;justify-content:center;z-index:100}
 .edit-card{background:var(--card);border:1px solid var(--border);padding:1.5rem;width:90%;max-width:400px}
 .edit-card h3{font-size:1rem;font-weight:500;margin-bottom:1rem}
 .edit-card label{display:block;font-size:.75rem;color:var(--muted-fg);margin-bottom:.25rem}
 .edit-card input{width:100%;padding:.5rem .75rem;font-size:.875rem;background:var(--bg);border:1px solid var(--border);color:var(--fg);margin-bottom:.75rem;outline:none}
-.edit-card input:focus{border-color:var(--accent)}
+.edit-card input:focus{border-color:var(--muted-fg)}
 .edit-actions{display:flex;gap:.5rem;justify-content:flex-end;margin-top:.5rem}
 .edit-actions button{padding:.375rem .75rem;font-size:.875rem;border:1px solid var(--border);cursor:pointer}
-.edit-actions .save-btn{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.edit-actions .save-btn{background:var(--fg);color:var(--bg);border-color:var(--fg)}
 .edit-actions .cancel-btn{background:var(--card);color:var(--muted-fg)}
+@media(max-width:800px){
+  .site-header-inner{grid-template-columns:1fr auto}
+  .site-nav{display:none}
+  .chart-layout{align-items:stretch;flex-direction:column;gap:1rem}
+  .chart-key{width:100%;flex-basis:auto}
+  .chart-key-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:1rem}
+  .details-grid{grid-template-columns:1fr}
+}
+@media(max-width:560px){
+  .site-header-inner{padding:0 .75rem}
+  .site-status{display:none}
+  .profile-header{padding:1.5rem .75rem}
+  .username{font-size:1.25rem}
+  .profile-actions{gap:.25rem}
+  .profile-action{padding:.32rem .45rem;font-size:.6875rem}
+  .stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stat-card{padding:.8rem .7rem}
+  .stat-value{font-size:1.1rem}
+  .stat-value.small{font-size:.95rem}
+  .dashboard-section,.detail-panel{padding:1rem .75rem}
+  canvas#tokenChart,.chart-empty{height:240px}
+  .chart-key-list{grid-template-columns:1fr}
+  .site-footer{grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:2rem}
+}
 </style>
 </head>
 <body>
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-brand" href="#dashboard">My Tokenmaxxing</a>
+    <nav class="site-nav" aria-label="Dashboard navigation">
+      <a href="#dashboard">Dashboard</a>
+      <a href="#details">Details</a>
+    </nav>
+    <div class="site-actions">
+      <span class="site-status">local profile</span>
+      <button class="site-action" onclick="showEdit()">Edit</button>
+    </div>
+  </div>
+</header>
 
-<div class="app-header"><h1>My Tokenmaxxing</h1></div>
-
-<div class="container" id="app">
+<main class="container" id="app">
   <div class="loading" id="loadingState">
     <div class="spinner"></div>
     <span>Loading token data...</span>
   </div>
-</div>
+</main>
+
+<footer class="site-footer">
+  <a href="https://github.com/nico2525nn/my-tokenmaxxing" target="_blank" rel="noreferrer">GitHub</a>
+  <a href="https://tokenmaxxing.sh/nico2525nn" target="_blank" rel="noreferrer">Reference</a>
+  <span>Local data</span>
+  <span id="footerRange">Auto refresh 60s</span>
+</footer>
 
 <script>
-const COLORS = ['#f59e0b','#10b981','#3b82f6','#ef4444','#8b5cf6','#ec4899','#06b6d4','#84cc16','#f97316','#6366f1'];
+const COLORS = ['#f59e0b','#10b981','#3b82f6','#ef4444','#8b5cf6','#ec4899','#06b6d4','#84cc16','#f97316','#6366f1','#14b8a6','#eab308'];
+const SOURCE_COLORS = ['#94a3b8','#38bdf8','#34d399','#fbbf24','#a78bfa','#fb7185'];
 const MODEL_COLORS = {};
 let colorIdx = 0;
-let userName = localStorage.getItem('tmx_name') || 'nico2525nn';
-let avatarUrl = localStorage.getItem('tmx_avatar') || 'https://avatars.githubusercontent.com/u/173241093?v=4';
-
-// Global state (cached, no refetch on toggle)
+let sourceColorIdx = 0;
+const profileParams = new URLSearchParams(location.search);
+let userName = profileParams.get('name')?.trim() || localStorage.getItem('tmx_name') || 'nico2525nn';
+let avatarUrl = profileParams.get('avatar')?.trim() || localStorage.getItem('tmx_avatar') || 'https://avatars.githubusercontent.com/u/173241093?v=4';
 let ALL_RECORDS = [];
 let ALL_STATS = null;
+let hasLoaded = false;
 const hiddenModels = new Set();
 const hiddenSources = new Set();
 
-const KNOWN_SOURCES = ['claude','codex','opencode','opencode2','gemini','copilot','omp','zcode','reasonix'];
-
 function normalizeModel(m) {
-  let c = (m||'').replace(/^\[.*?\]\s*/,'').trim();
-  c = c.replace(/^(openrouter|opencode-zen|opencode|anthropic|google|openai|deepseek|moonshotai|xiaomi|tencent|nemotron|minimax|gemma|nvidia)\/+/g,'');
-  if (c.includes('/')&&!c.includes('-')) c = c.split('/').filter(Boolean).join('-');
-  return c;
+  let c = (m || '').replace(/^\[.*?\]\s*/, '').trim();
+  c = c.replace(/^(openrouter|opencode-zen|opencode|anthropic|google|openai|deepseek|moonshotai|xiaomi|tencent|nemotron|minimax|gemma|nvidia)\/+/, '');
+  if (c.includes('/') && !c.includes('-')) c = c.split('/').filter(Boolean).join('-');
+  return c || 'unknown';
 }
 function getModelColor(m) {
-  const k = normalizeModel(m);
-  if (!MODEL_COLORS[k]) { MODEL_COLORS[k] = COLORS[colorIdx%COLORS.length]; colorIdx++; }
-  return MODEL_COLORS[k];
+  const key = normalizeModel(m);
+  if (!MODEL_COLORS[key]) { MODEL_COLORS[key] = COLORS[colorIdx % COLORS.length]; colorIdx++; }
+  return MODEL_COLORS[key];
+}
+function getSourceColor(source) {
+  if (!getSourceColor.values) getSourceColor.values = {};
+  if (!getSourceColor.values[source]) {
+    getSourceColor.values[source] = SOURCE_COLORS[sourceColorIdx % SOURCE_COLORS.length];
+    sourceColorIdx++;
+  }
+  return getSourceColor.values[source];
+}
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, function(ch) {
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];
+  });
+}
+function inlineArg(value) {
+  return escapeHtml(JSON.stringify(value));
 }
 function fmt(n) {
-  if (n>=1e9) return (n/1e9).toFixed(2)+'B';
-  if (n>=1e6) return (n/1e6).toFixed(1)+'M';
-  if (n>=1e3) return (n/1e3).toFixed(1)+'K';
-  return String(n);
+  n = Number(n) || 0;
+  if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B';
+  if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
+  if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
+  return String(Math.round(n));
 }
-function shortModel(n) {
-  const c = (n||'').replace(/^\[.*?\]\s*/,'').trim();
-  if (c.length>22) { const p=c.split('/'); return p.length>1?p[p.length-1]:c.slice(0,20)+'\u2026'; }
-  return c;
+function shortModel(name) {
+  const value = normalizeModel(name);
+  if (value.length > 22) {
+    const parts = value.split('/');
+    return parts.length > 1 ? parts[parts.length - 1] : value.slice(0, 20) + '\u2026';
+  }
+  return value;
+}
+function titleCase(value) {
+  return value.replace(/(^|[-_])([a-z])/g, function(_, prefix, letter) { return prefix + letter.toUpperCase(); });
+}
+function dateFromIso(value) {
+  const parts = value.split('-').map(Number);
+  return new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
+}
+function isoDate(date) {
+  return date.toISOString().slice(0, 10);
+}
+function addDays(value, amount) {
+  const date = dateFromIso(value);
+  date.setUTCDate(date.getUTCDate() + amount);
+  return isoDate(date);
+}
+function daySpan(first, last) {
+  if (!first || !last) return 0;
+  return Math.round((dateFromIso(last) - dateFromIso(first)) / 86400000) + 1;
+}
+function niceMax(value) {
+  if (!value || value <= 0) return 1;
+  const padded = value * 1.1;
+  const exponent = Math.pow(10, Math.floor(Math.log10(padded)));
+  const normalized = padded / exponent;
+  const step = normalized <= 1.5 ? .25 : normalized <= 3 ? .5 : normalized <= 7 ? 1 : 2;
+  return Math.ceil(padded / (step * exponent)) * step * exponent;
+}
+function modelTotals(records) {
+  const totals = {};
+  for (const record of records) {
+    const tokens = Number(record.totalTokens) || 0;
+    if (tokens <= 0) continue;
+    const model = normalizeModel(record.model);
+    totals[model] = (totals[model] || 0) + tokens;
+  }
+  return totals;
 }
 
 function showEdit() {
-  const o = document.createElement('div'); o.className='edit-overlay';
-  o.innerHTML='<div class="edit-card"><h3>Edit Profile</h3><label>Name</label><input id="edNm" value="'+userName.replace(/"/g,'&quot;')+'"><label>Avatar URL</label><input id="edAv" value="'+avatarUrl.replace(/"/g,'&quot;')+'"><div class="edit-actions"><button class="cancel-btn" onclick="this.closest(\'.edit-overlay\').remove()">Cancel</button><button class="save-btn" onclick="saveEdit()">Save</button></div></div>';
-  document.body.appendChild(o);
+  const overlay = document.createElement('div');
+  overlay.className = 'edit-overlay';
+  overlay.innerHTML = '<div class="edit-card"><h3>Edit Profile</h3><label for="edNm">Name</label><input id="edNm" value="' + escapeHtml(userName) + '"><label for="edAv">Avatar URL</label><input id="edAv" value="' + escapeHtml(avatarUrl) + '"><div class="edit-actions"><button class="cancel-btn" onclick="this.closest(\'.edit-overlay\').remove()">Cancel</button><button class="save-btn" onclick="saveEdit()">Save</button></div></div>';
+  document.body.appendChild(overlay);
 }
 function saveEdit() {
-  const n = document.getElementById('edNm').value.trim()||'nico2525nn';
-  const a = document.getElementById('edAv').value.trim()||'https://avatars.githubusercontent.com/u/173241093?v=4';
-  userName=n; avatarUrl=a;
-  localStorage.setItem('tmx_name',n); localStorage.setItem('tmx_avatar',a);
+  const name = document.getElementById('edNm').value.trim() || 'nico2525nn';
+  const avatar = document.getElementById('edAv').value.trim() || 'https://avatars.githubusercontent.com/u/173241093?v=4';
+  userName = name;
+  avatarUrl = avatar;
+  localStorage.setItem('tmx_name', name);
+  localStorage.setItem('tmx_avatar', avatar);
   document.querySelector('.edit-overlay')?.remove();
   renderAll();
 }
+async function shareProfile(button) {
+  const original = button.textContent;
+  try {
+    await navigator.clipboard.writeText(location.href);
+    button.textContent = 'Copied';
+  } catch {
+    button.textContent = 'Copy unavailable';
+  }
+  setTimeout(function() { button.textContent = original; }, 1400);
+}
 
-// ---- client-side stats (ported from server computeStats) ----
 function computeStats(records) {
   const empty = {totalTokens:0,totalInput:0,totalOutput:0,totalCacheRead:0,totalCacheCreation:0,activeDays:0,sessions:0,topModel:'N/A',topModelTokens:0,currentStreak:0,longestStreak:0,sources:[],daily:[],firstDate:'',lastDate:''};
   if (!records.length) return empty;
-  const s = Object.assign({}, empty);
+  const stats = Object.assign({}, empty);
   const dates = new Set();
   const sessionSet = new Set();
-  const modelTotals = {};
+  const models = {};
   const dailyMap = {};
-  for (const r of records) {
-    s.totalTokens += r.totalTokens;
-    s.totalInput += r.inputTokens;
-    s.totalOutput += r.outputTokens;
-    s.totalCacheRead += r.cacheReadTokens;
-    s.totalCacheCreation += r.cacheCreationTokens;
-    dates.add(r.date);
-    sessionSet.add(r.date+'|'+r.source+'|'+r.model);
-    const m = normalizeModel(r.model || 'unknown');
-    modelTotals[m] = (modelTotals[m] || 0) + r.totalTokens;
-    if (!dailyMap[r.date]) dailyMap[r.date] = {date:r.date,total:0,byModel:{}};
-    dailyMap[r.date].total += r.totalTokens;
-    dailyMap[r.date].byModel[m] = (dailyMap[r.date].byModel[m] || 0) + r.totalTokens;
+  for (const record of records) {
+    const total = Number(record.totalTokens) || 0;
+    stats.totalTokens += total;
+    stats.totalInput += Number(record.inputTokens) || 0;
+    stats.totalOutput += Number(record.outputTokens) || 0;
+    stats.totalCacheRead += Number(record.cacheReadTokens) || 0;
+    stats.totalCacheCreation += Number(record.cacheCreationTokens) || 0;
+    dates.add(record.date);
+    sessionSet.add(record.date + '|' + record.source + '|' + record.model);
+    const model = normalizeModel(record.model);
+    models[model] = (models[model] || 0) + total;
+    if (!dailyMap[record.date]) dailyMap[record.date] = {date:record.date,total:0,byModel:{}};
+    dailyMap[record.date].total += total;
+    dailyMap[record.date].byModel[model] = (dailyMap[record.date].byModel[model] || 0) + total;
   }
   const sortedDates = [...dates].sort();
-  s.activeDays = sortedDates.length;
-  s.firstDate = sortedDates[0] || '';
-  s.lastDate = sortedDates[sortedDates.length-1] || '';
-  s.sessions = sessionSet.size;
-  const sortedModels = Object.entries(modelTotals).sort((a,b)=>b[1]-a[1]);
-  if (sortedModels.length) { s.topModel = sortedModels[0][0]; s.topModelTokens = sortedModels[0][1]; }
-  s.sources = [...new Set(records.map(r=>r.source))];
-  s.daily = Object.values(dailyMap).sort((a,b)=>a.date.localeCompare(b.date));
+  const dateSet = new Set(sortedDates);
+  stats.activeDays = sortedDates.length;
+  stats.firstDate = sortedDates[0] || '';
+  stats.lastDate = sortedDates[sortedDates.length - 1] || '';
+  stats.sessions = sessionSet.size;
+  const sortedModels = Object.entries(models).sort(function(a,b) { return b[1] - a[1]; });
+  if (sortedModels.length) { stats.topModel = sortedModels[0][0]; stats.topModelTokens = sortedModels[0][1]; }
+  stats.sources = [...new Set(records.map(function(record) { return record.source; }))].sort();
+  stats.daily = Object.values(dailyMap).sort(function(a,b) { return a.date.localeCompare(b.date); });
 
-  // streaks
   const today = new Date();
-  let cur = 0;
-  for (let i=0;;i++) {
-    const d = new Date(today); d.setDate(d.getDate()-i);
-    const ds = d.toISOString().slice(0,10);
-    if (sortedDates.includes(ds)) cur++; else if (i>0) break;
-  }
-  s.currentStreak = cur;
-  let best = 0, run = 0;
-  for (let i=0;i<sortedDates.length;i++) {
-    if (i===0) run = 1;
-    else {
-      const diff = (new Date(sortedDates[i]) - new Date(sortedDates[i-1])) / 86400000;
-      run = diff === 1 ? run+1 : 1;
+  let current = 0;
+  if (dateSet.has(today.toISOString().slice(0, 10))) {
+    for (let index = 0; ; index++) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - index);
+      const key = date.toISOString().slice(0, 10);
+      if (dateSet.has(key)) current++;
+      else break;
     }
-    best = Math.max(best, run);
   }
-  s.longestStreak = best;
-  return s;
+  stats.currentStreak = current;
+  let run = 0;
+  for (let index = 0; index < sortedDates.length; index++) {
+    if (index === 0) run = 1;
+    else run = (dateFromIso(sortedDates[index]) - dateFromIso(sortedDates[index - 1])) / 86400000 === 1 ? run + 1 : 1;
+    stats.longestStreak = Math.max(stats.longestStreak, run);
+  }
+  return stats;
 }
 
-// ---- render ----
 function renderAll() {
-  const filtered = ALL_RECORDS.filter(r => !hiddenSources.has(r.source));
+  const filtered = ALL_RECORDS.filter(function(record) { return !hiddenSources.has(record.source); });
   ALL_STATS = computeStats(filtered);
-  renderDash(filtered);
+  renderDash();
   renderBreakdown(filtered);
   drawChart();
+  const footer = document.getElementById('footerRange');
+  if (footer) footer.textContent = ALL_STATS.firstDate ? ALL_STATS.firstDate + ' – ' + ALL_STATS.lastDate : 'No token data';
 }
 
-function renderDash(records) {
+function renderDash() {
   const app = document.getElementById('app');
-  const s = ALL_STATS;
-  app.innerHTML='<header class="profile-header"><div class="profile-info"><img src="'+avatarUrl+'" alt="" class="avatar" onerror="this.style.display=\'none\'"><h1 class="username">'+userName+'</h1></div><button class="edit-btn" onclick="showEdit()">Edit Profile</button></header>'
-  +'<div class="stats-grid"><div class="stats-inner">'
-  +'<div class="stat-card"><p class="stat-label">Total Tokens</p><p class="stat-value">'+fmt(s.totalTokens)+'</p></div>'
-  +'<div class="stat-card"><p class="stat-label">Sessions</p><p class="stat-value">'+s.sessions+'</p></div>'
-  +'<div class="stat-card"><p class="stat-label">Top Token Model</p><p class="stat-value small" title="'+s.topModel+'">'+shortModel(s.topModel)+'</p></div>'
-  +'<div class="stat-spacer"></div>'
-  +'<div class="stat-card"><p class="stat-label">Current Streak</p><p class="stat-value">'+s.currentStreak+'</p></div>'
-  +'<div class="stat-card"><p class="stat-label">Longest Streak</p><p class="stat-value">'+s.longestStreak+'</p></div>'
-  +'<div class="stat-card"><p class="stat-label">Active Days</p><p class="stat-value">'+s.activeDays+'</p></div>'
-  +'<div class="stat-card"><p class="stat-label">Total Input</p><p class="stat-value small">'+fmt(s.totalInput)+'</p></div>'
-  +'</div>'
-  +'<div class="chart-section"><h2 class="chart-title">Daily Tokens</h2><div class="canvas-wrapper"><canvas id="tokenChart"></canvas></div><div class="chart-legend" id="chartLegend"></div></div>'
-  +'</div>'
-  +'<div class="sources-section"><p class="sources-title">Harness（クリックで絞り込み）</p><div class="sources-list">'
-  +KNOWN_SOURCES.map(function(x){
-    const has = ALL_RECORDS.some(function(r){return r.source===x;});
-    const off = hiddenSources.has(x);
-    const cls = has ? (off ? 'active off' : 'active') : 'nodata';
-    return '<span class="source-badge '+cls+'" onclick="toggleSource(\''+x+'\')">'+x+'</span>';
-  }).join('')
-  +'</div></div>'
-  +'<div class="breakdown-section" id="modelBreakdown"><p class="breakdown-title">Model Breakdown</p></div>'
-  +'<div class="footer-note">'+s.firstDate+' &ndash; '+s.lastDate+' &middot; '+s.daily.length+' active days</div>';
+  const stats = ALL_STATS;
+  const sources = {};
+  for (const record of ALL_RECORDS) {
+    sources[record.source] = (sources[record.source] || 0) + (Number(record.totalTokens) || 0);
+  }
+  const sourceRows = Object.entries(sources).filter(function(entry) { return entry[1] > 0; }).sort(function(a,b) { return b[1] - a[1]; });
+  const sourceMarkup = sourceRows.length ? sourceRows.map(function(entry) {
+    const source = entry[0];
+    const off = hiddenSources.has(source) ? ' off' : '';
+    return '<button class="source-chip' + off + '" onclick="toggleSource(' + inlineArg(source) + ')" aria-pressed="' + (!hiddenSources.has(source)) + '"><span class="source-dot" style="background:' + getSourceColor(source) + '"></span><span>' + escapeHtml(titleCase(source)) + '</span><span class="source-count">' + fmt(entry[1]) + '</span></button>';
+  }).join('') : '<p class="empty-detail">No sources detected</p>';
+  app.innerHTML = '<div id="dashboard"></div>'
+    + '<header class="profile-header"><div class="profile-info"><img src="' + escapeHtml(avatarUrl) + '" alt="' + escapeHtml(userName) + ' avatar" class="avatar" onerror="this.style.display=\'none\'"><h1 class="username">' + escapeHtml(userName) + '</h1></div><div class="profile-actions"><button class="profile-action" onclick="shareProfile(this)">Share</button><button class="profile-action" onclick="showEdit()">Edit profile</button></div></header>'
+    + '<div class="stats-grid">'
+    + '<div class="stat-card"><p class="stat-label">Total tokens</p><p class="stat-value">' + fmt(stats.totalTokens) + '</p></div>'
+    + '<div class="stat-card"><p class="stat-label">Sessions</p><p class="stat-value">' + stats.sessions + '</p></div>'
+    + '<div class="stat-card"><p class="stat-label">Top token model</p><p class="stat-value small" title="' + escapeHtml(stats.topModel) + '">' + escapeHtml(shortModel(stats.topModel)) + '</p></div>'
+    + '<div class="stat-card"><p class="stat-label">Active days</p><p class="stat-value">' + stats.activeDays + '</p></div>'
+    + '<div class="stat-card"><p class="stat-label">Current streak</p><p class="stat-value">' + stats.currentStreak + '</p></div>'
+    + '<div class="stat-card"><p class="stat-label">Longest streak</p><p class="stat-value">' + stats.longestStreak + '</p></div>'
+    + '<div class="stat-card"><p class="stat-label">Total input</p><p class="stat-value small">' + fmt(stats.totalInput) + '</p></div>'
+    + '<div class="stat-card"><p class="stat-label">Total output</p><p class="stat-value small">' + fmt(stats.totalOutput) + '</p></div>'
+    + '</div>'
+    + '<section class="dashboard-section" aria-labelledby="tokens-title"><h2 class="section-title" id="tokens-title">Daily Tokens</h2><div class="chart-layout"><div class="chart-canvas"><canvas id="tokenChart" role="img" aria-label="Daily tokens by model"></canvas></div><aside class="chart-key" id="chartLegend" aria-label="Models"></aside></div></section>'
+    + '<div class="details-grid" id="details"><section class="detail-panel sources-section"><div class="detail-heading"><h2 class="detail-title">Harness</h2><span class="detail-hint">Click to filter</span></div><div class="sources-list">' + sourceMarkup + '</div></section><section class="detail-panel breakdown-section" id="modelBreakdown"><div class="detail-heading"><h2 class="detail-title">Model Breakdown</h2><span class="detail-hint">Click a model to hide it</span></div></section></div>'
+    + '<div class="page-meta">' + (stats.firstDate ? escapeHtml(stats.firstDate) + ' – ' + escapeHtml(stats.lastDate) + ' · ' + stats.activeDays + ' active days' : 'No token data') + '</div>';
 }
 
 function renderBreakdown(records) {
-  const el = document.getElementById('modelBreakdown'); if(!el) return;
-  const t={},i={},o={};
-  for(const r of records){const m=normalizeModel(r.model||'unknown');t[m]=(t[m]||0)+r.totalTokens;i[m]=(i[m]||0)+r.inputTokens;o[m]=(o[m]||0)+r.outputTokens;}
-  const sorted=Object.entries(t).sort(function(a,b){return b[1]-a[1];}); const total=sorted.reduce(function(s,x){return s+x[1];},0);
-  if (!total) { el.innerHTML='<p class="breakdown-title">Model Breakdown</p><p style="color:var(--muted-fg);font-size:.8125rem">No data</p>'; return; }
-  let h='<p class="breakdown-title">Model Breakdown</p><div class="breakdown-bar">';
-  sorted.forEach(function(x){h+='<div class="breakdown-segment" style="width:'+((x[1]/total*100).toFixed(1))+'%;background:'+getModelColor(x[0])+'"></div>';});
-  h+='</div><div class="breakdown-items">';
-  sorted.slice(0,10).forEach(function(x){
-    const off=hiddenModels.has(x[0])?' off':'';
-    h+='<div class="breakdown-item'+off+'" onclick="toggleModel(\''+x[0].replace(/'/g,"\\'")+'\')"><span class="model-name"><span class="dot" style="background:'+getModelColor(x[0])+'"></span>'+x[0]+'</span><span class="model-tokens">'+fmt(x[1])+' ('+((x[1]/total*100).toFixed(1))+'%) &middot; in '+fmt(i[x[0]])+' / out '+fmt(o[x[0]])+'</span></div>';
+  const element = document.getElementById('modelBreakdown');
+  if (!element) return;
+  const totals = modelTotals(records);
+  const inputs = {};
+  const outputs = {};
+  for (const record of records) {
+    const model = normalizeModel(record.model);
+    inputs[model] = (inputs[model] || 0) + (Number(record.inputTokens) || 0);
+    outputs[model] = (outputs[model] || 0) + (Number(record.outputTokens) || 0);
+  }
+  const sorted = Object.entries(totals).sort(function(a,b) { return b[1] - a[1]; });
+  const total = sorted.reduce(function(sum, entry) { return sum + entry[1]; }, 0);
+  if (!total) {
+    element.innerHTML = '<div class="detail-heading"><h2 class="detail-title">Model Breakdown</h2><span class="detail-hint">No data</span></div><p class="empty-detail">No models detected</p>';
+    return;
+  }
+  let html = '<div class="detail-heading"><h2 class="detail-title">Model Breakdown</h2><span class="detail-hint">' + sorted.length + ' models</span></div><div class="breakdown-bar" aria-hidden="true">';
+  sorted.forEach(function(entry) {
+    html += '<div class="breakdown-segment" style="width:' + (entry[1] / total * 100).toFixed(2) + '%;background:' + getModelColor(entry[0]) + '"></div>';
   });
-  h+='</div>'; el.innerHTML=h;
+  html += '</div><div class="breakdown-items">';
+  sorted.forEach(function(entry) {
+    const model = entry[0];
+    const off = hiddenModels.has(model) ? ' off' : '';
+    html += '<div class="breakdown-item' + off + '" onclick="toggleModel(' + inlineArg(model) + ')" role="button" tabindex="0" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){toggleModel(' + inlineArg(model) + ')}"><span class="model-name"><span class="dot" style="background:' + getModelColor(model) + '"></span>' + escapeHtml(model) + '</span><span class="model-tokens">' + fmt(entry[1]) + ' · ' + (entry[1] / total * 100).toFixed(1) + '% · in ' + fmt(inputs[model]) + ' / out ' + fmt(outputs[model]) + '</span></div>';
+  });
+  html += '</div>';
+  element.innerHTML = html;
 }
 
-// ---- toggles ----
-function toggleSource(x) {
-  if (!ALL_RECORDS.some(function(r){return r.source===x;})) return; // no data → not toggleable
-  hiddenSources.has(x) ? hiddenSources.delete(x) : hiddenSources.add(x);
-  renderAll(); // recompute stats + breakdown + chart
+function toggleSource(source) {
+  if (!ALL_RECORDS.some(function(record) { return record.source === source; })) return;
+  if (hiddenSources.has(source)) hiddenSources.delete(source);
+  else hiddenSources.add(source);
+  renderAll();
 }
-function toggleModel(m) {
-  hiddenModels.has(m) ? hiddenModels.delete(m) : hiddenModels.add(m);
-  drawChart(); // redraw chart only
-  renderBreakdown(ALL_RECORDS.filter(function(r){return !hiddenSources.has(r.source);})); // sync dim state
+function toggleModel(model) {
+  if (hiddenModels.has(model)) hiddenModels.delete(model);
+  else hiddenModels.add(model);
+  drawChart();
+  renderBreakdown(ALL_RECORDS.filter(function(record) { return !hiddenSources.has(record.source); }));
 }
 
-// ---- chart (stacked bars, grouped periods) ----
+function makeCalendarBuckets(daily) {
+  if (!daily.length) return {buckets:[],span:0};
+  const first = daily[0].date;
+  const last = daily[daily.length - 1].date;
+  const span = daySpan(first, last);
+  const step = span > 180 ? 7 : span > 90 ? 3 : 1;
+  const byDate = new Map(daily.map(function(day) { return [day.date, day]; }));
+  const buckets = [];
+  for (let offset = 0; offset < span; offset += step) {
+    const start = addDays(first, offset);
+    const bucket = {date:start, total:0, models:{}};
+    for (let index = 0; index < step && offset + index < span; index++) {
+      const day = byDate.get(addDays(first, offset + index));
+      if (!day) continue;
+      bucket.total += day.total;
+      for (const model in day.byModel) bucket.models[model] = (bucket.models[model] || 0) + day.byModel[model];
+    }
+    buckets.push(bucket);
+  }
+  return {buckets,span};
+}
+function axisLabel(value, span) {
+  const date = dateFromIso(value);
+  if (span <= 45) return String(date.getUTCMonth() + 1).padStart(2, '0') + '-' + String(date.getUTCDate()).padStart(2, '0');
+  return date.toLocaleDateString('en-US', {month:'short', timeZone:'UTC'});
+}
 function drawChart() {
+  const canvas = document.getElementById('tokenChart');
+  const legend = document.getElementById('chartLegend');
+  if (!canvas || !legend) return;
+  const records = ALL_RECORDS.filter(function(record) { return !hiddenSources.has(record.source); });
   const daily = ALL_STATS ? ALL_STATS.daily : [];
-  if (!daily || !daily.length) return;
-  const canvas=document.getElementById('tokenChart'); if(!canvas) return;
-  const ctx=canvas.getContext('2d');
+  const totals = modelTotals(records);
+  const names = Object.keys(totals);
+  const ranked = Object.entries(totals).sort(function(a,b) { return b[1] - a[1]; });
+  const colors = {};
+  names.forEach(function(name) { colors[name] = getModelColor(name); });
+  legend.innerHTML = ranked.length ? '<div class="chart-key-list">' + ranked.slice(0, 8).map(function(entry, index) {
+    const model = entry[0];
+    const off = hiddenModels.has(model) ? ' off' : '';
+    return '<button class="legend-item' + off + '" onclick="toggleModel(' + inlineArg(model) + ')" aria-pressed="' + (!hiddenModels.has(model)) + '"><span class="legend-rank">' + (index + 1) + '</span><span class="legend-dot" style="background:' + colors[model] + '"></span><span class="legend-name" title="' + escapeHtml(model) + '">' + escapeHtml(shortModel(model)) + '</span><span class="legend-value">' + (entry[1] / (ALL_STATS.totalTokens || 1) * 100).toFixed(1) + '%</span></button>';
+  }).join('') + '</div>' + (ranked.length > 8 ? '<p class="legend-more">+' + (ranked.length - 8) + ' more in Model Breakdown</p>' : '') : '<p class="empty-detail">No model data</p>';
 
-  const modelNames=[];
-  if (ALL_RECORDS) modelNames.push(...new Set(ALL_RECORDS.filter(r=>!hiddenSources.has(r.source)).map(function(r){return normalizeModel(r.model);}).filter(Boolean)));
-  const mColors={}; modelNames.forEach(function(m){mColors[m]=getModelColor(m);});
-
-  // Group: ≤14d → daily bars, else 3-day groups, else weekly
-  const n=daily.length;
-  const gs=n>60?7:n>30?3:1;
-  const grps=[];
-  for(let i=0;i<n;i+=gs){
-    const end=Math.min(i+gs,n);
-    const slc=daily.slice(i,end);
-    const lab=slc[0].date.slice(5);
-    const a={label:lab,total:0,models:{}};
-    modelNames.forEach(function(m){a.models[m]=0;});
-    for(const d of slc){
-      a.total+=d.total;
-      if(d.byModel){for(const m in d.byModel){const nm=normalizeModel(m);if(a.models[nm]!==undefined)a.models[nm]+=d.byModel[m];}}
+  const context = canvas.getContext('2d');
+  if (!daily.length) {
+    canvas.width = 1;
+    canvas.height = 1;
+    canvas.style.display = 'none';
+    const empty = canvas.parentElement.querySelector('.chart-empty');
+    if (!empty) canvas.parentElement.insertAdjacentHTML('beforeend', '<div class="chart-empty">No token data</div>');
+    return;
+  }
+  canvas.style.display = 'block';
+  canvas.parentElement.querySelector('.chart-empty')?.remove();
+  const calendar = makeCalendarBuckets(daily);
+  const buckets = calendar.buckets;
+  const visibleModels = names.filter(function(model) { return !hiddenModels.has(model); });
+  const values = buckets.map(function(bucket) { return visibleModels.reduce(function(sum, model) { return sum + (bucket.models[model] || 0); }, 0); });
+  const maxValue = niceMax(Math.max.apply(Math, values.concat([0])));
+  const dpr = window.devicePixelRatio || 1;
+  const width = Math.max(240, canvas.parentElement.clientWidth || 600);
+  const height = window.innerWidth <= 560 ? 240 : 280;
+  canvas.width = Math.round(width * dpr);
+  canvas.height = Math.round(height * dpr);
+  canvas.style.width = width + 'px';
+  canvas.style.height = height + 'px';
+  context.setTransform(dpr, 0, 0, dpr, 0, 0);
+  context.clearRect(0, 0, width, height);
+  const pad = {top:12,bottom:30,left:48,right:8};
+  const plotWidth = Math.max(1, width - pad.left - pad.right);
+  const plotHeight = Math.max(1, height - pad.top - pad.bottom);
+  const slotWidth = plotWidth / buckets.length;
+  const barWidth = Math.max(2, Math.min(12, slotWidth * .72));
+  context.font = '10px "Geist Sans",sans-serif';
+  context.textAlign = 'right';
+  for (let tick = 0; tick <= 4; tick++) {
+    const y = pad.top + plotHeight - plotHeight * tick / 4;
+    context.fillStyle = 'oklch(58% .005 270)';
+    context.fillText(fmt(maxValue * tick / 4), pad.left - 8, y + 3);
+    context.strokeStyle = tick === 0 ? 'oklch(58% .005 270 / .45)' : 'oklch(27% .012 270 / .72)';
+    context.lineWidth = 1;
+    context.beginPath();
+    context.moveTo(pad.left, y + .5);
+    context.lineTo(width - pad.right, y + .5);
+    context.stroke();
+  }
+  buckets.forEach(function(bucket, bucketIndex) {
+    const x = pad.left + bucketIndex * slotWidth + (slotWidth - barWidth) / 2;
+    let bottom = pad.top + plotHeight;
+    visibleModels.forEach(function(model) {
+      const value = bucket.models[model] || 0;
+      if (!value) return;
+      const barHeight = value / maxValue * plotHeight;
+      context.fillStyle = colors[model];
+      context.fillRect(x, bottom - barHeight, barWidth, barHeight);
+      bottom -= barHeight;
+    });
+  });
+  const labels = [];
+  let lastMonth = -1;
+  buckets.forEach(function(bucket, index) {
+    const date = dateFromIso(bucket.date);
+    if (calendar.span <= 45) {
+      const stride = Math.max(1, Math.ceil(buckets.length / 7));
+      if (index % stride === 0) labels.push({index,text:axisLabel(bucket.date,calendar.span)});
+    } else if (date.getUTCMonth() !== lastMonth) {
+      labels.push({index,text:axisLabel(bucket.date,calendar.span)});
+      lastMonth = date.getUTCMonth();
     }
-    grps.push(a);
-  }
-  const dpr=window.devicePixelRatio||1;
-  const w=canvas.parentElement.clientWidth||600;
-  const h=Math.min(320,Math.max(200,w*0.35));
-  canvas.width=w*dpr; canvas.height=h*dpr;
-  canvas.style.width=w+'px'; canvas.style.height=h+'px';
-  ctx.scale(dpr,dpr);
-  const pad={top:24,bottom:30,left:50,right:20};
-  const pw=w-pad.left-pad.right,ph=h-pad.top-pad.bottom;
-
-  const vModels=modelNames.filter(function(m){return !hiddenModels.has(m);});
-  // scale to visible total only
-  const visTotals=grps.map(function(g){let t=0;for(const m of vModels)t+=g.models[m]||0;return t;});
-  const maxVal=Math.max(...visTotals,1);
-  const barW=Math.min(pw/grps.length*0.65,28);
-  const gap=(pw-barW*grps.length)/(grps.length+1);
-
-  // Grid
-  ctx.font='11px "Geist Sans",sans-serif'; ctx.fillStyle='oklch(58% .005 270)'; ctx.textAlign='right';
-  for(let i=0;i<=4;i++){const y=pad.top+(ph/4)*i;ctx.fillText(fmt(maxVal-(maxVal/4)*i),pad.left-8,y+4);ctx.strokeStyle='oklch(24% .005 270)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(pad.left,y);ctx.lineTo(w-pad.right,y);ctx.stroke();}
-
-  // Stacked bars (visible models only)
-  for(let gi=0;gi<grps.length;gi++){
-    const g=grps[gi];
-    const x=pad.left+gap+gi*(barW+gap);
-    let yBot=pad.top+ph;
-    for(let vi=0;vi<vModels.length;vi++){
-      const m=vModels[vi]; const val=g.models[m]||0;
-      if(val===0) continue;
-      const hBar=(val/maxVal)*ph;
-      ctx.fillStyle=mColors[m];
-      ctx.fillRect(x,yBot-hBar,barW,hBar);
-      yBot-=hBar;
-    }
-  }
-
-  // X labels
-  const ls=grps.length>15?Math.ceil(grps.length/10):1;
-  for(let gi=0;gi<grps.length;gi+=ls){
-    const x=pad.left+gap+gi*(barW+gap)+barW/2;
-    ctx.textAlign='center'; ctx.fillStyle='oklch(58% .005 270)';
-    ctx.fillText(grps[gi].label,x,h-pad.bottom+16);
-  }
-
-  // Legend: ALL models, hidden ones dimmed + strikethrough
-  const legend=document.getElementById('chartLegend');
-  if(legend) legend.innerHTML=modelNames.map(function(m){
-    const off=hiddenModels.has(m)?' off':'';
-    return '<span class="legend-item'+off+'" onclick="toggleModel(\''+m.replace(/'/g,"\\'")+'\')"><span class="legend-dot" style="background:'+mColors[m]+'"></span>'+shortModel(m)+'</span>';
-  }).join('');
+  });
+  if (labels.length && labels[labels.length - 1].index === buckets.length - 1 && labels.length > 1) labels.pop();
+  context.textAlign = 'center';
+  context.fillStyle = 'oklch(58% .005 270)';
+  labels.forEach(function(label) {
+    const x = pad.left + label.index * slotWidth + slotWidth / 2;
+    context.fillText(label.text, x, height - 9);
+  });
 }
 
 async function loadData() {
   const app = document.getElementById('app');
   try {
-    const r = await fetch('/api/records');
-    if (!r.ok) throw Error('API error');
-    const {records} = await r.json();
-    ALL_RECORDS = records || [];
-    hiddenModels.clear();
-    hiddenSources.clear();
+    const response = await fetch('/api/records');
+    if (!response.ok) throw Error('API error');
+    const payload = await response.json();
+    ALL_RECORDS = payload.records || [];
+    if (!hasLoaded) {
+      hiddenModels.clear();
+      hiddenSources.clear();
+      hasLoaded = true;
+    }
     renderAll();
-  } catch(e) {
-    app.innerHTML='<div class="error-box"><p>Failed to load token data</p><p style="font-size:.75rem;color:var(--muted-fg)">'+e.message+'</p><button class="retry-btn" onclick="location.reload()">Retry</button></div>';
+  } catch (error) {
+    app.innerHTML = '<div class="error-box"><p>Failed to load token data</p><p style="font-size:.75rem;color:var(--muted-fg)">' + escapeHtml(error.message) + '</p><button class="retry-btn" onclick="location.reload()">Retry</button></div>';
   }
 }
 
 loadData();
-setInterval(loadData,60000);
-window.addEventListener('resize',function(){setTimeout(function(){if(ALL_STATS)drawChart();},300);});
+setInterval(loadData, 60000);
+window.addEventListener('resize', function() { clearTimeout(window.__chartResize); window.__chartResize = setTimeout(function() { if (ALL_STATS) drawChart(); }, 150); });
 </script>
 </body>
 </html>

@@ -4,7 +4,7 @@ AIエージェント（Codex, OpenCode, OMP, ZCode, Reasonix など）のLLMト�
 
 ## 機能
 
-- **9種類のデータソース**からトークン使用量を自動収集
+- **10種類のデータソース**からトークン使用量を自動収集
   - ccusage（Codex, OpenCode, Claude, Gemini, Copilot, pi）
   - OpenCode2（session_v2 SQLite）
   - OMP（Oh My Pi）セッションJSONL
