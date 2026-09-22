@@ -1,15 +1,16 @@
 # My TokenMaxxing
 
-AIエージェント（Codex, OpenCode, OMP, ZCode, Reasonix など）のLLMトークン使用量をローカルから収集し、ダッシュボードに表示します。
+AIエージェント（Codex, OpenCode, OpenGrok, OMP, ZCode, Reasonix など）のLLMトークン使用量をローカルから収集し、ダッシュボードに表示します。
 
 ## 機能
 
-- **10種類のデータソース**からトークン使用量を自動収集
+- **11種類のデータソース**からトークン使用量を自動収集
   - ccusage（Codex, OpenCode, Claude, Gemini, Copilot, pi）
   - OpenCode2（session_v2 SQLite）
   - OMP（Oh My Pi）セッションJSONL
   - ZCode SQLiteデータベース
   - Reasonix telemetry.json
+  - OpenGrok session usage.json
 - **グレースケールダッシュボード** – データの可視化のみカラフル
 - **積み上げ棒グラフ** – 期間に応じて日別/3日/週単位に自動グループ化
 - **モデル別内訳** – 使用モデルの割合と入出力トークン
@@ -61,6 +62,7 @@ http://localhost:3642?name=YourName&avatar=https://example.com/avatar.png
 | OMP | `~/.omp/agent/sessions/*.jsonl` | ✅ |
 | ZCode | `~/.zcode/cli/db/db.sqlite` | ✅ |
 | Reasonix | `%APPDATA%/reasonix/projects/*/sessions/*.telemetry.json` | ✅ |
+| OpenGrok | `$OPENGROK_HOME/sessions/**/usage.json`（未設定時は `~/.opengrok`） | ✅ |
 
 ## プロジェクト構成
 

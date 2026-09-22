@@ -306,6 +306,79 @@ async function fetchFromOpenCode2() {
   }
 }
 
+/**
+ * Read OpenGrok per-session usage files.
+ * OpenGrok writes cumulative session totals plus per-turn deltas to
+ * $OPENGROK_HOME/sessions/<cwd>/<session>/usage.json. Use turns so a session
+ * contributes to the day on which each turn finished instead of double-counting
+ * its cumulative summary.
+ */
+function fetchFromOpenGrok() {
+  console.log("[fetcher] Fetching from OpenGrok...");
+  const configuredHome = process.env.OPENGROK_HOME?.trim();
+  const sessionsDir = join(configuredHome || join(HOME, ".opengrok"), "sessions");
+  if (!existsSync(sessionsDir)) {
+    console.log("[fetcher] OpenGrok dir not found");
+    return [];
+  }
+
+  const files = [];
+  collectFiles(sessionsDir, files, "usage.json");
+  const results = [];
+
+  for (const file of files) {
+    try {
+      const session = JSON.parse(readFileSync(file, "utf-8"));
+      const turns = Array.isArray(session.turns) ? session.turns : [];
+      for (const turn of turns) {
+        const dateValue = turn?.endedAt || session.updatedAt;
+        const endedAt = new Date(dateValue);
+        if (Number.isNaN(endedAt.getTime())) continue;
+        const date = endedAt.toISOString().slice(0, 10);
+
+        const modelRows = turn?.modelUsage && typeof turn.modelUsage === "object"
+          ? Object.entries(turn.modelUsage)
+          : [];
+        if (!modelRows.length) {
+          modelRows.push([
+            turn?.primaryModelId || session.session?.primaryModelId || "unknown",
+            turn,
+          ]);
+        }
+
+        for (const [modelName, usage] of modelRows) {
+          const inputTokens = Number(usage?.inputTokens) || 0;
+          const outputTokens = Number(usage?.outputTokens) || 0;
+          const reasoningTokens = Number(usage?.reasoningTokens) || 0;
+          const cacheReadTokens = Number(usage?.cachedReadTokens) || 0;
+          const cacheCreationTokens = Number(usage?.cacheCreationTokens) || 0;
+          const totalTokens = inputTokens + outputTokens + reasoningTokens
+            + cacheReadTokens + cacheCreationTokens;
+          if (totalTokens <= 0) continue;
+
+          results.push({
+            period: date,
+            agent: "opengrok",
+            modelName: normalizeModel(modelName),
+            inputTokens,
+            // OpenGrok stores reasoning separately; keep it in the output bucket
+            // to match the existing OpenCode2 dashboard contract.
+            outputTokens: outputTokens + reasoningTokens,
+            cacheReadTokens,
+            cacheCreationTokens,
+            totalTokens,
+          });
+        }
+      }
+    } catch (e) {
+      console.error(`[fetcher] Error reading OpenGrok file ${file}:`, e.message);
+    }
+  }
+
+  console.log(`[fetcher] OpenGrok: ${results.length} entries`);
+  return results;
+}
+
 function collectFiles(dir, files, ext) {
   try {
     const entries = readdirSync(dir, { withFileTypes: true });
@@ -352,6 +425,7 @@ export async function aggregateAllData() {
   const zcodeEntries = await fetchFromZCode();
   const reasonixEntries = fetchFromReasonix();
   const opencode2Entries = await fetchFromOpenCode2();
+  const opengrokEntries = fetchFromOpenGrok();
   const allRecords = [];
 
   // Process ccusage format into records
@@ -451,6 +525,20 @@ export async function aggregateAllData() {
     allRecords.push({
       date: e.period,
       source: "opencode2",
+      model: e.modelName,
+      inputTokens: e.inputTokens,
+      outputTokens: e.outputTokens,
+      cacheReadTokens: e.cacheReadTokens,
+      cacheCreationTokens: e.cacheCreationTokens,
+      totalTokens: e.totalTokens,
+    });
+  }
+
+  // Add OpenGrok entries
+  for (const e of opengrokEntries) {
+    allRecords.push({
+      date: e.period,
+      source: "opengrok",
       model: e.modelName,
       inputTokens: e.inputTokens,
       outputTokens: e.outputTokens,

@@ -1,9 +1,9 @@
 # トークン読み取りロジック
 
-tokenmaxxing は以下の 8 種類の AI エージェント・CLI ツールから LLM トークン使用量を読み取る。
+tokenmaxxing は以下の 10 種類の AI エージェント・CLI ツールから LLM トークン使用量を読み取る。
 
 - **外部ツール** (ccusage@^20 経由): Claude, Codex, OpenCode, Gemini, Copilot
-- **ローカルリーダー** (直接ファイル読み込み): OMP, ZCode, Reasonix
+- **ローカルリーダー** (直接ファイル読み込み): OMP, ZCode, Reasonix, OpenCode2, OpenGrok
 
 全ソースとも、読み取ったデータは内部で `(date, model, source)` をキーとする行に集約され、API に同期される。同期後は 1 行 = `UsageDayInput { date, source, model, inputTokens, outputTokens, cacheCreationTokens, cacheReadTokens, totalTokens, costUsd }` として D1 に upsert される。
 
@@ -241,6 +241,25 @@ FROM session_v2
 - 日付・モデルごとに集約
 
 **コスト**: あり（`cost` 列に記録されているが表示には使用しない）
+
+### 10. OpenGrok — ローカルリーダー
+
+**対応ソフト**: [Open Grok](https://github.com/mweinbach/open-grok)
+
+**データ取得方式**: 直接 JSON ファイル読み取り
+
+**読み取り元**: `$OPENGROK_HOME/sessions/**/usage.json`（未設定時は `~/.opengrok/sessions/**/usage.json`）
+
+**パース方法**:
+
+- セッションの累積 `session` ではなく、重複計上を避けるため `turns[]` を読む
+- `endedAt` の日付を `YYYY-MM-DD` に変換する
+- `modelUsage` のモデル別内訳を `(date, model, source)` ごとに集約する
+- モデル内訳がないターンは `primaryModelId`、セッションの `primaryModelId`、`unknown` の順で補完する
+- `reasoningTokens` は既存の OpenCode2 と同じく `outputTokens` に含める
+- `totalTokens` は input、output、reasoning、cached read、cache creation の合計
+
+**コスト**: なし（OpenGrokのコスト情報は表示に使用しない）
 
 ---
 
