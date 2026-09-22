@@ -1,9 +1,9 @@
 # トークン読み取りロジック
 
-tokenmaxxing は以下の 10 種類の AI エージェント・CLI ツールから LLM トークン使用量を読み取る。
+tokenmaxxing は以下の 9 種類の AI エージェント・CLI ツールから LLM トークン使用量を読み取る。
 
 - **外部ツール** (ccusage@^20 経由): Claude, Codex, OpenCode, Gemini, Copilot
-- **ローカルリーダー** (直接ファイル読み込み): OMP, ZCode, Reasonix, OpenCode2, OpenGrok
+- **ローカルリーダー** (直接ファイル読み込み): OMP, ZCode, Reasonix, OpenGrok
 
 全ソースとも、読み取ったデータは内部で `(date, model, source)` をキーとする行に集約され、API に同期される。同期後は 1 行 = `UsageDayInput { date, source, model, inputTokens, outputTokens, cacheCreationTokens, cacheReadTokens, totalTokens, costUsd }` として D1 に upsert される。
 
@@ -216,33 +216,7 @@ FROM model_usage
 
 5. `usage.totalTokens` がない行はスキップ
 
-### 9. OpenCode2 — ローカルリーダー
-
-**対応ソフト**: [OpenCode 2](https://opencode.ai/v2/docs)（ベータ版、`opencode2` バイナリ）
-
-**データ取得方式**: 直接 SQLite 読み取り（`bun:sqlite`）
-
-**読み取り元**: `~/.local/share/opencode/opencode.db`
-
-**クエリ**:
-
-```sql
-SELECT time_created, model, tokens_input, tokens_output,
-       tokens_reasoning, tokens_cache_read, tokens_cache_write
-FROM session_v2
-```
-
-**パース方法**:
-
-- `session_v2` テーブルからトークン列が存在する全行を取得
-- `time_created` (epoch ms) から日付 (YYYY-MM-DD) を算出
-- `model` は JSON 文字列（`{"id":"deepseek-v4-flash","providerID":"opencode-go","variant":"max"}`）なので `id` を抽出
-- `tokens_reasoning` は `outputTokens` に合算
-- 日付・モデルごとに集約
-
-**コスト**: あり（`cost` 列に記録されているが表示には使用しない）
-
-### 10. OpenGrok — ローカルリーダー
+### 9. OpenGrok — ローカルリーダー
 
 **対応ソフト**: [Open Grok](https://github.com/mweinbach/open-grok)
 
@@ -256,7 +230,7 @@ FROM session_v2
 - `endedAt` の日付を `YYYY-MM-DD` に変換する
 - `modelUsage` のモデル別内訳を `(date, model, source)` ごとに集約する
 - モデル内訳がないターンは `primaryModelId`、セッションの `primaryModelId`、`unknown` の順で補完する
-- `reasoningTokens` は既存の OpenCode2 と同じく `outputTokens` に含める
+- `reasoningTokens` は `outputTokens` に含める
 - `totalTokens` は input、output、reasoning、cached read、cache creation の合計
 
 **コスト**: なし（OpenGrokのコスト情報は表示に使用しない）
