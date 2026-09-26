@@ -1,6 +1,8 @@
 # My TokenMaxxing
 
 AIエージェント（Codex, OpenCode, OpenGrok, OMP, ZCode, Reasonix など）のLLMトークン使用量をローカルから収集し、ダッシュボードに表示します。
+<img width="1050" height="965" alt="image" src="https://github.com/user-attachments/assets/e46997f1-7fcd-4fb3-84a7-3ace577af69a" />
+
 
 ## 機能
 
