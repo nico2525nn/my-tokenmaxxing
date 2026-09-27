@@ -61,6 +61,20 @@ canvas#tokenChart{display:block;width:100%;height:280px}
 .legend-value{font-family:var(--mono);font-size:.625rem;color:var(--muted-fg);white-space:nowrap}
 .legend-more{margin-top:.45rem;color:var(--muted-fg);font-size:.6875rem}
 .chart-empty{height:280px;display:flex;align-items:center;justify-content:center;color:var(--muted-fg);font-size:.8125rem}
+.chart-canvas{position:relative}
+canvas#tokenChart.active{cursor:pointer}
+.chart-tip{position:absolute;z-index:20;min-width:180px;max-width:280px;padding:.6rem .7rem;background:var(--card);border:1px solid var(--border);box-shadow:0 8px 24px oklch(0% 0 0 / .45);pointer-events:none;font-size:.6875rem}
+.chart-tip-head{display:flex;align-items:baseline;justify-content:space-between;gap:.75rem;margin-bottom:.4rem;padding-bottom:.35rem;border-bottom:1px solid var(--border)}
+.chart-tip-date{font-weight:500;white-space:nowrap}
+.chart-tip-total{font-family:var(--mono);color:var(--fg);white-space:nowrap}
+.chart-tip-list{display:flex;flex-direction:column;gap:.22rem}
+.chart-tip-row{display:grid;grid-template-columns:8px minmax(0,1fr) auto;align-items:center;gap:.4rem}
+.chart-tip-row .dot{width:8px;height:8px;flex-shrink:0}
+.chart-tip-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chart-tip-value{font-family:var(--mono);color:var(--muted-fg);white-space:nowrap}
+.chart-tip-more{margin-top:.35rem;color:var(--muted-fg);font-size:.625rem}
+.chart-tip-foot{margin-top:.45rem;padding-top:.35rem;border-top:1px solid var(--border);color:var(--muted-fg);font-size:.625rem}
+.chart-tip-hint{margin-top:.35rem;color:var(--muted-fg);font-size:.625rem}
 .details-grid{display:grid;grid-template-columns:minmax(0,.6fr) minmax(0,2.4fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border)}
 .detail-panel{min-width:0;background:var(--bg);padding:1.25rem}
 .detail-heading{display:flex;align-items:baseline;justify-content:space-between;gap:.75rem;margin-bottom:1rem}
@@ -160,7 +174,7 @@ canvas#tokenChart{display:block;width:100%;height:280px}
 <script>
 const COLORS = ['#f59e0b','#10b981','#3b82f6','#ef4444','#8b5cf6','#ec4899','#06b6d4','#84cc16','#f97316','#6366f1','#14b8a6','#eab308'];
 const SOURCE_COLORS = ['#94a3b8','#38bdf8','#34d399','#fbbf24','#a78bfa','#fb7185'];
-const SOURCE_LABELS = { opencode:'OpenCode', opengrok:'OpenGrok', omp:'OMP', zcode:'ZCode', reasonix:'Reasonix' };
+const SOURCE_LABELS = { opencode:'OpenCode', opengrok:'OpenGrok', omp:'OMP', zcode:'ZCode', reasonix:'Reasonix', deepswe:'DeepSWE' };
 const MODEL_COLORS = {};
 let colorIdx = 0;
 let sourceColorIdx = 0;
@@ -341,6 +355,7 @@ function computeStats(records) {
 function renderAll() {
   const filtered = ALL_RECORDS.filter(function(record) { return !hiddenSources.has(record.source); });
   ALL_STATS = computeStats(filtered);
+  pinnedBucket = -1;
   renderDash();
   renderBreakdown(filtered);
   drawChart();
@@ -441,13 +456,82 @@ function makeCalendarBuckets(daily) {
     }
     buckets.push(bucket);
   }
-  return {buckets,span};
+  return {buckets,span,step,first,last};
 }
 function axisLabel(value, span) {
   const date = dateFromIso(value);
   if (span <= 45) return String(date.getUTCMonth() + 1).padStart(2, '0') + '-' + String(date.getUTCDate()).padStart(2, '0');
   return date.toLocaleDateString('en-US', {month:'short', timeZone:'UTC'});
 }
+let chartView = null;
+let pinnedBucket = -1;
+
+function chartTipHtml(index) {
+  if (!chartView) return '';
+  const bucket = chartView.buckets[index];
+  if (!bucket) return '';
+  const start = bucket.date;
+  const label = chartView.calendar.step === 1 ? start : start + ' – ' + addDays(start, chartView.calendar.step - 1);
+  const rows = Object.entries(bucket.models)
+    .filter(function(entry) { return entry[1] > 0 && !hiddenModels.has(entry[0]); })
+    .sort(function(a, b) { return b[1] - a[1]; });
+  const total = rows.reduce(function(sum, entry) { return sum + entry[1]; }, 0);
+  let html = '<div class="chart-tip-head"><span class="chart-tip-date">' + escapeHtml(label) + '</span><span class="chart-tip-total">' + fmt(total) + '</span></div>';
+  if (!rows.length) {
+    html += '<p class="chart-tip-more">No token usage</p>';
+  } else {
+    html += '<div class="chart-tip-list">';
+    rows.slice(0, 8).forEach(function(entry) {
+      html += '<div class="chart-tip-row"><span class="dot" style="background:' + getModelColor(entry[0]) + '"></span><span class="chart-tip-name" title="' + escapeHtml(entry[0]) + '">' + escapeHtml(shortModel(entry[0])) + '</span><span class="chart-tip-value">' + (entry[1] / total * 100).toFixed(1) + '%</span></div>';
+    });
+    html += '</div>';
+    if (rows.length > 8) html += '<p class="chart-tip-more">+' + (rows.length - 8) + ' more models</p>';
+  }
+  html += '<p class="chart-tip-hint">' + (pinnedBucket === index ? 'Click to unpin' : 'Click to pin') + '</p>';
+  return html;
+}
+
+function hideChartTip() {
+  const tip = document.querySelector('.chart-tip');
+  if (tip) tip.remove();
+  const canvas = document.getElementById('tokenChart');
+  if (canvas) canvas.classList.remove('active');
+}
+
+function showChartTip(index, anchorX) {
+  const canvas = document.getElementById('tokenChart');
+  if (!canvas || !chartView || index < 0 || index >= chartView.buckets.length) {
+    hideChartTip();
+    return;
+  }
+  const host = canvas.parentElement;
+  let tip = host.querySelector('.chart-tip');
+  if (!tip) {
+    tip = document.createElement('div');
+    tip.className = 'chart-tip';
+    host.appendChild(tip);
+  }
+  tip.innerHTML = chartTipHtml(index);
+  const x = chartView.pad.left + index * chartView.slotWidth + chartView.barWidth / 2;
+  const tipWidth = tip.offsetWidth;
+  const hostWidth = host.clientWidth;
+  let left = anchorX + 12;
+  if (left + tipWidth > hostWidth - 4) left = x - tipWidth - 12;
+  tip.style.left = Math.max(4, left) + 'px';
+  tip.style.top = chartView.pad.top + 'px';
+  canvas.classList.add('active');
+}
+
+function chartBucketAt(clientX) {
+  const canvas = document.getElementById('tokenChart');
+  if (!canvas || !chartView) return -1;
+  const rect = canvas.getBoundingClientRect();
+  const x = clientX - rect.left;
+  if (x < chartView.pad.left || x > rect.width - chartView.pad.right) return -1;
+  const index = Math.floor((x - chartView.pad.left) / chartView.slotWidth);
+  return index >= 0 && index < chartView.buckets.length ? index : -1;
+}
+
 function drawChart() {
   const canvas = document.getElementById('tokenChart');
   const legend = document.getElementById('chartLegend');
@@ -467,6 +551,9 @@ function drawChart() {
 
   const context = canvas.getContext('2d');
   if (!daily.length) {
+    chartView = null;
+    pinnedBucket = -1;
+    hideChartTip();
     canvas.width = 1;
     canvas.height = 1;
     canvas.style.display = 'none';
@@ -539,6 +626,37 @@ function drawChart() {
     const x = pad.left + label.index * slotWidth + slotWidth / 2;
     context.fillText(label.text, x, height - 9);
   });
+  chartView = {buckets, calendar, pad, slotWidth, barWidth};
+  if (!canvas.dataset.tipBound) {
+    canvas.dataset.tipBound = '1';
+    canvas.addEventListener('mousemove', function(event) {
+      if (pinnedBucket >= 0) return;
+      const index = chartBucketAt(event.clientX);
+      if (index < 0) {
+        hideChartTip();
+        return;
+      }
+      showChartTip(index, event.clientX - canvas.getBoundingClientRect().left);
+    });
+    canvas.addEventListener('mouseleave', function() {
+      if (pinnedBucket < 0) hideChartTip();
+    });
+    canvas.addEventListener('click', function(event) {
+      const index = chartBucketAt(event.clientX);
+      if (index < 0) {
+        pinnedBucket = -1;
+        hideChartTip();
+        return;
+      }
+      pinnedBucket = pinnedBucket === index ? -1 : index;
+      if (pinnedBucket < 0) {
+        hideChartTip();
+        return;
+      }
+      showChartTip(pinnedBucket, event.clientX - canvas.getBoundingClientRect().left);
+    });
+  }
+  if (pinnedBucket >= 0) showChartTip(pinnedBucket, chartView.pad.left + pinnedBucket * chartView.slotWidth);
 }
 
 async function loadData() {
