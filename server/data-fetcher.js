@@ -312,83 +312,6 @@ function fetchFromOpenGrok() {
   return results;
 }
 
-/**
- * Read DeepSWE (pier) batch trial results.
- * Each trial runs the opencode agent in a container and reports its own token
- * counters in <job>/<trial>/result.json. The per-trial files sum exactly to the
- * job-level stats, so only the per-trial files are read to avoid double counting.
- */
-function fetchFromDeepSwe() {
-  console.log("[fetcher] Fetching from DeepSWE...");
-  const jobsDir = process.env.DEEPSWE_JOBS_DIR?.trim() || join(HOME, "deepswe-work", "jobs");
-  if (!existsSync(jobsDir)) {
-    console.log("[fetcher] DeepSWE jobs dir not found");
-    return [];
-  }
-
-  let jobDirs;
-  try {
-    jobDirs = readdirSync(jobsDir, { withFileTypes: true })
-      .filter(entry => entry.isDirectory())
-      .map(entry => entry.name);
-  } catch (e) {
-    console.error("[fetcher] Error listing DeepSWE jobs:", e.message);
-    return [];
-  }
-
-  const results = [];
-  for (const jobName of jobDirs) {
-    const jobDir = join(jobsDir, jobName);
-    let trialNames;
-    try {
-      trialNames = readdirSync(jobDir, { withFileTypes: true })
-        .filter(entry => entry.isDirectory())
-        .map(entry => entry.name);
-    } catch {
-      continue;
-    }
-
-    for (const trialName of trialNames) {
-      const resultPath = join(jobDir, trialName, "result.json");
-      if (!existsSync(resultPath)) continue;
-      try {
-        const trial = JSON.parse(readFileSync(resultPath, "utf-8"));
-        const usage = trial.agent_result;
-        if (!usage) continue;
-
-        const inputTokens = Number(usage.n_input_tokens) || 0;
-        const outputTokens = Number(usage.n_output_tokens) || 0;
-        const cacheReadTokens = Number(usage.n_cache_tokens) || 0;
-        const totalTokens = inputTokens + outputTokens + cacheReadTokens;
-        if (totalTokens <= 0) continue;
-
-        const stamp = trial.finished_at || trial.started_at;
-        if (typeof stamp !== "string" || stamp.length < 10) continue;
-
-        const model = trial.agent_info?.model_info?.name
-          || trial.config?.agent?.model_name
-          || "unknown";
-
-        results.push({
-          period: stamp.slice(0, 10),
-          agent: "deepswe",
-          modelName: normalizeModel(model),
-          inputTokens,
-          outputTokens,
-          cacheReadTokens,
-          cacheCreationTokens: 0,
-          totalTokens,
-        });
-      } catch (e) {
-        console.error(`[fetcher] Error reading DeepSWE trial ${resultPath}:`, e.message);
-      }
-    }
-  }
-
-  console.log(`[fetcher] DeepSWE: ${results.length} trials`);
-  return results;
-}
-
 function collectFiles(dir, files, ext) {
   try {
     const entries = readdirSync(dir, { withFileTypes: true });
@@ -435,7 +358,6 @@ export async function aggregateAllData() {
   const zcodeEntries = await fetchFromZCode();
   const reasonixEntries = fetchFromReasonix();
   const opengrokEntries = fetchFromOpenGrok();
-  const deepsweEntries = fetchFromDeepSwe();
   const allRecords = [];
 
   // Process ccusage format into records
@@ -536,20 +458,6 @@ export async function aggregateAllData() {
     allRecords.push({
       date: e.period,
       source: "opengrok",
-      model: e.modelName,
-      inputTokens: e.inputTokens,
-      outputTokens: e.outputTokens,
-      cacheReadTokens: e.cacheReadTokens,
-      cacheCreationTokens: e.cacheCreationTokens,
-      totalTokens: e.totalTokens,
-    });
-  }
-
-  // Add DeepSWE entries
-  for (const e of deepsweEntries) {
-    allRecords.push({
-      date: e.period,
-      source: "deepswe",
       model: e.modelName,
       inputTokens: e.inputTokens,
       outputTokens: e.outputTokens,

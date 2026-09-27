@@ -1,9 +1,9 @@
 # トークン読み取りロジック
 
-tokenmaxxing は以下の 10 種類の AI エージェント・CLI ツールから LLM トークン使用量を読み取る。
+tokenmaxxing は以下の 9 種類の AI エージェント・CLI ツールから LLM トークン使用量を読み取る。
 
 - **外部ツール** (ccusage@^20 経由): Claude, Codex, OpenCode, Gemini, Copilot
-- **ローカルリーダー** (直接ファイル読み取り): OMP, ZCode, Reasonix, OpenGrok, DeepSWE
+- **ローカルリーダー** (直接ファイル読み取り): OMP, ZCode, Reasonix, OpenGrok
 
 全ソースとも、読み取ったデータは内部で `(date, model, source)` をキーとする行に集約され、API に同期される。同期後は 1 行 = `UsageDayInput { date, source, model, inputTokens, outputTokens, cacheCreationTokens, cacheReadTokens, totalTokens, costUsd }` として D1 に upsert される。
 
@@ -234,30 +234,6 @@ FROM model_usage
 - `totalTokens` は input、output、reasoning、cached read、cache creation の合計
 
 **コスト**: なし（OpenGrokのコスト情報は表示に使用しない）
-
-### 10. DeepSWE — ローカルリーダー
-
-**対応ソフト**: [pier](https://github.com/laude-institute/harbor)（DeepSWE バッチ評価ランナー）
-
-**データ取得方式**: 直接 JSON ファイル読み取り
-
-**読み取り元**: `$DEEPSWE_JOBS_DIR/<job>/<trial>/result.json`（未設定時は `~/deepswe-work/jobs`）
-
-**パース方法**:
-
-- trial ディレクトリ（`config.json` を含む階層）だけを走査し、trial 単位の `result.json` を読む
-- ジョブ直下の `result.json` は trial 合計と一致するため読み飛ばす（二重計上防止）
-- 日付は `finished_at`、未実行なら `started_at` の先頭 10 文字
-- モデルは `agent_info.model_info.name` → `config.agent.model_name` の順で補完
-
-| フィールド      | JSON パス                          |
-| ----------- | -------------------------------- |
-| inputTokens  | `agent_result.n_input_tokens`      |
-| outputTokens | `agent_result.n_output_tokens`     |
-| cacheReadTokens | `agent_result.n_cache_tokens`   |
-| totalTokens  | 上記 3 つの合計                        |
-
-**コスト**: なし（`cost_usd` は `null` のため使用しない）
 
 ---
 
