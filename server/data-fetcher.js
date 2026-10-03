@@ -280,11 +280,16 @@ function fetchFromOpenGrok() {
         }
 
         for (const [modelName, usage] of modelRows) {
-          const inputTokens = Number(usage?.inputTokens) || 0;
+          // OpenGrok reports Responses-wire semantics: `inputTokens` already
+          // contains `cachedReadTokens` (its own totalTokens is input+output).
+          // Every other source reports cache reads as a separate additive
+          // bucket, so subtract them here instead of double counting them.
+          const reportedInput = Number(usage?.inputTokens) || 0;
           const outputTokens = Number(usage?.outputTokens) || 0;
           const reasoningTokens = Number(usage?.reasoningTokens) || 0;
           const cacheReadTokens = Number(usage?.cachedReadTokens) || 0;
           const cacheCreationTokens = Number(usage?.cacheCreationTokens) || 0;
+          const inputTokens = Math.max(0, reportedInput - cacheReadTokens);
           const totalTokens = inputTokens + outputTokens + reasoningTokens
             + cacheReadTokens + cacheCreationTokens;
           if (totalTokens <= 0) continue;

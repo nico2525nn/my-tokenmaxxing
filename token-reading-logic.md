@@ -232,6 +232,7 @@ FROM model_usage
 - モデル内訳がないターンは `primaryModelId`、セッションの `primaryModelId`、`unknown` の順で補完する
 - `reasoningTokens` は `outputTokens` に含める
 - `totalTokens` は input、output、reasoning、cached read、cache creation の合計
+- **注意**: OpenGrok の `inputTokens` は Responses ワイヤ仕様で `cachedReadTokens` を**含む**（OpenGrok 自身の `totalTokens` は input+output）。他ソースはキャッシュ読み出しを独立した加算バケットとして報告するため、`inputTokens` から `cachedReadTokens` を引いて正規化する（未補正だと二重計上になる）
 
 **コスト**: なし（OpenGrokのコスト情報は表示に使用しない）
 
@@ -266,6 +267,31 @@ FROM model_usage
 - **フォールバック**: `bunx` が ENOENT の場合 → `npx -y ccusage@^20` を使用
 - **バッファ**: 256 MB（巨大なデータに対応）
 - **エラー処理**: 失敗 → `Option.none`（該当ソースをスキップ、他ソースに影響なし）
+
+---
+
+## キャッシュヒット率
+
+プロンプト側トークンのうちキャッシュから供給された割合として定義する:
+
+```
+cacheHitRate = cacheReadTokens / (inputTokens + cacheReadTokens)
+```
+
+- 分母が 0 の場合（プロンプト側トークンがない）は `—` と表示する
+- 全ソースで `inputTokens` と `cacheReadTokens` は独立した加算バケットとして正規化されている（OpenGrok のみ補正あり）ため、この式が全ソースで同じ意味になる
+- 表示箇所は 2 つのみ:
+  - **Harness**: ソース名の下に `cache 97.2%`（トークン数の下に小文字で併記、总量的にはここが主指標）
+  - **Model Breakdown**: `Cache` 列（列見出し付き。`Share` は従来どおり取得全期間に対する割合）
+
+## グラフの表示範囲
+
+- 既定は **直近 30 日**。カーソルで棒を狙いやすくするため、履歴が 30 日より短い場合も **最小 7 日** まで左に拡張する
+- 履歴が 7 日未満なら履歴全体を 7 日へ引き伸ばす（バーが疎にならないように）
+- `ALL` で全期間をプロット
+- 範囲は `chartRange`（`'30d'` / `'all'`）で保持し、`chartWindow()` が実ウィンドウ、`makeCalendarBuckets(daily, from, to)` がバケット列を生成する
+- 凡例の日 MODEL 割合は**表示中のウィンドウ合計**に対する割合（グラフと凡例が一致するように）
+- 範囲切替時は固定中（pin）のポップアップを解除する
 
 ---
 
