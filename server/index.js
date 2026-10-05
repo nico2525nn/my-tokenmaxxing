@@ -2,6 +2,7 @@ import express from "express";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import { existsSync } from "fs";
+import { createGzip, createBrotliCompress, constants as zlibConstants } from "zlib";
 import { aggregateAllData } from "./data-fetcher.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -9,6 +10,46 @@ const PORT = process.env.PORT || 3642;
 const app = express();
 
 app.disable("etag");
+
+// The records payload is tens of thousands of repetitive JSON rows and gzips
+// roughly 12x smaller. Remote clients (a phone on the tailnet, say) otherwise
+// pull megabytes on every refresh and the transfer can die part-way, which the
+// page surfaces as "Failed to load token data".
+const COMPRESS_MIN_BYTES = 1024;
+
+app.use((req, res, next) => {
+  const accept = String(req.headers["accept-encoding"] || "");
+  const encoding = /\bbr\b/.test(accept) ? "br" : /\bgzip\b/.test(accept) ? "gzip" : null;
+  if (!encoding) return next();
+
+  const originalJson = res.json.bind(res);
+  const makeStream = () => encoding === "br"
+    ? createBrotliCompress({
+        params: {
+          [zlibConstants.BROTLI_PARAM_QUALITY]: 5,
+          [zlibConstants.BROTLI_PARAM_SIZE_HINT]: 1 << 20,
+        },
+      })
+    : createGzip({ level: 6 });
+
+  // Pipe into the response instead of res.send(stream): Express routes objects
+  // back through res.json, so handing it a stream re-enters this override and
+  // recurses until the stack blows.
+  res.json = (body) => {
+    const payload = JSON.stringify(body);
+    if (Buffer.byteLength(payload) < COMPRESS_MIN_BYTES) return originalJson(body);
+    const stream = makeStream();
+    stream.on("error", () => res.destroy());
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.setHeader("Content-Encoding", encoding);
+    res.setHeader("Vary", "Accept-Encoding");
+    res.removeHeader("Content-Length");
+    stream.pipe(res);
+    stream.end(payload);
+    return res;
+  };
+  next();
+});
 app.use((_req, res, next) => {
   res.set({
     "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",

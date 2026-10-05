@@ -267,6 +267,7 @@ FROM model_usage
 - **セッションカウント**: `--mode calculate` の session レポート（失敗しても daily の同期は継続）
 - **フォールバック**: `bunx` が失敗した場合（ENOENT 以外も含む）→ `npx -y ccusage@^20` を試す。成功判定は「stdout が空でない」かつ「`daily` 配列を持つ JSON がパースできる」こと（exit code 0 でも空 stdout あり）
 - **バッファ**: 256 MB（巨大なデータに対応）
+- **応答圧縮**: `/api/*` の JSON はクライアントが `Accept-Encoding` で brotli / gzip を求めていれば圧縮する。レコードが 4 万行を超えると平文で 7.6MB になり、リモート（tailnet 経由のスマホ等）では転送が途中で切れることがある。実測で brotli 602KB / gzip 669KB（ 約12倍）。1KB 未満は圧縮しない。圧縮は `res.send` ではなく `stream.pipe(res)` で行う（Express は object を `res.json` に戻りartan ため、`res.send(stream)` を上書きすると再帰して `Maximum call stack size exceeded` になる）
 - **エラー処理**: 全ランナーが失敗 → `Option.none`（該当ソースをスキップ、他ソースに影響なし）。このときは.codex / opencode / claude / gemini / copilot / pi の 6 ソースが同時に失われるため、警告ログで明示する
 
 ---
