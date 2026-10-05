@@ -18,7 +18,7 @@ tokenmaxxing は以下の 9 種類の AI エージェント・CLI ツールか�
 `bunx ccusage@^20 <subcommand> daily --json --breakdown --mode calculate`
 
 - `--mode calculate`: 全トークンを最新の API 一覧価格で再計算する（サブスクリプションで実コストが $0 になるケースに対応）
-- `bunx` がない場合は `npx -y cusage@^20` にフォールバック
+- **ランナーフォールバック**: `bunx ccusage@^20` を先に試し、失敗したら `npx -y ccusage@^20` を試す。`bunx` はパッケージを `/tmp` に展開するため、`/tmp` がクォータ枯渇した tmpfs の场合 **4.7MB のネイティブバイナリが展開できず 0 バイトの stub だけが残る**。その状態で ccusage は `native binary is not available` を出して exit 1 になる（ exit code 0 で空 stdout になるケースもあるため、stdout の JSON 検証も行う）
 - タイムアウト: 180 秒
 - 失敗しても他のソースの同期は継続する
 
@@ -264,9 +264,9 @@ FROM model_usage
 - **サブコマンド**: `<source> daily` / `<source> session`
 - **共通フラグ**: `--json --breakdown --mode calculate`
 - **セッションカウント**: `--mode calculate` の session レポート（失敗しても daily の同期は継続）
-- **フォールバック**: `bunx` が ENOENT の場合 → `npx -y ccusage@^20` を使用
+- **フォールバック**: `bunx` が失敗した場合（ENOENT 以外も含む）→ `npx -y ccusage@^20` を試す。成功判定は「stdout が空でない」かつ「`daily` 配列を持つ JSON がパースできる」こと（exit code 0 でも空 stdout あり）
 - **バッファ**: 256 MB（巨大なデータに対応）
-- **エラー処理**: 失敗 → `Option.none`（該当ソースをスキップ、他ソースに影響なし）
+- **エラー処理**: 全ランナーが失敗 → `Option.none`（該当ソースをスキップ、他ソースに影響なし）。このときは.codex / opencode / claude / gemini / copilot / pi の 6 ソースが同時に失われるため、警告ログで明示する
 
 ---
 

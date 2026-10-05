@@ -4,9 +4,16 @@ import { homedir } from "os";
 import { join } from "path";
 
 const HOME = homedir();
-const CCUSAGE_CMD = process.platform === "win32"
-  ? `npx -y ccusage@^20`
-  : `bunx ccusage@^20`;
+
+// bunx stages the package (and its ~4.7MB platform-native binary) under /tmp,
+// which can be a quota'd tmpfs. When that staging fails, bunx leaves a 0-byte
+// stub behind and ccusage exits with "native binary is not available", so a
+// working npx is tried as a fallback instead of silently losing every ccusage
+// source. npx stages into ~/.npm, which lives on the real filesystem.
+const CCUSAGE_ARGS = "daily --json --breakdown --no-cost --by-agent";
+const CCUSAGE_CANDIDATES = process.platform === "win32"
+  ? [`npx -y ccusage@^20`]
+  : [`bunx ccusage@^20`, `npx -y ccusage@^20`];
 
 // Try to use bun:sqlite (available in Bun runtime)
 let BUN_SQLITE = null;
@@ -17,24 +24,36 @@ try {
 }
 
 /**
- * Fetch data from ccusage CLI for external tools
+ * Fetch data from ccusage CLI for external tools.
+ * Tries each runner in turn and keeps the first one that yields real report
+ * data, because "exited 0 with empty stdout" is a real failure mode here.
  */
 function fetchFromCcusage() {
   console.log("[fetcher] Fetching from ccusage...");
-  try {
-    const stdout = execSync(`${CCUSAGE_CMD} daily --json --breakdown --no-cost --by-agent`, {
-      timeout: 120_000,
-      maxBuffer: 256 * 1024 * 1024,
-      shell: process.platform === "win32" ? "cmd.exe" : true,
-      encoding: "utf-8",
-    });
-    const data = JSON.parse(stdout);
-    console.log(`[fetcher] ccusage: ${data.daily?.length || 0} days`);
-    return data.daily || [];
-  } catch (e) {
-    console.error("[fetcher] ccusage failed:", e.message);
-    return [];
+  const failures = [];
+  for (const command of CCUSAGE_CANDIDATES) {
+    try {
+      const stdout = execSync(`${command} ${CCUSAGE_ARGS}`, {
+        timeout: 120_000,
+        maxBuffer: 256 * 1024 * 1024,
+        shell: process.platform === "win32" ? "cmd.exe" : true,
+        encoding: "utf-8",
+      });
+      const trimmed = stdout.trim();
+      if (!trimmed) throw new Error("empty stdout");
+      const data = JSON.parse(trimmed);
+      const daily = Array.isArray(data.daily) ? data.daily : null;
+      if (!daily) throw new Error("stdout has no daily array");
+      console.log(`[fetcher] ccusage (${command.split(" ")[0]}): ${daily.length} days`);
+      return daily;
+    } catch (e) {
+      const reason = (e.stderr || e.stdout || e.message || "").toString().trim().split("\n").pop();
+      console.error(`[fetcher] ccusage via ${command.split(" ")[0]} failed: ${reason || e.message}`);
+      failures.push(`${command.split(" ")[0]}: ${reason || e.message}`);
+    }
   }
+  console.error(`[fetcher] ccusage unavailable, dropping Codex/OpenCode/Claude/Gemini/Copilot/pi. ${failures.join(" | ")}`);
+  return [];
 }
 
 /**
