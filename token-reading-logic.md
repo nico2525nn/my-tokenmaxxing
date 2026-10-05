@@ -18,7 +18,8 @@ tokenmaxxing は以下の 9 種類の AI エージェント・CLI ツールか�
 `bunx ccusage@^20 <subcommand> daily --json --breakdown --mode calculate`
 
 - `--mode calculate`: 全トークンを最新の API 一覧価格で再計算する（サブスクリプションで実コストが $0 になるケースに対応）
-- **ランナーフォールバック**: `bunx ccusage@^20` を先に試し、失敗したら `npx -y ccusage@^20` を試す。`bunx` はパッケージを `/tmp` に展開するため、`/tmp` がクォータ枯渇した tmpfs の场合 **4.7MB のネイティブバイナリが展開できず 0 バイトの stub だけが残る**。その状態で ccusage は `native binary is not available` を出して exit 1 になる（ exit code 0 で空 stdout になるケースもあるため、stdout の JSON 検証も行う）
+- **ステージ先の固定**: 子プロセスの `TMPDIR` を `~/.cache/tokenmaxxing/staging` に固定する。既定の `/tmp` はクォータ付き tmpfs であることが、展開が中断されると中途半端なツリーが残って **次回 bunx がそれを再利用して SIGSEGV で落ちる**（再展開しない）。`/tmp` から切り離すことでこの連鎖を断つ
+- **ランナーフォールバック**: `bunx ccusage@^20` を先に試し、失敗したら `npx -y ccusage@^20` を試す。npx は `~/.npm` にステージするため影響を受けない。成功判定は「stdout が空でない」かつ「`daily` 配列を持つ JSON がパースできる」こと（exit code 0 でも空 stdout がありうる）
 - タイムアウト: 180 秒
 - 失敗しても他のソースの同期は継続する
 

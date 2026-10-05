@@ -1,19 +1,31 @@
 import { execSync } from "child_process";
-import { readFileSync, readdirSync, existsSync } from "fs";
+import { readFileSync, readdirSync, existsSync, mkdirSync } from "fs";
 import { homedir } from "os";
 import { join } from "path";
 
 const HOME = homedir();
 
-// bunx stages the package (and its ~4.7MB platform-native binary) under /tmp,
-// which can be a quota'd tmpfs. When that staging fails, bunx leaves a 0-byte
-// stub behind and ccusage exits with "native binary is not available", so a
-// working npx is tried as a fallback instead of silently losing every ccusage
-// source. npx stages into ~/.npm, which lives on the real filesystem.
+// bunx stages the package (and its ~4.7MB platform-native binary) under TMPDIR,
+// which on many machines is a quota'd tmpfs (/tmp). When staging is interrupted
+// it leaves a half-written tree behind, and the next bunx run reuses that tree
+// and dies with SIGSEGV instead of re-extracting. Two defences:
+//   1. stage into a directory we own on the real filesystem, and
+//   2. fall back to npx (which stages into ~/.npm) if bunx fails anyway,
+//      so a broken runner never silently drops every ccusage source.
 const CCUSAGE_ARGS = "daily --json --breakdown --no-cost --by-agent";
 const CCUSAGE_CANDIDATES = process.platform === "win32"
   ? [`npx -y ccusage@^20`]
   : [`bunx ccusage@^20`, `npx -y ccusage@^20`];
+
+function ccusageEnv() {
+  const staging = join(HOME, ".cache", "tokenmaxxing", "staging");
+  try {
+    mkdirSync(staging, { recursive: true });
+    return { ...process.env, TMPDIR: staging, TMP: staging, TEMP: staging };
+  } catch {
+    return process.env;
+  }
+}
 
 // Try to use bun:sqlite (available in Bun runtime)
 let BUN_SQLITE = null;
@@ -38,6 +50,7 @@ function fetchFromCcusage() {
         maxBuffer: 256 * 1024 * 1024,
         shell: process.platform === "win32" ? "cmd.exe" : true,
         encoding: "utf-8",
+        env: ccusageEnv(),
       });
       const trimmed = stdout.trim();
       if (!trimmed) throw new Error("empty stdout");
