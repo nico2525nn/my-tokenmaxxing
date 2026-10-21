@@ -1,9 +1,9 @@
 # トークン読み取りロジック
 
-tokenmaxxing は以下の 9 種類の AI エージェント・CLI ツールから LLM トークン使用量を読み取る。
+tokenmaxxing は以下の 10 種類の AI エージェント・CLI ツールから LLM トークン使用量を読み取る。
 
 - **外部ツール** (ccusage@^20 経由): Claude, Codex, OpenCode, Gemini, Copilot
-- **ローカルリーダー** (直接ファイル読み取り): OMP, ZCode, Reasonix, OpenGrok
+- **ローカルリーダー** (直接ファイル読み取り): OMP, ZCode, Reasonix, OpenGrok, DSH
 
 全ソースとも、読み取ったデータは内部で `(date, model, source)` をキーとする行に集約され、API に同期される。同期後は 1 行 = `UsageDayInput { date, source, model, inputTokens, outputTokens, cacheCreationTokens, cacheReadTokens, totalTokens, costUsd }` として D1 に upsert される。
 
@@ -236,6 +236,33 @@ FROM model_usage
 - **注意**: OpenGrok の `inputTokens` は Responses ワイヤ仕様で `cachedReadTokens` を**含む**（OpenGrok 自身の `totalTokens` は input+output）。他ソースはキャッシュ読み出しを独立した加算バケットとして報告するため、`inputTokens` から `cachedReadTokens` を引いて正規化する（未補正だと二重計上になる）
 
 **コスト**: なし（OpenGrokのコスト情報は表示に使用しない）
+
+---
+
+### 10. DSH (DeepSeek Harness) — ローカルリーダー
+
+**対応ソフト**: DeepSeek Harness（`dsh`）
+
+**データ取得方式**: 直接 JSON ファイル読み取り（+ 古いセッションのみイベントログ）
+
+**読み取り元**: `$DSH_HOME/storages/session_projcache/sessions/*.json`（未設定時は `~/.dsh`）
+
+**パース方法**:
+
+- ハーネス自身が保持する投影キャッシュの `record.rows.tokenUsage.val.totals` を使う（`/cost` と同じ値）
+- イベントログの usage チャンクは一部ステップしか記録しないため**合計には使わない**
+- 日付は `sessionListMetadata.val.lastPromptAt`、無ければ `identity.createdAt`
+- モデルは `modelSelection.val.lastUsed.model`。この行を持たない古いセッションのみ `~/.dsh/sessions/**/session*.zstd` を `zstd -dc` で展開し、最後の `request/context` の `model` を使う
+- subagent セッションは投影キャッシュに現れず、親の合計に畳み込まれているため加算しない（二重計上防止）
+
+| フィールド | JSON パス |
+| ---------- | --------- |
+| inputTokens | `uncachedInputTokens` |
+| outputTokens | `outputTokens` |
+| cacheReadTokens | `cacheReadTokens` |
+| cacheCreationTokens | `cacheWriteTokens` |
+
+**コスト**: なし
 
 ---
 

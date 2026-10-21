@@ -6,12 +6,13 @@ AIエージェント（Codex, OpenCode, OpenGrok, OMP, ZCode, Reasonix など）
 
 ## 機能
 
-- **10種類のデータソース**からトークン使用量を自動収集
+- **11種類のデータソース**からトークン使用量を自動収集
   - ccusage（Codex, OpenCode, Claude, Gemini, Copilot, pi）
   - OMP（Oh My Pi）セッションJSONL
   - ZCode SQLiteデータベース
   - Reasonix telemetry.json
   - OpenGrok session usage.json
+  - DSH（DeepSeek Harness）セッション投影キャッシュ
 - **グレースケールダッシュボード** – データの可視化のみカラフル
 - **積み上げ棒グラフ** – 期間に応じて日別/3日/週単位に自動グループ化（既定は直近30日、`ALL` で全期間）
 - **日別詳細ポップアップ** – グラフにホバーまたはクリックで、その日のモデル内訳を表示
@@ -65,6 +66,7 @@ http://localhost:3642?name=YourName&avatar=https://example.com/avatar.png
 | ZCode | `~/.zcode/cli/db/db.sqlite` | ✅ |
 | Reasonix | `%APPDATA%/reasonix/projects/*/sessions/*.telemetry.json` | ✅ |
 | OpenGrok | `$OPENGROK_HOME/sessions/**/usage.json`（未設定時は `~/.opengrok`） | ✅ |
+| DSH | `$DSH_HOME/storages/session_projcache/sessions/*.json`（未設定時は `~/.dsh`） | ✅ |
 
 ## プロジェクト構成
 

@@ -1,4 +1,4 @@
-import { execSync } from "child_process";
+import { execSync, execFileSync } from "child_process";
 import { readFileSync, readdirSync, existsSync, mkdirSync } from "fs";
 import { homedir } from "os";
 import { join } from "path";
@@ -349,6 +349,131 @@ function fetchFromOpenGrok() {
   return results;
 }
 
+/**
+ * Read DSH (DeepSeek Harness, `dsh`) usage.
+ *
+ * The harness maintains a projection cache per session that already contains
+ * its own authoritative token accounting (`tokenUsage.totals`), including cache
+ * reads. Those totals are used directly rather than re-summing the event log,
+ * which only records usage for a subset of steps. Subagent sessions are absent
+ * from the projection cache and are already folded into the parent's totals, so
+ * nothing extra is added for them.
+ *
+ * Dates come from the last prompt (falling back to session creation). Models
+ * come from the session's model selection; older sessions that predate that row
+ * are resolved from the `request/context` line in their event log.
+ */
+function fetchFromDsh() {
+  console.log("[fetcher] Fetching from DSH...");
+  const dshHome = process.env.DSH_HOME?.trim() || join(HOME, ".dsh");
+  const projections = join(dshHome, "storages", "session_projcache", "sessions");
+  if (!existsSync(projections)) {
+    console.log("[fetcher] DSH projection cache not found");
+    return [];
+  }
+
+  let files;
+  try {
+    files = readdirSync(projections).filter(name => name.endsWith(".json"));
+  } catch (e) {
+    console.error("[fetcher] Error listing DSH sessions:", e.message);
+    return [];
+  }
+
+  const sessionsDir = join(dshHome, "sessions");
+  const logIndex = new Map();
+  let logIndexed = false;
+  const logFor = (sessionId) => {
+    if (!logIndexed) {
+      logIndexed = true;
+      try {
+        for (const project of readdirSync(sessionsDir, { withFileTypes: true })) {
+          if (!project.isDirectory()) continue;
+          const projectDir = join(sessionsDir, project.name);
+          for (const entry of readdirSync(projectDir, { withFileTypes: true })) {
+            if (!entry.isDirectory()) continue;
+            const id = entry.name.replace(/^session-/, "");
+            const dir = join(projectDir, entry.name);
+            const log = readdirSync(dir).find(name => name.endsWith(".zstd"));
+            if (log) logIndex.set(id, join(dir, log));
+          }
+        }
+      } catch {
+        // Older/newer layout: leave the index empty and fall back to "unknown".
+      }
+    }
+    return logIndex.get(sessionId) || null;
+  };
+
+  const results = [];
+  for (const file of files) {
+    try {
+      const cache = JSON.parse(readFileSync(join(projections, file), "utf-8"));
+      const record = cache?.record;
+      const rows = record?.rows;
+      const totals = rows?.tokenUsage?.val?.totals;
+      if (!totals) continue;
+
+      const inputTokens = Number(totals.uncachedInputTokens) || 0;
+      const outputTokens = Number(totals.outputTokens) || 0;
+      const cacheReadTokens = Number(totals.cacheReadTokens) || 0;
+      const cacheCreationTokens = Number(totals.cacheWriteTokens) || 0;
+      const totalTokens = inputTokens + outputTokens + cacheReadTokens + cacheCreationTokens;
+      if (totalTokens <= 0) continue;
+
+      const stamp = Number(rows.sessionListMetadata?.val?.lastPromptAt)
+        || Number(record?.identity?.createdAt);
+      if (!stamp) continue;
+      const period = new Date(stamp).toISOString().slice(0, 10);
+
+      const sessionId = (record?.identity?.id || file.replace(/\.json$/, "")).replace(/^session-/, "");
+      let model = rows.modelSelection?.val?.lastUsed?.model;
+      if (!model) model = dshModelFromLog(logFor(sessionId));
+      if (!model) model = "unknown";
+
+      results.push({
+        period,
+        agent: "dsh",
+        modelName: normalizeModel(model),
+        inputTokens,
+        outputTokens,
+        cacheReadTokens,
+        cacheCreationTokens,
+        totalTokens,
+      });
+    } catch (e) {
+      console.error(`[fetcher] Error reading DSH session ${file}:`, e.message);
+    }
+  }
+
+  console.log(`[fetcher] DSH: ${results.length} sessions`);
+  return results;
+}
+
+function dshModelFromLog(logPath) {
+  if (!logPath) return null;
+  try {
+    const raw = execFileSync("zstd", ["-dc", logPath], {
+      maxBuffer: 256 * 1024 * 1024,
+      encoding: "utf-8",
+      stdio: ["ignore", "pipe", "ignore"],
+    });
+    let model = null;
+    for (const line of raw.split("\n")) {
+      if (!line.includes('"request/context"')) continue;
+      try {
+        const found = JSON.parse(line)?.data?.model;
+        if (typeof found === "string" && found) model = found;
+      } catch {
+        // ignore malformed lines
+      }
+    }
+    return model;
+  } catch {
+    return null;
+  }
+}
+
 function collectFiles(dir, files, ext) {
   try {
     const entries = readdirSync(dir, { withFileTypes: true });
@@ -395,6 +520,7 @@ export async function aggregateAllData() {
   const zcodeEntries = await fetchFromZCode();
   const reasonixEntries = fetchFromReasonix();
   const opengrokEntries = fetchFromOpenGrok();
+  const dshEntries = fetchFromDsh();
   const allRecords = [];
 
   // Process ccusage format into records
@@ -495,6 +621,20 @@ export async function aggregateAllData() {
     allRecords.push({
       date: e.period,
       source: "opengrok",
+      model: e.modelName,
+      inputTokens: e.inputTokens,
+      outputTokens: e.outputTokens,
+      cacheReadTokens: e.cacheReadTokens,
+      cacheCreationTokens: e.cacheCreationTokens,
+      totalTokens: e.totalTokens,
+    });
+  }
+
+  // Add DSH entries
+  for (const e of dshEntries) {
+    allRecords.push({
+      date: e.period,
+      source: "dsh",
       model: e.modelName,
       inputTokens: e.inputTokens,
       outputTokens: e.outputTokens,

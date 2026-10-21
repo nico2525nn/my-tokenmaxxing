@@ -90,7 +90,7 @@ function refresh() {
   const startedAt = Date.now();
   refreshPromise = new Promise((resolve) => {
     let stderr = "";
-    const child = spawn(process.execPath, [WORKER], { stdio: ["ignore", "ignore", "pipe"], env: process.env });
+    const child = spawn(process.execPath, [WORKER], { stdio: ["ignore", "inherit", "pipe"], env: process.env });
     child.stderr?.on("data", (chunk) => { stderr += chunk; });
     const settle = (ok) => {
       refreshPromise = null;
