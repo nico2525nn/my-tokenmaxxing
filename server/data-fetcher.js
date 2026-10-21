@@ -509,108 +509,124 @@ export async function aggregateAllData() {
     console.warn(`[fetcher] Skipped ${allRecords.length - records.length} records with invalid dates`);
   }
   console.log(`[fetcher] Total records: ${records.length}`);
-
-  const stats = computeStats(records);
-  return { records, stats };
+  return { records };
 }
 
-function computeStats(records) {
-  if (!records.length) return emptyStats();
+const DAY_MS = 86_400_000;
 
-  const totalTokens = records.reduce((s, r) => s + r.totalTokens, 0);
-  const totalInput = records.reduce((s, r) => s + r.inputTokens, 0);
-  const totalOutput = records.reduce((s, r) => s + r.outputTokens, 0);
-  const totalCacheRead = records.reduce((s, r) => s + r.cacheReadTokens, 0);
-  const totalCacheCreation = records.reduce((s, r) => s + r.cacheCreationTokens, 0);
+/**
+ * Collapse records into the compact payload the dashboard actually renders.
+ *
+ * Records are already keyed by (date, source, model), so grouping turns tens of
+ * thousands of rows into a few hundred entries. Shipping that summary is what
+ * keeps page load flat as history grows: the client no longer downloads every
+ * row and re-aggregates it on each refresh.
+ */
+export function summarizeDashboard(records) {
+  const totals = { tokens: 0, input: 0, output: 0, cacheRead: 0, cacheCreation: 0 };
+  const sources = new Map();
+  const models = new Map();
+  const days = new Map();
 
-  const dates = [...new Set(records.map(r => r.date))].sort();
+  const bump = (row, tokens, input, output, cacheRead, cacheCreation) => {
+    row.tokens += tokens;
+    row.input += input;
+    row.output += output;
+    row.cacheRead += cacheRead;
+    row.cacheCreation += cacheCreation;
+  };
+
+  for (const record of records) {
+    const tokens = Number(record.totalTokens) || 0;
+    if (tokens <= 0) continue;
+    const input = Number(record.inputTokens) || 0;
+    const output = Number(record.outputTokens) || 0;
+    const cacheRead = Number(record.cacheReadTokens) || 0;
+    const cacheCreation = Number(record.cacheCreationTokens) || 0;
+    const source = String(record.source || "unknown");
+    const model = normalizeModel(record.model || "unknown");
+    const date = record.date;
+
+    bump(totals, tokens, input, output, cacheRead, cacheCreation);
+
+    let sourceRow = sources.get(source);
+    if (!sourceRow) {
+      sources.set(source, sourceRow = { source, tokens: 0, input: 0, output: 0, cacheRead: 0, cacheCreation: 0 });
+    }
+    bump(sourceRow, tokens, input, output, cacheRead, cacheCreation);
+
+    const modelKey = source + "\u0000" + model;
+    let modelRow = models.get(modelKey);
+    if (!modelRow) {
+      models.set(modelKey, modelRow = { source, model, tokens: 0, input: 0, output: 0, cacheRead: 0, cacheCreation: 0 });
+    }
+    bump(modelRow, tokens, input, output, cacheRead, cacheCreation);
+
+    let day = days.get(date);
+    if (!day) days.set(date, day = new Map());
+    day.set(modelKey, (day.get(modelKey) || 0) + tokens);
+  }
+
+  const dates = [...days.keys()].sort();
+  const perModel = new Map();
+  for (const row of models.values()) {
+    perModel.set(row.model, (perModel.get(row.model) || 0) + row.tokens);
+  }
+  const top = [...perModel.entries()].sort((a, b) => b[1] - a[1])[0];
+
   const dateSet = new Set(dates);
-  const activeDays = dates.length;
-
-  // Sessions: count distinct (date, source) combos
-  const sessionSet = new Set(records.map(r => `${r.date}|${r.source}|${r.model}`));
-  const sessions = sessionSet.size;
-  const modelTotals = {};
-  for (const r of records) {
-    const key = normalizeModel(r.model || "unknown");
-    modelTotals[key] = (modelTotals[key] || 0) + r.totalTokens;
-  }
-  const sortedModels = Object.entries(modelTotals).sort((a, b) => b[1] - a[1]);
-  const topModel = sortedModels[0];
-
-  // Streaks
-  let currentStreak = 0;
-  let longestStreak = 0;
   const today = new Date();
-  const todayStr = today.toISOString().slice(0, 10);
-
-  // Current streak: only count a run that includes today.
-  if (dateSet.has(todayStr)) {
-    for (let i = 0; ; i++) {
-      const d = new Date(today);
-      d.setDate(d.getDate() - i);
-      const dStr = d.toISOString().slice(0, 10);
-      if (dateSet.has(dStr)) currentStreak++;
-      else break;
+  let currentStreak = 0;
+  if (dateSet.has(today.toISOString().slice(0, 10))) {
+    for (let back = 0; ; back++) {
+      const cursor = new Date(today);
+      cursor.setDate(cursor.getDate() - back);
+      if (!dateSet.has(cursor.toISOString().slice(0, 10))) break;
+      currentStreak++;
     }
   }
-
-  // Longest streak
-  let current = 0;
-  for (let i = 0; i < dates.length; i++) {
-    if (i === 0) {
-      current = 1;
+  let longestStreak = 0;
+  let run = 0;
+  for (let index = 0; index < dates.length; index++) {
+    if (index === 0) {
+      run = 1;
     } else {
-      const prev = new Date(dates[i - 1]);
-      const curr = new Date(dates[i]);
-      const diffDays = (curr - prev) / (1000 * 60 * 60 * 24);
-      if (diffDays === 1) {
-        current++;
-      } else {
-        current = 1;
-      }
+      const gap = Date.parse(`${dates[index]}T00:00:00Z`) - Date.parse(`${dates[index - 1]}T00:00:00Z`);
+      run = gap === DAY_MS ? run + 1 : 1;
     }
-    longestStreak = Math.max(longestStreak, current);
+    if (run > longestStreak) longestStreak = run;
   }
 
-  const sources = [...new Set(records.map(r => r.source))];
-
-  const dailyMap = {};
-  for (const r of records) {
-    if (!dailyMap[r.date]) dailyMap[r.date] = { date: r.date, total: 0, byModel: {} };
-    dailyMap[r.date].total += r.totalTokens;
-    const model = normalizeModel(r.model || "unknown");
-    dailyMap[r.date].byModel[model] = (dailyMap[r.date].byModel[model] || 0) + r.totalTokens;
-  }
-  const daily = Object.values(dailyMap).sort((a, b) => a.date.localeCompare(b.date));
+  let sessions = 0;
+  for (const day of days.values()) sessions += day.size;
 
   return {
-    totalTokens,
-    totalInput,
-    totalOutput,
-    totalCacheRead,
-    totalCacheCreation,
-    activeDays,
+    generatedAt: new Date().toISOString(),
+    totals,
     sessions,
-    topModel: topModel?.[0] || "N/A",
-    topModelTokens: topModel?.[1] || 0,
-    currentStreak,
-    longestStreak,
-    sources,
-    daily,
+    activeDays: dates.length,
+    topModel: top ? top[0] : "N/A",
+    topModelTokens: top ? top[1] : 0,
     firstDate: dates[0] || "",
     lastDate: dates[dates.length - 1] || "",
+    currentStreak,
+    longestStreak,
+    sources: [...sources.values()].sort((a, b) => b.tokens - a.tokens),
+    models: [...models.values()].sort((a, b) => b.tokens - a.tokens),
+    daily: dates.map((date) => ({
+      date,
+      points: [...days.get(date)].map(([key, tokens]) => {
+        const split = key.indexOf("\u0000");
+        return { source: key.slice(0, split), model: key.slice(split + 1), tokens };
+      }),
+    })),
   };
 }
 
-function emptyStats() {
-  return {
-    totalTokens: 0, totalInput: 0, totalOutput: 0,
-    totalCacheRead: 0, totalCacheCreation: 0,
-    activeDays: 0, sessions: 0,
-    topModel: "N/A", topModelTokens: 0,
-    currentStreak: 0, longestStreak: 0,
-    sources: [], daily: [],
-    firstDate: "", lastDate: "",
-  };
+/**
+ * Full pipeline: read every source, then collapse to the dashboard payload.
+ */
+export async function buildDashboard() {
+  const { records } = await aggregateAllData();
+  return summarizeDashboard(records);
 }

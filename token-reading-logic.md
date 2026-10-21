@@ -297,6 +297,47 @@ cacheHitRate = cacheReadTokens / (inputTokens + cacheReadTokens)
 
 ---
 
+## 配信（API とキャッシュ）
+
+クライアントは**生レコードを受け取らない**。サーバが `(date, source, model)` で集約した要約だけを返す。
+
+```text
+GET /api/dashboard          → 要約スナップショット（200）
+GET /api/refresh            → 同期待ちで再生成して返す（手動用）
+```
+
+要約の形:
+
+```jsonc
+{
+  "generatedAt": "ISO",
+  "totals": { "tokens": 0, "input": 0, "output": 0, "cacheRead": 0, "cacheCreation": 0 },
+  "sessions": 0, "activeDays": 0, "topModel": "…", "topModelTokens": 0,
+  "firstDate": "YYYY-MM-DD", "lastDate": "YYYY-MM-DD",
+  "currentStreak": 0, "longestStreak": 0,
+  "sources": [ { "source": "codex", "tokens": 0, "input": 0, "output": 0, "cacheRead": 0, "cacheCreation": 0 } ],
+  "models":  [ { "model": "gpt-5.6-luna", "source": "codex", "tokens": 0, "input": 0, "output": 0, "cacheRead": 0, "cacheCreation": 0 } ],
+  "daily":   [ { "date": "YYYY-MM-DD", "points": [ { "source": "codex", "model": "gpt-5.6-luna", "tokens": 0 } ] } ]
+}
+```
+
+- `models` は `(source, model)` 単位。クライアントはハーネス絞り込みをこの行のフィルタで行うので、ソースを隠しても内訳が正しく引き算される
+- `daily[].points` も `(source, model)` 単位。日別グラフのソース絞り込みに必要
+- 実測（93日 / 33モデル行 / 188ポイント）: **20,284 バイト**、brotli で **2,862 バイト**。旧構成は 7,646,984 バイト（brotli 602,473）だったので約 380 分の 1
+
+### 再生成は子プロセス + キャッシュファイル
+
+集約は数百ファイルの同期読みと ccusage の spawn で **6〜18 秒**かかり、その間イベントループを占有する。そのため:
+
+- `server/refresh-dashboard.js` を**子プロセス**で起動して集約させる（HTTP は一切ブロックされない）
+- 結果は `~/.cache/tokenmaxxing/dashboard.json` に**原子的に**書く（`tmp` → `rename`）
+- `server/index.js` はメモリ上のスナップショットを返すだけ。TTL (`REFRESH_INTERVAL_MS`, 既定 60s) を過ぎていたら返しつつ裏で再生成を開始する（stale-while-revalidate）
+- 起動時はキャッシュを読んで**即座に配信**し、再生成は背景で走らせる。キャッシュが無い初回だけは生成完了まで待つ（503 を返してクライアントが再試行する）
+
+実測: キャッシュありの起動では再生成中でも **1.5〜7ms** で応答。キャッシュ無しの初回のみ数秒待つ。
+
+---
+
 ## ストレージ (D1)
 
 集約後のデータは Cloudflare D1 の `usage_days` テーブルに upsert される:
