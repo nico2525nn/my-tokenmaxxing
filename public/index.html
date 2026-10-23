@@ -54,6 +54,26 @@ button{font:inherit;color:inherit}
 .range-btn:hover{color:var(--fg)}
 .range-btn.active{background:var(--fg);color:var(--bg)}
 .range-hint{color:var(--muted-fg);font-family:var(--mono);font-size:.625rem;white-space:nowrap}
+.stats-period{display:flex;align-items:center;justify-content:flex-end;gap:1rem;flex-wrap:wrap;padding:.6rem 1.25rem;background:var(--bg);border-bottom:1px solid var(--border)}
+.custom-range{display:flex;flex-basis:100%;justify-content:flex-end;align-items:center;gap:.4rem}
+.custom-range.hidden{display:none}
+.custom-range input[type="date"]{padding:.25rem .4rem;background:var(--bg);border:1px solid var(--border);color:var(--fg);font-family:var(--mono);font-size:.625rem;color-scheme:dark}
+.custom-range input[type="date"]:focus{outline:none;border-color:var(--muted-fg)}
+.range-sep{color:var(--muted-fg);font-size:.625rem}
+.custom-range{position:relative}
+.cal-pop{position:absolute;top:calc(100% + 5px);z-index:30;min-width:250px;padding:.65rem .7rem;background:var(--card);border:1px solid var(--border);box-shadow:0 8px 24px oklch(0% 0 0 / .45)}
+.cal-head{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.5rem}
+.cal-title{font-family:var(--mono);font-size:.6875rem}
+.cal-nav{padding:.15rem .45rem;border:1px solid var(--border);background:var(--bg);color:var(--muted-fg);font-family:var(--mono);font-size:.625rem;cursor:pointer}
+.cal-nav:hover{color:var(--fg);background:var(--muted)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,2rem);gap:2px}
+.cal-dow{color:var(--muted-fg);font-family:var(--mono);font-size:.5625rem;text-align:center;padding:.15rem 0}
+.cal-day{padding:.28rem 0;border:0;background:none;color:var(--fg);font-family:var(--mono);font-size:.625rem;text-align:center;cursor:pointer}
+.cal-day:hover{background:var(--muted)}
+.cal-day.dim{visibility:hidden}
+.cal-day.today{outline:1px solid var(--muted-fg);outline-offset:-1px}
+.cal-day.in-range{background:var(--muted)}
+.cal-day.picked{background:var(--fg);color:var(--bg)}
 .chart-layout{display:flex;align-items:center;gap:1.5rem;margin-top:1rem}
 .chart-canvas{min-width:0;flex:1}
 canvas#tokenChart{display:block;width:100%;height:280px}
@@ -207,6 +227,33 @@ let ALL_STATS = null;
 let hasLoaded = false;
 const hiddenModels = new Set();
 const hiddenSources = new Set();
+let statsPeriod = '30';
+let statsCustom = {from:'', to:''};
+
+function saveStatsPeriod() {
+  try {
+    localStorage.setItem('tmx_stats_period', statsPeriod);
+    localStorage.setItem('tmx_stats_custom', JSON.stringify(statsCustom));
+  } catch {}
+}
+
+function loadStatsPeriod() {
+  try {
+    const saved = localStorage.getItem('tmx_stats_period');
+    if (saved === '7' || saved === '30' || saved === '90' || saved === 'all' || saved === 'custom') {
+      statsPeriod = saved;
+    }
+    const custom = JSON.parse(localStorage.getItem('tmx_stats_custom') || '{}');
+    if (/^\d{4}-\d{2}-\d{2}$/.test(custom.from || '') && /^\d{4}-\d{2}-\d{2}$/.test(custom.to || '')) {
+      statsCustom = {from:custom.from, to:custom.to};
+    } else {
+      statsCustom = {from:'', to:''};
+    }
+  } catch {
+    statsPeriod = '30';
+    statsCustom = {from:'', to:''};
+  }
+}
 
 function getModelColor(m) {
   const key = m || 'unknown';
@@ -265,6 +312,21 @@ function addDays(value, amount) {
 function daySpan(first, last) {
   if (!first || !last) return 0;
   return Math.round((dateFromIso(last) - dateFromIso(first)) / 86400000) + 1;
+}
+// DeepSeek Platform 風: 全体統計の期間絞り込み。null は無制限。
+function statsPeriodWindow(days) {
+  if (statsPeriod === 'custom') {
+    if (statsCustom.from && statsCustom.to && statsCustom.from <= statsCustom.to) {
+      return {from:statsCustom.from, to:statsCustom.to};
+    }
+    return null;
+  }
+  if (!days || !days.length) return null;
+  const span = parseInt(statsPeriod, 10);
+  if (statsPeriod === 'all' || !isFinite(span) || span <= 0) return null;
+  const last = days[days.length - 1].date;
+  const first = days[0].date;
+  return {from:addDays(last, -(Math.min(span, daySpan(first, last)) - 1)), to:last};
 }
 function niceMax(value) {
   if (!value || value <= 0) return 1;
@@ -343,48 +405,68 @@ function streakStats(daily) {
 // payload is already grouped by (date, source, model), so this walks a few
 // hundred entries rather than every raw record.
 function buildView(summary) {
-  if (!summary) return Object.assign({}, EMPTY_STATS);
+  if (!summary) return Object.assign({}, EMPTY_STATS, {sourceRows:[]});
   const visible = new Set();
   for (const row of summary.sources || []) {
     if (!hiddenSources.has(row.source)) visible.add(row.source);
   }
+  const win = statsPeriodWindow(summary.daily || []);
+  const inWin = function(date) {
+    if (!win || !win.from || !win.to) return true;
+    return date >= win.from && date <= win.to;
+  };
 
   const modelMap = new Map();
+  const sourceMap = new Map();
   const dailyMap = new Map();
   let totalTokens = 0, totalInput = 0, totalOutput = 0, totalCacheRead = 0, totalCacheCreation = 0;
-
-  for (const row of summary.models || []) {
-    if (!visible.has(row.source)) continue;
-    totalTokens += row.tokens;
-    totalInput += row.input;
-    totalOutput += row.output;
-    totalCacheRead += row.cacheRead;
-    totalCacheCreation += row.cacheCreation;
-    const slot = modelMap.get(row.model) || {model: row.model, tokens: 0, input: 0, output: 0, cacheRead: 0, cacheCreation: 0};
-    slot.tokens += row.tokens;
-    slot.input += row.input;
-    slot.output += row.output;
-    slot.cacheRead += row.cacheRead;
-    slot.cacheCreation += row.cacheCreation;
-    modelMap.set(row.model, slot);
-  }
-
   let sessions = 0;
+
+  const bump = function(slot, tokens, input, output, cacheRead, cacheCreation) {
+    slot.tokens += tokens;
+    slot.input += input;
+    slot.output += output;
+    slot.cacheRead += cacheRead;
+    slot.cacheCreation += cacheCreation;
+  };
+
+  // 一度だけ daily を走査し、期間×ソース両軸でモデル・日別・合計を同時に作る。
   for (const day of summary.daily || []) {
+    if (!inWin(day.date)) continue;
     let dayTotal = 0;
     let byModel = null;
     for (const point of day.points) {
       if (!visible.has(point.source)) continue;
+      const tokens = point.tokens || 0;
+      if (tokens <= 0) continue;
+      const input = point.input || 0;
+      const output = point.output || 0;
+      const cacheRead = point.cacheRead || 0;
+      const cacheCreation = point.cacheCreation || 0;
       sessions++;
-      dayTotal += point.tokens;
+      dayTotal += tokens;
+      totalTokens += tokens;
+      totalInput += input;
+      totalOutput += output;
+      totalCacheRead += cacheRead;
+      totalCacheCreation += cacheCreation;
       if (!byModel) byModel = {};
-      byModel[point.model] = (byModel[point.model] || 0) + point.tokens;
+      byModel[point.model] = (byModel[point.model] || 0) + tokens;
+      let slot = modelMap.get(point.model);
+      if (!slot) modelMap.set(point.model, slot = {model: point.model, tokens: 0, input: 0, output: 0, cacheRead: 0, cacheCreation: 0});
+      bump(slot, tokens, input, output, cacheRead, cacheCreation);
+      let srow = sourceMap.get(point.source);
+      if (!srow) sourceMap.set(point.source, srow = {source: point.source, tokens: 0, input: 0, output: 0, cacheRead: 0, cacheCreation: 0});
+      bump(srow, tokens, input, output, cacheRead, cacheCreation);
     }
     if (dayTotal > 0) dailyMap.set(day.date, {date: day.date, total: dayTotal, byModel: byModel || {}});
   }
 
   const daily = [...dailyMap.values()].sort(function(a, b) { return a.date.localeCompare(b.date); });
   const modelRows = [...modelMap.values()].sort(function(a, b) { return b.tokens - a.tokens; });
+  const sourceRows = (summary.sources || []).map(function(row) {
+    return sourceMap.get(row.source) || {source: row.source, tokens: 0, input: 0, output: 0, cacheRead: 0, cacheCreation: 0};
+  }).sort(function(a, b) { return b.tokens - a.tokens; });
   const streak = streakStats(daily);
   const stats = Object.assign({}, EMPTY_STATS, {
     totalTokens, totalInput, totalOutput, totalCacheRead, totalCacheCreation,
@@ -392,6 +474,7 @@ function buildView(summary) {
     sessions,
     daily,
     modelRows,
+    sourceRows,
     firstDate: daily.length ? daily[0].date : '',
     lastDate: daily.length ? daily[daily.length - 1].date : '',
     currentStreak: streak.current,
@@ -410,6 +493,10 @@ function renderAll() {
   renderDash();
   renderBreakdown();
   drawChart();
+  const win = statsPeriodWindow(DASH ? DASH.daily || [] : []);
+  const statsLabel = document.getElementById('statsRangeLabel');
+  if (statsLabel) statsLabel.textContent = win ? win.from + ' – ' + win.to : 'all time';
+  bindStatsCustomRange();
   const footer = document.getElementById('footerRange');
   if (footer) footer.textContent = ALL_STATS.firstDate ? ALL_STATS.firstDate + ' – ' + ALL_STATS.lastDate : 'No token data';
 }
@@ -417,8 +504,7 @@ function renderAll() {
 function renderDash() {
   const app = document.getElementById('app');
   const stats = ALL_STATS;
-  const sourceRows = (DASH && DASH.sources ? DASH.sources.slice() : []).filter(function(row) { return row.tokens > 0; }).sort(function(a,b) { return b.tokens - a.tokens; });
-  const sourceMarkup = sourceRows.length ? sourceRows.map(function(row) {
+  const sourceMarkup = stats.sourceRows.length ? stats.sourceRows.map(function(row) {
     const source = row.source;
     const off = hiddenSources.has(source) ? ' off' : '';
     const rate = cacheHitRate(row.input, row.cacheRead);
@@ -426,6 +512,7 @@ function renderDash() {
   }).join('') : '<p class="empty-detail">No sources detected</p>';
   app.innerHTML = '<div id="dashboard"></div>'
     + '<header class="profile-header"><div class="profile-info"><img src="' + escapeHtml(avatarUrl) + '" alt="' + escapeHtml(userName) + ' avatar" class="avatar" onerror="this.style.display=\'none\'"><h1 class="username">' + escapeHtml(userName) + '</h1></div><div class="profile-actions"><button class="profile-action" onclick="shareProfile(this)">Share</button><button class="profile-action" onclick="showEdit()">Edit profile</button></div></header>'
+    + '<div class="stats-period"><div class="section-actions"><span class="range-hint" id="statsRangeLabel"></span><div class="range-group" role="group" aria-label="Stats period"><button class="range-btn' + (statsPeriod === '7' ? ' active' : '') + '" onclick="setStatsPeriod(' + inlineArg('7') + ')">7D</button><button class="range-btn' + (statsPeriod === '30' ? ' active' : '') + '" onclick="setStatsPeriod(' + inlineArg('30') + ')">30D</button><button class="range-btn' + (statsPeriod === '90' ? ' active' : '') + '" onclick="setStatsPeriod(' + inlineArg('90') + ')">90D</button><button class="range-btn' + (statsPeriod === 'all' ? ' active' : '') + '" onclick="setStatsPeriod(' + inlineArg('all') + ')">ALL</button><button class="range-btn' + (statsPeriod === 'custom' ? ' active' : '') + '" onclick="setStatsPeriod(' + inlineArg('custom') + ')">CUSTOM</button></div></div><div class="custom-range' + (statsPeriod === 'custom' ? '' : ' hidden') + '" id="customRange"><input type="date" id="customFrom" aria-label="From" value="' + escapeHtml(statsCustom.from) + '"><span class="range-sep">–</span><input type="date" id="customTo" aria-label="To" value="' + escapeHtml(statsCustom.to) + '"></div></div>'
     + '<div class="stats-grid">'
     + '<div class="stat-card"><p class="stat-label">Total tokens</p><p class="stat-value">' + fmt(stats.totalTokens) + '</p></div>'
     + '<div class="stat-card"><p class="stat-label">Sessions</p><p class="stat-value">' + stats.sessions + '</p></div>'
@@ -493,13 +580,162 @@ const CHART_RANGE_DAYS = 30;
 const CHART_RANGE_MIN_DAYS = 7;
 let chartRange = '30d';
 
+function setStatsPeriod(period) {
+  if (period !== '7' && period !== '30' && period !== '90' && period !== 'all' && period !== 'custom') return;
+  if (statsPeriod === period) return;
+  statsPeriod = period;
+  if (period === 'custom' && (!statsCustom.from || !statsCustom.to)) {
+    const days = DASH ? DASH.daily || [] : [];
+    if (days.length) {
+      statsCustom = {from:days[days.length - 1].date, to:days[days.length - 1].date};
+    }
+  }
+  saveStatsPeriod();
+  renderAll();
+}
+
+function applyStatsCustomRange() {
+  const from = document.getElementById('customFrom');
+  const to = document.getElementById('customTo');
+  if (!from || !to || !from.value || !to.value || from.value > to.value) return;
+  if (from.value !== statsCustom.from || to.value !== statsCustom.to) {
+    statsCustom.from = from.value;
+    statsCustom.to = to.value;
+    saveStatsPeriod();
+  }
+  statsPeriod = 'custom';
+  renderAll();
+}
+
+let calTarget = 'from';
+let calCursor = '';
+
+function calOpenDays() {
+  const days = DASH && DASH.daily ? DASH.daily.map(function(d) { return d.date; }) : [];
+  return {first:days.length ? days[0] : isoDate(new Date()), last:days.length ? days[days.length - 1] : isoDate(new Date())};
+}
+
+function fmtMonthLabel(value) {
+  const parts = value.split('-').map(Number);
+  return parts[0] + '-' + String(parts[1]).padStart(2, '0');
+}
+
+function renderCalPop() {
+  const host = document.getElementById('customRange');
+  if (!host) return;
+  let pop = host.querySelector('.cal-pop');
+  if (!pop) {
+    pop = document.createElement('div');
+    pop.className = 'cal-pop';
+    host.appendChild(pop);
+  }
+  const bounds = calOpenDays();
+  if (!calCursor || calCursor < bounds.first.slice(0, 7) || calCursor > bounds.last.slice(0, 7)) {
+    const seed = calTarget === 'to' ? statsCustom.to : statsCustom.from;
+    calCursor = /^20\d\d-\d\d-\d\d$/.test(seed || '') ? seed.slice(0, 7) : statsCustom.to ? statsCustom.to.slice(0, 7) : statsCustom.from ? statsCustom.from.slice(0, 7) : bounds.last.slice(0, 7);
+  }
+  const parts = calCursor.split('-').map(Number);
+  const monthFirst = new Date(Date.UTC(parts[0], parts[1] - 1, 1));
+  const leadBlanks = monthFirst.getUTCDay();
+  const daysInMonth = new Date(Date.UTC(parts[0], parts[1], 0)).getUTCDate();
+  const today = isoDate(new Date());
+  let html = '<div class="cal-head"><button class="cal-nav" data-cal-nav="-1" aria-label="Previous month">‹</button><span class="cal-title">' + fmtMonthLabel(calCursor + '-01') + '</span><button class="cal-nav" data-cal-nav="1" aria-label="Next month">›</button></div><div class="cal-grid">';
+  ['S','M','T','W','T','F','S'].forEach(function(d) { html += '<span class="cal-dow">' + d + '</span>'; });
+  for (let blank = 0; blank < leadBlanks; blank++) html += '<span class="cal-day dim">·</span>';
+  for (let day = 1; day <= daysInMonth; day++) {
+    const iso = calCursor + '-' + String(day).padStart(2, '0');
+    let cls = 'cal-day';
+    if (iso === today) cls += ' today';
+    const from = statsCustom.from, to = statsCustom.to;
+    if (iso === from || iso === to) cls += ' picked';
+    else if (from && to && iso > from && iso < to) cls += ' in-range';
+    html += '<button class="' + cls + '" data-cal-day="' + iso + '">' + day + '</button>';
+  }
+  html += '</div>';
+  pop.innerHTML = html;
+  pop.querySelectorAll('[data-cal-nav]').forEach(function(btn) {
+    btn.onclick = function() {
+      const next = new Date(Date.UTC(parts[0], parts[1] - 1 + Number(btn.dataset.calNav), 1));
+      calCursor = isoDate(next).slice(0, 7);
+      renderCalPop();
+    };
+  });
+  pop.querySelectorAll('[data-cal-day]').forEach(function(btn) {
+    btn.onclick = function() { calPickDay(btn.dataset.calDay); };
+  });
+}
+
+function calPickDay(iso) {
+  if (calTarget === 'from') {
+    statsCustom.from = iso;
+    if (statsCustom.to && statsCustom.to < iso) statsCustom.to = iso;
+    calTarget = 'to';
+  } else {
+    statsCustom.to = iso;
+    if (statsCustom.from && statsCustom.from > iso) statsCustom.from = iso;
+    calTarget = 'from';
+  }
+  saveStatsPeriod();
+  const fromInput = document.getElementById('customFrom');
+  const toInput = document.getElementById('customTo');
+  if (fromInput) fromInput.value = statsCustom.from;
+  if (toInput) toInput.value = statsCustom.to;
+  statsPeriod = 'custom';
+  closeCalPop();
+  renderAll();
+}
+
+function closeCalPop() {
+  const pop = document.querySelector('#customRange .cal-pop');
+  if (pop) pop.remove();
+}
+
+function bindStatsCustomRange() {
+  for (const id of ['customFrom', 'customTo']) {
+    const input = document.getElementById(id);
+    if (!input || input.dataset.bound) continue;
+    input.dataset.bound = '1';
+    input.addEventListener('focus', function() {
+      calTarget = id === 'customTo' ? 'to' : 'from';
+      const seed = calTarget === 'to' ? statsCustom.to : statsCustom.from;
+      if (/^20\d\d-\d\d-\d\d$/.test(seed || '')) calCursor = seed.slice(0, 7);
+      renderCalPop();
+    });
+    input.addEventListener('change', applyStatsCustomRange);
+  }
+  if (!document.body.dataset.calBound) {
+    document.body.dataset.calBound = '1';
+    document.addEventListener('pointerdown', function(event) {
+      if (!event.target.closest('#customRange')) closeCalPop();
+    });
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') closeCalPop();
+    });
+  }
+}
+// グラフ用の全期間日別。統計の期間フィルタとは独立で、ハーネス絞り込みのみ反映。
+function chartDaily(fullDaily, visible) {
+  const out = [];
+  for (const day of fullDaily || []) {
+    let total = 0;
+    const byModel = {};
+    for (const point of day.points) {
+      if (!visible.has(point.source) || !(point.tokens > 0)) continue;
+      total += point.tokens;
+      byModel[point.model] = (byModel[point.model] || 0) + point.tokens;
+    }
+    if (total > 0) out.push({date: day.date, total, byModel});
+  }
+  return out.sort(function(a, b) { return a.date.localeCompare(b.date); });
+}
+
 function setChartRange(range) {
   if (range !== 'all' && range !== '30d') return;
   if (chartRange === range) return;
   chartRange = range;
   pinnedBucket = -1;
   hideChartTip();
-  const buttons = document.querySelectorAll('.range-btn');
+  const buttons = document.querySelectorAll('.dashboard-section .range-btn');
   for (const button of buttons) {
     const active = button.textContent.trim().toLowerCase() === range;
     button.classList.toggle('active', active);
@@ -618,7 +854,11 @@ function drawChart() {
   const canvas = document.getElementById('tokenChart');
   const legend = document.getElementById('chartLegend');
   if (!canvas || !legend) return;
-  const daily = ALL_STATS ? ALL_STATS.daily : [];
+  const visible = new Set();
+  for (const row of DASH && DASH.sources ? DASH.sources : []) {
+    if (!hiddenSources.has(row.source)) visible.add(row.source);
+  }
+  const daily = chartDaily(DASH ? DASH.daily || [] : [], visible);
   const window_ = chartWindow(daily, chartRange);
   const calendar = window_ ? makeCalendarBuckets(daily, window_.from, window_.to) : {buckets:[],span:0,step:1};
   const buckets = calendar.buckets;
@@ -776,6 +1016,7 @@ async function loadData() {
   }
 }
 
+loadStatsPeriod();
 loadData();
 setInterval(loadData, 60000);
 window.addEventListener('resize', function() { clearTimeout(window.__chartResize); window.__chartResize = setTimeout(function() { if (ALL_STATS) drawChart(); }, 150); });

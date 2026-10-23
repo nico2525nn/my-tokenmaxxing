@@ -704,7 +704,13 @@ export function summarizeDashboard(records) {
 
     let day = days.get(date);
     if (!day) days.set(date, day = new Map());
-    day.set(modelKey, (day.get(modelKey) || 0) + tokens);
+    let point = day.get(modelKey);
+    if (!point) {
+      day.set(modelKey, point = {
+        source, model, tokens: 0, input: 0, output: 0, cacheRead: 0, cacheCreation: 0,
+      });
+    }
+    bump(point, tokens, input, output, cacheRead, cacheCreation);
   }
 
   const dates = [...days.keys()].sort();
@@ -755,10 +761,7 @@ export function summarizeDashboard(records) {
     models: [...models.values()].sort((a, b) => b.tokens - a.tokens),
     daily: dates.map((date) => ({
       date,
-      points: [...days.get(date)].map(([key, tokens]) => {
-        const split = key.indexOf("\u0000");
-        return { source: key.slice(0, split), model: key.slice(split + 1), tokens };
-      }),
+      points: [...days.get(date).values()].sort((a, b) => b.tokens - a.tokens),
     })),
   };
 }

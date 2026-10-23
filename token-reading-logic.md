@@ -324,7 +324,20 @@ cacheHitRate = cacheReadTokens / (inputTokens + cacheReadTokens)
 
 ---
 
+**ポイント**: 各ポイントはトークン内訳（`input` / `output` / `cacheRead` / `cacheCreation` と合計）を持つ。クライアントの期間フィルタはこのバケット単位で行うため、日付もモデルもハーネスも、期間で切り替えても再集計不要である。
+
+## 期間フィルタ（DeepSeek Platform 風）
+
+- 統計バー上の `7D / 30D / 90D / ALL / CUSTOM` が統計カード・Harness・Model Breakdown・フッター範囲に効く
+- 日別グラフ（30D / ALL）は独立して動く。期間フィルタの影響を受けない
+- プリセットは快取の最終日から遡る N 日間。CUSTOM は自前カレンダー（入力欄下 5px）か直接入力で from/to を指定
+- 選択は `localStorage` に保存され、再訪時に復元される
+- モデル内訳の `Share` は選択期間内合計に対する割合。`Cache` は選択期間の `cacheRead / (input + cacheRead)`
+
+---
+
 ## 配信（API とキャッシュ）
+
 
 クライアントは**生レコードを受け取らない**。サーバが `(date, source, model)` で集約した要約だけを返す。
 
