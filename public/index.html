@@ -191,15 +191,30 @@ canvas#tokenChart.active{cursor:pointer}
   .chart-key{width:100%;flex-basis:auto;border-left:0;border-top:1px solid hsl(var(--border));padding-left:0;padding-top:1rem}
   .chart-key-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:1rem}
 }
+.breakdown-sub{display:none}
 @media(max-width:640px){
+  .breakdown-sub{display:block;margin-top:.2rem;font-family:"Geist Mono",monospace;font-size:.6875rem;color:hsl(var(--muted-foreground));white-space:nowrap}
   .page{padding:1rem}
   .topbar-inner{padding:0 1rem}
+  .page-head{flex-direction:column;align-items:stretch;gap:.75rem}
+  .period-picker{width:100%}
+  .period-picker .range-group{flex:1;justify-content:space-between}
+  .period-picker .range-btn{flex:1;text-align:center;padding:.35rem .25rem}
+  .custom-range{left:0;right:0;justify-content:center}
+  .cal-pop{left:50%;right:auto;transform:translateX(-50%);min-width:min(19rem,86vw)}
+  .cal-grid{grid-template-columns:repeat(7,minmax(0,1fr))}
   .kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem}
+  .kpi-body{padding:.9rem .8rem}
   .stat-num{font-size:1.125rem;line-height:1.5rem}
+  .stat-sub{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.35;min-height:2.025rem}
   .custom-range input[type="date"]{font-size:16px}
   .hide-sm{display:none}
-  .progress{width:3rem}
-  .cell-share{grid-template-columns:3rem 3.8ch}
+  .data-table thead th{padding:.55rem .5rem}
+  .data-table td{padding:.5rem}
+  .table-scroll{margin:0 -1rem;padding:0 1rem}
+  .table-scroll .data-table{min-width:0;table-layout:fixed}
+  .data-table td.num{width:5.5rem}
+  .data-table td:first-child,.data-table th:first-child{left:-1rem}
   .card-content{padding:1rem}
   canvas#tokenChart{height:240px}
   .chart-empty{height:240px}
@@ -428,14 +443,14 @@ function renderBreakdown() {
   }
   if (breakTab === 'models') {
     const rows = ALL_STATS.modelRows || [];
-    wrap.innerHTML = '<div class="table-scroll"><table class="data-table"><thead><tr><th>Model</th><th class="num">Tokens</th><th class="num-r">Share</th><th class="num-r">Cache</th><th class="num hide-sm">In / Out</th></tr></thead><tbody>' + rows.map(function(row) {
+    wrap.innerHTML = '<div class="table-scroll"><table class="data-table"><thead><tr><th>Model</th><th class="num">Tokens</th><th class="num-r hide-sm">Share</th><th class="num-r hide-sm">Cache</th><th class="num hide-sm">In / Out</th></tr></thead><tbody>' + rows.map(function(row) {
       const off = hiddenModels.has(row.model) ? ' off' : '';
       const share = (row.tokens / ALL_STATS.totalTokens * 100).toFixed(1);
       return '<tr class="' + off.trim() + '" data-model="' + escapeHtml(row.model) + '" title="' + escapeHtml(row.model) + ' — cache hit ' + escapeHtml(cacheHitText(row.input, row.cacheRead)) + ' of ' + escapeHtml(fmt(row.input + row.cacheRead)) + ' prompt tokens">'
-        + '<td><span class="cell-name"><span class="dot" style="background:' + getModelColor(row.model) + '"></span><span>' + escapeHtml(row.model) + '</span></span></td>'
+        + '<td><span class="cell-name"><span class="dot" style="background:' + getModelColor(row.model) + '"></span><span>' + escapeHtml(row.model) + '</span></span><span class="breakdown-sub sm-only">' + share + '% · cache ' + escapeHtml(cacheHitText(row.input, row.cacheRead)) + '</span></td>'
         + '<td class="num">' + fmt(row.tokens) + '</td>'
-        + '<td class="num-r"><span class="cell-share"><span class="progress"><span class="progress-bar" style="width:' + share + '%;background:' + getModelColor(row.model) + '"></span></span><span class="share-pct">' + share + '%</span></span></td>'
-        + '<td class="num">' + escapeHtml(cacheHitText(row.input, row.cacheRead)) + '</td>'
+        + '<td class="num-r hide-sm"><span class="cell-share"><span class="progress"><span class="progress-bar" style="width:' + share + '%;background:' + getModelColor(row.model) + '"></span></span><span class="share-pct">' + share + '%</span></span></td>'
+        + '<td class="num hide-sm">' + escapeHtml(cacheHitText(row.input, row.cacheRead)) + '</td>'
         + '<td class="num hide-sm cell-muted">' + fmt(row.input) + ' / ' + fmt(row.output) + '</td>'
         + '</tr>';
     }).join('') + '</tbody></table></div>';
@@ -445,14 +460,14 @@ function renderBreakdown() {
   } else {
     const rows = ALL_STATS.sourceRows || [];
     const total = rows.reduce(function(s, r) { return s + r.tokens; }, 0) || 1;
-    wrap.innerHTML = '<div class="table-scroll"><table class="data-table"><thead><tr><th>Harness</th><th class="num">Tokens</th><th class="num-r">Share</th><th class="num-r">Cache</th><th class="num hide-sm">In / Out</th></tr></thead><tbody>' + rows.map(function(row) {
+    wrap.innerHTML = '<div class="table-scroll"><table class="data-table"><thead><tr><th>Harness</th><th class="num">Tokens</th><th class="num-r hide-sm">Share</th><th class="num-r hide-sm">Cache</th><th class="num hide-sm">In / Out</th></tr></thead><tbody>' + rows.map(function(row) {
       const off = hiddenSources.has(row.source) ? ' off' : '';
       const share = (row.tokens / total * 100).toFixed(1);
       return '<tr class="' + off.trim() + '" data-source="' + escapeHtml(row.source) + '">'
-        + '<td><span class="cell-name"><span class="dot" style="background:' + getSourceColor(row.source) + '"></span><span>' + escapeHtml(sourceLabel(row.source)) + '</span></span></td>'
+        + '<td><span class="cell-name"><span class="dot" style="background:' + getSourceColor(row.source) + '"></span><span>' + escapeHtml(sourceLabel(row.source)) + '</span></span><span class="breakdown-sub sm-only">' + share + '% · cache ' + escapeHtml(cacheHitText(row.input, row.cacheRead)) + '</span></td>'
         + '<td class="num">' + fmt(row.tokens) + '</td>'
-        + '<td class="num-r"><span class="cell-share"><span class="progress"><span class="progress-bar" style="width:' + share + '%;background:' + getSourceColor(row.source) + '"></span></span><span class="share-pct">' + share + '%</span></span></td>'
-        + '<td class="num">' + escapeHtml(cacheHitText(row.input, row.cacheRead)) + '</td>'
+        + '<td class="num-r hide-sm"><span class="cell-share"><span class="progress"><span class="progress-bar" style="width:' + share + '%;background:' + getSourceColor(row.source) + '"></span></span><span class="share-pct">' + share + '%</span></span></td>'
+        + '<td class="num hide-sm">' + escapeHtml(cacheHitText(row.input, row.cacheRead)) + '</td>'
         + '<td class="num hide-sm cell-muted">' + fmt(row.input) + ' / ' + fmt(row.output) + '</td>'
         + '</tr>';
     }).join('') + '</tbody></table></div>';
