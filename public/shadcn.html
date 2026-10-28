@@ -61,28 +61,26 @@ a{color:inherit;text-decoration:none}
 .topbar{position:sticky;top:0;z-index:50;border-bottom:1px solid hsl(var(--border));background:hsl(var(--background) / .85);backdrop-filter:blur(12px)}
 .topbar-inner{max-width:80rem;margin:0 auto;height:3.5rem;padding:0 1.5rem;display:flex;align-items:center;gap:1.5rem}
 .brand{display:flex;align-items:center;gap:.6rem;font-size:.875rem;font-weight:600;letter-spacing:-.01em}
-.brand-mark{width:1.5rem;height:1.5rem;border-radius:.375rem;background:hsl(var(--primary));color:hsl(var(--primary-foreground));display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700}
-.topnav{display:flex;align-items:center;gap:.25rem;margin-left:1rem}
-.topnav a{padding:.45rem .75rem;border-radius:calc(var(--radius) - 2px);font-size:.875rem;font-weight:500;color:hsl(var(--muted-foreground))}
-.topnav a:hover{color:hsl(var(--foreground));background:hsl(var(--accent))}
-.topnav a.active{color:hsl(var(--foreground));background:hsl(var(--accent))}
+.brand-mark{width:1.5rem;height:1.5rem;border-radius:.375rem;background:hsl(var(--primary));color:hsl(var(--primary-foreground));display:flex;align-items:center;justify-content:center}
+.brand-mark svg{display:block}
 .topbar-right{margin-left:auto;display:flex;align-items:center;gap:.5rem}
 .page{max-width:80rem;margin:0 auto;padding:1.5rem}
 .page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:1.25rem}
 .page-title{font-size:1.5rem;font-weight:700;letter-spacing:-.025em;line-height:2rem}
 .page-desc{margin-top:.25rem;font-size:.875rem;color:hsl(var(--muted-foreground))}
-.period-picker{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
+.period-picker{position:relative;display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
 .range-hint{font-size:.75rem;color:hsl(var(--muted-foreground));font-family:"Geist Mono",monospace;white-space:nowrap}
 .range-group{display:inline-flex;align-items:center;gap:1px;background:hsl(var(--muted));border-radius:calc(var(--radius) - 2px);padding:3px}
+.range-sm .range-btn{padding:.2rem .5rem;font-size:.6875rem}
 .range-btn{padding:.3rem .65rem;border-radius:calc(var(--radius) - 4px);font-size:.75rem;font-weight:500;color:hsl(var(--muted-foreground))}
 .range-btn:hover{color:hsl(var(--foreground))}
 .range-btn.active{background:hsl(var(--background));color:hsl(var(--foreground));box-shadow:0 1px 2px hsl(0 0% 0% / .3)}
-.custom-range{position:relative;display:flex;align-items:center;gap:.4rem}
+.custom-range{position:absolute;top:calc(100% + 6px);right:0;z-index:30;display:flex;align-items:center;gap:.4rem;padding:.6rem .7rem;background:hsl(var(--popover));border:1px solid hsl(var(--border));border-radius:var(--radius);box-shadow:0 8px 24px hsl(0 0% 0% / .45)}
 .custom-range.hidden{display:none}
 .custom-range input[type="date"]{height:2rem;padding:.25rem .5rem;background:hsl(var(--background));border:1px solid hsl(var(--input));border-radius:calc(var(--radius) - 2px);color:hsl(var(--foreground));font-family:"Geist Mono",monospace;font-size:.75rem;color-scheme:dark}
 .custom-range input[type="date"]:focus{outline:2px solid hsl(var(--ring));outline-offset:1px}
 .range-sep{color:hsl(var(--muted-foreground));font-size:.75rem}
-.cal-pop{position:absolute;top:calc(100% + 5px);right:0;z-index:30;min-width:260px;padding:.75rem;background:hsl(var(--popover));border:1px solid hsl(var(--border));border-radius:var(--radius);box-shadow:0 8px 24px hsl(0 0% 0% / .45)}
+.cal-pop{position:absolute;top:calc(100% + 5px);right:0;z-index:31;min-width:260px;padding:.75rem;background:hsl(var(--popover));border:1px solid hsl(var(--border));border-radius:var(--radius);box-shadow:0 12px 32px hsl(0 0% 0% / .5)}
 .cal-head{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.5rem}
 .cal-title{font-size:.8125rem;font-weight:500}
 .cal-nav{width:1.75rem;height:1.75rem;display:flex;align-items:center;justify-content:center;border:1px solid hsl(var(--border));border-radius:calc(var(--radius) - 2px);color:hsl(var(--muted-foreground));font-size:.875rem}
@@ -113,7 +111,7 @@ a{color:inherit;text-decoration:none}
 .chart-canvas{min-width:0;flex:1;position:relative}
 canvas#tokenChart{display:block;width:100%;height:300px}
 canvas#tokenChart.active{cursor:pointer}
-.chart-key{width:200px;flex:0 0 200px;min-width:0;border-left:1px solid hsl(var(--border));padding-left:1.25rem}
+.chart-key{width:220px;flex:0 0 220px;min-width:0;border-left:1px solid hsl(var(--border));padding-left:1.25rem}
 .chart-key-title{font-size:.75rem;font-weight:500;color:hsl(var(--muted-foreground));margin-bottom:.5rem}
 .chart-key-list{display:flex;flex-direction:column;gap:.15rem}
 .legend-item{display:grid;grid-template-columns:8px minmax(0,1fr) auto;align-items:center;gap:.5rem;width:100%;padding:.35rem .5rem;border-radius:calc(var(--radius) - 2px);font-size:.8125rem;text-align:left;user-select:none}
@@ -143,8 +141,8 @@ canvas#tokenChart.active{cursor:pointer}
 .tabs-badge{font-family:"Geist Mono",monospace;font-size:.6875rem;color:hsl(var(--muted-foreground))}
 .data-table{width:100%;border-collapse:collapse;font-size:.8125rem}
 .data-table thead th{padding:.65rem .75rem;text-align:left;font-size:.75rem;font-weight:500;color:hsl(var(--muted-foreground));border-bottom:1px solid hsl(var(--border))}
-.data-table thead th.num,.data-table tbody td.num{text-align:right;font-family:"Geist Mono",monospace;font-size:.75rem;white-space:nowrap}
-.data-table thead th.num-r,.data-table tbody td.num-r{text-align:right}
+.data-table thead th.num,.data-table tbody td.num{text-align:right;font-family:"Geist Mono",monospace;font-size:.75rem;white-space:nowrap;font-variant-numeric:tabular-nums}
+.data-table thead th.num-r,.data-table tbody td.num-r{text-align:right;white-space:nowrap}
 .data-table tbody tr{border-bottom:1px solid hsl(var(--border));cursor:pointer}
 .data-table tbody tr:last-child{border-bottom:0}
 .data-table tbody tr:hover{background:hsl(var(--muted) / .5)}
@@ -154,17 +152,24 @@ canvas#tokenChart.active{cursor:pointer}
 .cell-name{display:flex;align-items:center;gap:.6rem;min-width:0}
 .cell-name .dot{width:8px;height:8px;border-radius:9999px;flex-shrink:0}
 .cell-name span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.cell-share{display:flex;align-items:center;justify-content:flex-end;gap:.5rem}
+.cell-share{display:grid;grid-template-columns:4.5rem 3.8ch;align-items:center;justify-content:end;gap:.5rem}
+.share-pct{font-family:"Geist Mono",monospace;font-size:.75rem;color:hsl(var(--muted-foreground));text-align:right;font-variant-numeric:tabular-nums}
 .progress{width:4.5rem;height:.5rem;border-radius:9999px;background:hsl(var(--secondary));overflow:hidden;flex-shrink:0}
-.progress-bar{height:100%;border-radius:9999px}
+.progress-bar{display:block;height:100%;border-radius:9999px}
 .cell-muted{color:hsl(var(--muted-foreground))}
 .page-meta{padding:1rem 0 2rem;text-align:center;font-family:"Geist Mono",monospace;font-size:.75rem;color:hsl(var(--muted-foreground))}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .site-footer{border-top:1px solid hsl(var(--border))}
 .site-footer-inner{max-width:80rem;margin:0 auto;padding:1.25rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;font-size:.8125rem;color:hsl(var(--muted-foreground))}
 .site-footer nav{display:flex;gap:1.25rem}
 .site-footer a:hover{color:hsl(var(--foreground))}
 .avatar{width:2rem;height:2rem;border-radius:9999px;overflow:hidden;flex-shrink:0;background:hsl(var(--muted));display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:600;color:hsl(var(--muted-foreground))}
 .avatar img{width:100%;height:100%;object-fit:cover}
+.menu{position:absolute;top:calc(100% + 6px);right:0;z-index:60;min-width:11rem;padding:.25rem;background:hsl(var(--popover));border:1px solid hsl(var(--border));border-radius:var(--radius);box-shadow:0 8px 24px hsl(0 0% 0% / .45)}
+.menu.hidden{display:none}
+.menu-label{padding:.4rem .6rem .35rem;font-size:.75rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-bottom:1px solid hsl(var(--border));margin-bottom:.25rem}
+.menu [role="menuitem"]{display:block;width:100%;text-align:left;padding:.45rem .6rem;border-radius:calc(var(--radius) - 2px);font-size:.8125rem}
+.menu [role="menuitem"]:hover{background:hsl(var(--accent))}
 .dialog-overlay{position:fixed;inset:0;background:hsl(0 0% 0% / .7);display:flex;align-items:center;justify-content:center;z-index:100;padding:1rem}
 .dialog{background:hsl(var(--card));border:1px solid hsl(var(--border));border-radius:var(--radius);padding:1.5rem;width:100%;max-width:26rem;box-shadow:0 12px 32px hsl(0 0% 0% / .5)}
 .dialog h3{font-size:1.125rem;font-weight:600;margin-bottom:.25rem}
@@ -187,10 +192,11 @@ canvas#tokenChart.active{cursor:pointer}
 @media(max-width:640px){
   .page{padding:1rem}
   .topbar-inner{padding:0 1rem}
-  .topnav{display:none}
-  .kpi-grid{grid-template-columns:1fr}
+  .kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem}
+  .stat-num{font-size:1.125rem;line-height:1.5rem}
   .hide-sm{display:none}
   .progress{width:3rem}
+  .cell-share{grid-template-columns:3rem 3.8ch}
   .card-content{padding:1rem}
   canvas#tokenChart{height:240px}
   .chart-empty{height:240px}
@@ -198,19 +204,21 @@ canvas#tokenChart.active{cursor:pointer}
 }
 .table-scroll{overflow-x:auto;margin:0 -1.5rem;padding:0 1.5rem}
 .table-scroll .data-table{min-width:34rem}
+.data-table td:first-child,.data-table th:first-child{position:sticky;left:-1.5rem;background:hsl(var(--card));z-index:1}
+.data-table tbody tr:hover td:first-child{background:hsl(var(--muted) / .5)}
+.table-scroll{scrollbar-width:thin;background:linear-gradient(to right,hsl(var(--card)) 96%,transparent),linear-gradient(to left,hsl(var(--muted)) 0,transparent 12px);background-repeat:no-repeat;background-attachment:local,scroll}
 </style>
 </head>
 <body>
 <header class="topbar">
   <div class="topbar-inner">
-    <a class="brand" href="#top"><span class="brand-mark">T</span>My Tokenmaxxing</a>
-    <nav class="topnav" aria-label="Dashboard navigation">
-      <a href="#overview" class="active">Overview</a>
-      <a href="#breakdown">Breakdown</a>
-    </nav>
-    <div class="topbar-right">
-      <button class="btn btn-ghost btn-icon" id="shareBtn" title="Copy link" aria-label="Copy link">⧉</button>
-      <button class="avatar" id="avatarBtn" title="Edit profile" aria-label="Edit profile"></button>
+    <a class="brand" href="#top"><span class="brand-mark" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="7.5" width="3" height="5" rx="1" fill="currentColor" opacity=".55"/><rect x="5.5" y="4.5" width="3" height="8" rx="1" fill="currentColor" opacity=".8"/><rect x="9.5" y="1.5" width="3" height="11" rx="1" fill="currentColor"/></svg></span>My Tokenmaxxing</a>
+    <div class="topbar-right" style="position:relative">
+      <button class="avatar" id="avatarBtn" title="Profile menu" aria-label="Profile menu" aria-haspopup="menu" aria-expanded="false"></button>
+      <div class="menu hidden" id="avatarMenu" role="menu">
+        <div class="menu-label" id="avatarMenuName"></div>
+        <button role="menuitem" id="menuEdit">Edit profile</button>
+      </div>
     </div>
   </div>
 </header>
@@ -222,7 +230,6 @@ canvas#tokenChart.active{cursor:pointer}
       <p class="page-desc" id="pageDesc">Local token usage across every coding agent.</p>
     </div>
     <div class="period-picker">
-      <span class="range-hint" id="statsRangeLabel"></span>
       <div class="range-group" role="group" aria-label="Stats period" id="statsRangeGroup"></div>
       <div class="custom-range hidden" id="customRange">
         <input type="date" id="customFrom" aria-label="From">
@@ -241,7 +248,7 @@ canvas#tokenChart.active{cursor:pointer}
           <h2 class="card-title" id="tokens-title">Token usage</h2>
           <p class="card-desc" id="chartRangeLabel"></p>
         </div>
-        <div class="range-group" role="group" aria-label="Chart range" id="chartRangeGroup"></div>
+        <div class="range-group range-sm" role="group" aria-label="Chart range" id="chartRangeGroup"></div>
       </div>
     </div>
     <div class="card-content">
@@ -268,12 +275,12 @@ canvas#tokenChart.active{cursor:pointer}
     <div class="card-content" id="breakTableWrap"></div>
   </section>
 
-  <p class="page-meta" id="pageMeta"></p>
+  <p class="page-meta sr-only" id="pageMeta" aria-live="polite"></p>
 </main>
 
 <footer class="site-footer">
   <div class="site-footer-inner">
-    <span>Local data · auto refresh 60s</span>
+    <span id="footerMeta">Local data · auto refresh 60s</span>
     <nav>
       <a href="https://github.com/nico2525nn/my-tokenmaxxing" target="_blank" rel="noreferrer">GitHub</a>
       <a href="https://tokenmaxxing.sh" target="_blank" rel="noreferrer">Reference</a>
@@ -320,21 +327,6 @@ function loadStatsPeriod() {
 const initialTab = new URLSearchParams(location.search).get('tab');
 if (initialTab === 'harness') breakTab = 'harness';
 
-function renderAll() {
-  ALL_STATS = buildView(DASH, {hiddenSources, statsPeriod, statsCustom});
-  pinnedBucket = -1;
-  renderPeriod();
-  renderKpis();
-  renderChartCard();
-  renderBreakdown();
-  drawChart();
-  const win = statsPeriodWindow(DASH ? DASH.daily || [] : [], statsPeriod, statsCustom);
-  document.getElementById('statsRangeLabel').textContent = win ? win.from + ' – ' + win.to : 'all time';
-  bindStatsCustomRange();
-  document.getElementById('pageMeta').textContent = ALL_STATS.firstDate ? ALL_STATS.firstDate + ' – ' + ALL_STATS.lastDate + ' · ' + ALL_STATS.activeDays + ' active days' : 'No token data';
-  renderAvatar();
-}
-
 function renderPeriod() {
   const presets = [['7','7D'],['30','30D'],['90','90D'],['all','ALL'],['custom','Custom']];
   document.getElementById('statsRangeGroup').innerHTML = presets.map(function(p) {
@@ -354,7 +346,15 @@ function renderPeriod() {
 
 function setStatsPeriod(period) {
   if (period !== '7' && period !== '30' && period !== '90' && period !== 'all' && period !== 'custom') return;
-  if (statsPeriod === period) return;
+  if (statsPeriod === period) {
+    if (period !== 'custom') return;
+    const range = document.getElementById('customRange');
+    const hidden = range.classList.contains('hidden');
+    range.classList.toggle('hidden', !hidden);
+    if (hidden) document.getElementById('customFrom').focus();
+    else closeCustomPopover();
+    return;
+  }
   statsPeriod = period;
   if (period === 'custom' && (!statsCustom.from || !statsCustom.to)) {
     const days = DASH ? DASH.daily || [] : [];
@@ -372,7 +372,7 @@ function renderKpis() {
     {label:'Total Tokens', value:fmt(s.totalTokens), cls:'', sub:s.sessions + ' sessions · in ' + fmt(s.totalInput) + ' / out ' + fmt(s.totalOutput), badge:null},
     {label:'Cache Hit Rate', value:hit, cls:'', sub:fmt(s.totalCacheRead) + ' of ' + fmt(s.totalInput + s.totalCacheRead) + ' prompt tokens', badge:null},
     {label:'Top Model', value:s.topModel === 'N/A' ? '—' : shortModel(s.topModel), cls:'', sub:topShare + ' of all tokens · ' + fmt(s.topModelTokens), badge:null, title:s.topModel},
-    {label:'Active Days', value:String(s.activeDays), cls:'', sub:'streak ' + s.currentStreak + ' · longest ' + s.longestStreak, badge:s.activeDays > 0 ? s.sessions + ' pts' : null},
+    {label:'Active Days', value:String(s.activeDays), cls:'', sub:'streak ' + s.currentStreak + ' · longest ' + s.longestStreak, badge:null},
   ];
   document.getElementById('kpiGrid').innerHTML = cards.map(function(c) {
     return '<div class="card"><div class="kpi-body"><div class="stat-top"><span class="card-desc">' + c.label + '</span>' + (c.badge ? '<span class="badge badge-secondary">' + escapeHtml(c.badge) + '</span>' : '') + '</div><span class="stat-num"' + (c.title ? ' title="' + escapeHtml(c.title) + '"' : '') + '>' + escapeHtml(c.value) + '</span><span class="stat-sub">' + escapeHtml(c.sub) + '</span></div></div>';
@@ -419,7 +419,7 @@ function renderBreakdown() {
       return '<tr class="' + off.trim() + '" data-model="' + escapeHtml(row.model) + '" title="' + escapeHtml(row.model) + ' — cache hit ' + escapeHtml(cacheHitText(row.input, row.cacheRead)) + ' of ' + escapeHtml(fmt(row.input + row.cacheRead)) + ' prompt tokens">'
         + '<td><span class="cell-name"><span class="dot" style="background:' + getModelColor(row.model) + '"></span><span>' + escapeHtml(row.model) + '</span></span></td>'
         + '<td class="num">' + fmt(row.tokens) + '</td>'
-        + '<td class="num-r"><span class="cell-share"><span class="progress"><span class="progress-bar" style="width:' + share + '%;background:' + getModelColor(row.model) + '"></span></span><span class="mono">' + share + '%</span></span></td>'
+        + '<td class="num-r"><span class="cell-share"><span class="progress"><span class="progress-bar" style="width:' + share + '%;background:' + getModelColor(row.model) + '"></span></span><span class="share-pct">' + share + '%</span></span></td>'
         + '<td class="num">' + escapeHtml(cacheHitText(row.input, row.cacheRead)) + '</td>'
         + '<td class="num hide-sm cell-muted">' + fmt(row.input) + ' / ' + fmt(row.output) + '</td>'
         + '</tr>';
@@ -436,7 +436,7 @@ function renderBreakdown() {
       return '<tr class="' + off.trim() + '" data-source="' + escapeHtml(row.source) + '">'
         + '<td><span class="cell-name"><span class="dot" style="background:' + getSourceColor(row.source) + '"></span><span>' + escapeHtml(sourceLabel(row.source)) + '</span></span></td>'
         + '<td class="num">' + fmt(row.tokens) + '</td>'
-        + '<td class="num-r"><span class="cell-share"><span class="progress"><span class="progress-bar" style="width:' + share + '%;background:' + getSourceColor(row.source) + '"></span></span><span class="mono">' + share + '%</span></span></td>'
+        + '<td class="num-r"><span class="cell-share"><span class="progress"><span class="progress-bar" style="width:' + share + '%;background:' + getSourceColor(row.source) + '"></span></span><span class="share-pct">' + share + '%</span></span></td>'
         + '<td class="num">' + escapeHtml(cacheHitText(row.input, row.cacheRead)) + '</td>'
         + '<td class="num hide-sm cell-muted">' + fmt(row.input) + ' / ' + fmt(row.output) + '</td>'
         + '</tr>';
@@ -530,11 +530,18 @@ function calPickDay(iso) {
   if (toInput) toInput.value = statsCustom.to;
   statsPeriod = 'custom';
   closeCalPop();
+  const range = document.getElementById('customRange');
+  if (range) range.classList.remove('hidden');
   renderAll();
 }
 function closeCalPop() {
   const pop = document.querySelector('#customRange .cal-pop');
   if (pop) pop.remove();
+}
+function closeCustomPopover() {
+  closeCalPop();
+  const range = document.getElementById('customRange');
+  if (range) range.classList.add('hidden');
 }
 function bindStatsCustomRange() {
   for (const id of ['customFrom', 'customTo']) {
@@ -552,10 +559,10 @@ function bindStatsCustomRange() {
   if (!document.body.dataset.calBound) {
     document.body.dataset.calBound = '1';
     document.addEventListener('pointerdown', function(event) {
-      if (!event.target.closest('#customRange')) closeCalPop();
+      if (!event.target.closest('#customRange') && !event.target.closest('#statsRangeGroup')) closeCustomPopover();
     });
     document.addEventListener('keydown', function(event) {
-      if (event.key === 'Escape') closeCalPop();
+      if (event.key === 'Escape') closeCustomPopover();
     });
   }
 }
@@ -595,10 +602,14 @@ function saveEdit() {
   document.getElementById('dialogRoot').innerHTML = '';
   renderAll();
 }
-async function shareProfile() {
-  try {
-    await navigator.clipboard.writeText(location.href);
-  } catch {}
+function toggleAvatarMenu(force) {
+  const menu = document.getElementById('avatarMenu');
+  const btn = document.getElementById('avatarBtn');
+  if (!menu || !btn) return;
+  const show = typeof force === 'boolean' ? force : menu.classList.contains('hidden');
+  menu.classList.toggle('hidden', !show);
+  btn.setAttribute('aria-expanded', String(show));
+  if (show) document.getElementById('avatarMenuName').textContent = userName;
 }
 
 // ---- canvas chart (same engine as the legacy page) ----
@@ -692,13 +703,14 @@ function drawChart() {
   });
   const names = Object.keys(totals);
   const ranked = Object.entries(totals).sort(function(a,b) { return b[1] - a[1]; });
-  const windowTotal = buckets.reduce(function(sum, bucket) { return sum + bucket.total; }, 0);
+  // Legend shares use only visible models so the percentages match the bars.
+  const visibleWindowTotal = ranked.reduce(function(sum, entry) { return sum + (hiddenModels.has(entry[0]) ? 0 : entry[1]); }, 0);
   const colors = {};
   names.forEach(function(name) { colors[name] = getModelColor(name); });
   legend.innerHTML = ranked.length ? '<div class="chart-key-list">' + ranked.slice(0, 8).map(function(entry, index) {
     const model = entry[0];
     const off = hiddenModels.has(model) ? ' off' : '';
-    return '<button class="legend-item' + off + '" onclick="toggleModel(' + inlineArg(model) + ')" aria-pressed="' + (!hiddenModels.has(model)) + '"><span class="legend-dot" style="background:' + colors[model] + '"></span><span class="legend-name" title="' + escapeHtml(model) + '">' + escapeHtml(shortModel(model)) + '</span><span class="legend-value">' + (entry[1] / (windowTotal || 1) * 100).toFixed(1) + '%</span></button>';
+    return '<button class="legend-item' + off + '" onclick="toggleModel(' + inlineArg(model) + ')" aria-pressed="' + (!hiddenModels.has(model)) + '"><span class="legend-dot" style="background:' + colors[model] + '"></span><span class="legend-name" title="' + escapeHtml(model) + '">' + escapeHtml(shortModel(model)) + '</span><span class="legend-value">' + (entry[1] / (visibleWindowTotal || 1) * 100).toFixed(1) + '%</span></button>';
   }).join('') + '</div>' + (ranked.length > 8 ? '<p class="legend-more">+' + (ranked.length - 8) + ' more in breakdown</p>' : '') : '<p class="card-desc">No model data</p>';
 
   const rangeLabel = document.getElementById('chartRangeLabel');
@@ -718,7 +730,8 @@ function drawChart() {
   }
   canvas.style.display = 'block';
   canvas.parentElement.querySelector('.chart-empty')?.remove();
-  const visibleModels = names.filter(function(model) { return !hiddenModels.has(model); });
+  // Stack largest-first so the segment order matches the ranked legend.
+  const visibleModels = ranked.map(function(entry) { return entry[0]; }).filter(function(model) { return !hiddenModels.has(model); });
   const values = buckets.map(function(bucket) { return visibleModels.reduce(function(sum, model) { return sum + (bucket.models[model] || 0); }, 0); });
   const maxValue = niceMax(Math.max.apply(Math, values.concat([0])));
   const dpr = window.devicePixelRatio || 1;
@@ -734,14 +747,16 @@ function drawChart() {
   const plotWidth = Math.max(1, width - pad.left - pad.right);
   const plotHeight = Math.max(1, height - pad.top - pad.bottom);
   const slotWidth = plotWidth / buckets.length;
-  const barWidth = Math.max(2, Math.min(12, slotWidth * .72));
+  const barWidth = Math.max(2, Math.min(16, slotWidth * .86));
   context.font = '10px Inter,sans-serif';
   context.textAlign = 'right';
+  const gridBase = 'hsl(240 5% 64.9%)';
+  const gridLine = 'hsl(240 5% 64.9% / .28)';
   for (let tick = 0; tick <= 4; tick++) {
     const y = pad.top + plotHeight - plotHeight * tick / 4;
-    context.fillStyle = 'hsl(240 5% 64.9%)';
+    context.fillStyle = gridBase;
     context.fillText(fmt(maxValue * tick / 4), pad.left - 8, y + 3);
-    context.strokeStyle = tick === 0 ? 'hsl(240 5% 64.9% / .45)' : 'hsl(240 3.7% 15.9% / .9)';
+    context.strokeStyle = tick === 0 ? 'hsl(240 5% 64.9% / .6)' : gridLine;
     context.lineWidth = 1;
     context.beginPath();
     context.moveTo(pad.left, y + .5);
@@ -751,12 +766,27 @@ function drawChart() {
   buckets.forEach(function(bucket, bucketIndex) {
     const x = pad.left + bucketIndex * slotWidth + (slotWidth - barWidth) / 2;
     let bottom = pad.top + plotHeight;
+    const dayTotal = visibleModels.reduce(function(sum, model) { return sum + (bucket.models[model] || 0); }, 0);
+    if (!dayTotal) {
+      // Zero-activity slot: a 1px guide so empty days read as gaps, not missing bars.
+      context.fillStyle = 'hsl(240 5% 64.9% / .25)';
+      context.fillRect(x, pad.top + plotHeight - 1, barWidth, 1);
+      return;
+    }
     visibleModels.forEach(function(model) {
       const value = bucket.models[model] || 0;
       if (!value) return;
-      const barHeight = value / maxValue * plotHeight;
+      const barHeight = Math.max(1, value / maxValue * plotHeight);
       context.fillStyle = colors[model];
-      context.fillRect(x, bottom - barHeight, barWidth, barHeight);
+      const r = Math.min(2, barWidth / 2, barHeight / 2);
+      const y = bottom - barHeight;
+      if (typeof context.roundRect === 'function') {
+        context.beginPath();
+        context.roundRect(x, y, barWidth, barHeight, r);
+        context.fill();
+      } else {
+        context.fillRect(x, y, barWidth, barHeight);
+      }
       bottom -= barHeight;
     });
   });
@@ -821,9 +851,10 @@ function renderAll() {
   renderBreakdown();
   drawChart();
   const win = statsPeriodWindow(DASH ? DASH.daily || [] : [], statsPeriod, statsCustom);
-  document.getElementById('statsRangeLabel').textContent = win ? win.from + ' – ' + win.to : 'all time';
+  document.getElementById('pageDesc').textContent = 'Local token usage across every coding agent.' + (win ? ' · ' + win.from + ' – ' + win.to : ' · all time');
   bindStatsCustomRange();
   document.getElementById('pageMeta').textContent = ALL_STATS.firstDate ? ALL_STATS.firstDate + ' – ' + ALL_STATS.lastDate + ' · ' + ALL_STATS.activeDays + ' active days' : 'No token data';
+  document.getElementById('footerMeta').textContent = 'Local data · auto refresh 60s' + (ALL_STATS.firstDate ? ' · ' + ALL_STATS.firstDate + ' – ' + ALL_STATS.lastDate : '');
   renderAvatar();
 }
 
@@ -849,8 +880,14 @@ async function loadData() {
   }
 }
 
-document.getElementById('shareBtn').onclick = shareProfile;
-document.getElementById('avatarBtn').onclick = showEdit;
+document.getElementById('avatarBtn').onclick = function() { toggleAvatarMenu(); };
+document.getElementById('menuEdit').onclick = function() { toggleAvatarMenu(false); showEdit(); };
+document.addEventListener('pointerdown', function(event) {
+  if (!event.target.closest('.topbar-right')) toggleAvatarMenu(false);
+});
+document.addEventListener('keydown', function(event) {
+  if (event.key === 'Escape') toggleAvatarMenu(false);
+});
 loadStatsPeriod();
 loadData();
 setInterval(loadData, 60000);
