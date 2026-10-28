@@ -864,12 +864,15 @@ function drawChart() {
       const r = Math.min(2, barWidth / 2, barHeight / 2);
       const y = bottom - barHeight;
       const isTop = segIndex === segments.length - 1;
+      // Overlap 1px into the segment below so fractional coordinates never
+      // leave a background-colored seam between stacked segments.
+      const drawHeight = barHeight + 1;
       if (typeof context.roundRect === 'function' && isTop && r > 0) {
         context.beginPath();
-        context.roundRect(x, y, barWidth, barHeight, [r, r, 0, 0]);
+        context.roundRect(x, y, barWidth, drawHeight, [r, r, 0, 0]);
         context.fill();
       } else {
-        context.fillRect(x, y, barWidth, barHeight);
+        context.fillRect(x, y, barWidth, drawHeight);
       }
       bottom -= barHeight;
     });
