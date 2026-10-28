@@ -115,11 +115,11 @@ a{color:inherit;text-decoration:none}
 .stat-sub{display:block;margin-top:.25rem;font-size:.75rem;color:hsl(var(--muted-foreground));white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .stat-sub b{color:hsl(var(--foreground));font-weight:600;font-variant-numeric:tabular-nums}
 .chart-card{margin-bottom:1rem}
-.chart-layout{display:flex;gap:1.5rem;align-items:stretch}
+.chart-layout{display:flex;align-items:stretch}
 .chart-canvas{min-width:0;flex:1;position:relative}
 canvas#tokenChart{display:block;width:100%;height:300px}
 canvas#tokenChart.active{cursor:pointer}
-.chart-key{width:220px;flex:0 0 220px;min-width:0;border-left:1px solid hsl(var(--border))}
+.chart-key{width:244px;flex:0 0 244px;min-width:0;border-left:1px solid hsl(var(--border));padding-left:1.5rem}
 .chart-key-title{font-size:.875rem;font-weight:500;margin-bottom:.5rem}
 .chart-key-list{display:flex;flex-direction:column;gap:.25rem}
 .legend-item{display:grid;grid-template-columns:8px minmax(0,1fr) auto;align-items:center;gap:.5rem;width:100%;padding:.375rem .5rem;border-radius:calc(var(--radius) - 2px);font-size:.875rem;font-weight:500;text-align:left;user-select:none;transition:background-color .15s}
@@ -202,7 +202,7 @@ canvas#tokenChart.active{cursor:pointer}
 .alert button{margin-left:auto;flex-shrink:0}
 @media(max-width:1024px){
   .kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .chart-layout{flex-direction:column;align-items:stretch}
+  .chart-layout{flex-direction:column;align-items:stretch;gap:1rem}
   .chart-key{width:100%;flex-basis:auto;border-left:0;border-top:1px solid hsl(var(--border));padding-left:0;padding-top:1rem}
 }
 @media(max-width:640px){
