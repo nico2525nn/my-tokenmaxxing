@@ -856,16 +856,17 @@ function drawChart() {
       context.fillRect(x, pad.top + plotHeight - 1, barWidth, 1);
       return;
     }
-    visibleModels.forEach(function(model) {
-      const value = bucket.models[model] || 0;
-      if (!value) return;
+    const segments = visibleModels.filter(function(model) { return bucket.models[model] > 0; });
+    segments.forEach(function(model, segIndex) {
+      const value = bucket.models[model];
       const barHeight = Math.max(1, value / maxValue * plotHeight);
       context.fillStyle = colors[model];
       const r = Math.min(2, barWidth / 2, barHeight / 2);
       const y = bottom - barHeight;
-      if (typeof context.roundRect === 'function') {
+      const isTop = segIndex === segments.length - 1;
+      if (typeof context.roundRect === 'function' && isTop && r > 0) {
         context.beginPath();
-        context.roundRect(x, y, barWidth, barHeight, r);
+        context.roundRect(x, y, barWidth, barHeight, [r, r, 0, 0]);
         context.fill();
       } else {
         context.fillRect(x, y, barWidth, barHeight);
