@@ -1,234 +1,317 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="ja" class="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>nico2525nn on tokenmaxxing</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="tmx.js"></script>
 <style>
 :root{
-  --bg:oklch(16% .008 270);
-  --fg:oklch(93% .005 95);
-  --card:oklch(18% .008 270);
-  --muted:oklch(22% .012 270);
-  --muted-fg:oklch(58% .005 270);
-  --border:oklch(27% .012 270);
-  --font:"Geist Sans","Geist",ui-sans-serif,system-ui,sans-serif;
-  --mono:"Geist Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --background:0 0% 100%;
+  --foreground:240 10% 3.9%;
+  --card:0 0% 100%;
+  --card-foreground:240 10% 3.9%;
+  --popover:0 0% 100%;
+  --popover-foreground:240 10% 3.9%;
+  --primary:240 5.9% 10%;
+  --primary-foreground:0 0% 98%;
+  --secondary:240 4.8% 95.9%;
+  --secondary-foreground:240 5.9% 10%;
+  --muted:240 4.8% 95.9%;
+  --muted-foreground:240 3.8% 46.1%;
+  --accent:240 4.8% 95.9%;
+  --accent-foreground:240 5.9% 10%;
+  --destructive:0 84.2% 60.2%;
+  --destructive-foreground:0 0% 98%;
+  --border:240 5.9% 90%;
+  --input:240 5.9% 90%;
+  --ring:240 10% 3.9%;
+  --radius:.5rem;
 }
-*{margin:0;padding:0;box-sizing:border-box}
+.dark{
+  --background:240 10% 3.9%;
+  --foreground:0 0% 98%;
+  --card:240 10% 3.9%;
+  --card-foreground:0 0% 98%;
+  --popover:240 10% 3.9%;
+  --popover-foreground:0 0% 98%;
+  --primary:0 0% 98%;
+  --primary-foreground:240 5.9% 10%;
+  --secondary:240 3.7% 15.9%;
+  --secondary-foreground:0 0% 98%;
+  --muted:240 3.7% 15.9%;
+  --muted-foreground:240 5% 64.9%;
+  --accent:240 3.7% 15.9%;
+  --accent-foreground:0 0% 98%;
+  --destructive:0 62.8% 30.6%;
+  --destructive-foreground:0 0% 98%;
+  --border:240 3.7% 15.9%;
+  --input:240 3.7% 15.9%;
+  --ring:240 4.9% 83.9%;
+}
+*{margin:0;padding:0;box-sizing:border-box;border-color:hsl(var(--border))}
 html{scroll-behavior:smooth}
-body{font-family:var(--font);background:var(--bg);color:var(--fg);min-height:100vh;-webkit-font-smoothing:antialiased}
+body{font-family:Inter,ui-sans-serif,system-ui,sans-serif;background:hsl(var(--background));color:hsl(var(--foreground));min-height:100vh;-webkit-font-smoothing:antialiased;font-feature-settings:"cv11","ss01"}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 a{color:inherit;text-decoration:none}
-button{font:inherit;color:inherit}
-.site-header{position:sticky;top:0;z-index:50;background:oklch(16% .008 270 / .88);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
-.site-header-inner{max-width:64rem;height:57px;margin:0 auto;padding:0 1rem;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:1rem}
-.site-brand{font-size:.75rem;font-weight:600;letter-spacing:-.01em;justify-self:start}
-.site-nav{display:flex;align-items:center;justify-content:center;gap:1.5rem;font-size:.75rem;color:var(--muted-fg)}
-.site-nav a:hover{color:var(--fg)}
-.site-actions{display:flex;align-items:center;justify-content:flex-end;gap:.5rem;font-size:.6875rem;color:var(--muted-fg)}
-.site-status{font-family:var(--mono);letter-spacing:.04em;text-transform:uppercase}
-.site-action{padding:.3rem .55rem;border:1px solid var(--border);background:var(--bg);font-size:.6875rem;cursor:pointer}
-.site-action:hover{background:var(--muted);color:var(--fg)}
-.container{max-width:64rem;margin:0 auto;min-height:100vh;border-left:1px solid var(--border);border-right:1px solid var(--border)}
-.profile-header{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:2rem 1rem}
-.profile-info{display:flex;align-items:center;gap:1rem;min-width:0}
-.avatar{width:56px;height:56px;flex-shrink:0;object-fit:cover}
-.username{font-size:1.5rem;font-weight:600;letter-spacing:-.025em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.profile-actions{display:flex;align-items:center;gap:.5rem;flex-shrink:0}
-.profile-action{display:inline-flex;align-items:center;gap:.35rem;padding:.35rem .6rem;font-size:.75rem;border:1px solid var(--border);background:var(--bg);color:var(--muted-fg);cursor:pointer}
-.profile-action:hover{background:var(--muted);color:var(--fg)}
-.stats-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--border);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
-.stat-card{background:var(--bg);padding:1rem;min-width:0;min-height:76px}
-.stat-label{font-size:.625rem;font-weight:500;text-transform:uppercase;letter-spacing:.055em;color:var(--muted-fg)}
-.stat-value{margin-top:.35rem;font-size:1.25rem;font-weight:600;letter-spacing:-.025em;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
-.stat-value.small{font-size:1.05rem}
-.dashboard-section{background:var(--bg);padding:1.25rem;border-bottom:1px solid var(--border)}
-.section-title{font-size:1rem;font-weight:500;line-height:1.5}
-.section-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
-.range-group{display:flex;gap:1px;background:var(--border);border:1px solid var(--border)}
-.section-actions{display:flex;align-items:center;gap:.6rem}
-.range-btn{padding:.25rem .5rem;border:0;background:var(--bg);color:var(--muted-fg);font-family:var(--mono);font-size:.625rem;letter-spacing:.03em;cursor:pointer}
-.range-btn:hover{color:var(--fg)}
-.range-btn.active{background:var(--fg);color:var(--bg)}
-.range-hint{color:var(--muted-fg);font-family:var(--mono);font-size:.625rem;white-space:nowrap}
-.stats-period{display:flex;align-items:center;justify-content:flex-end;gap:1rem;flex-wrap:wrap;padding:.6rem 1.25rem;background:var(--bg);border-bottom:1px solid var(--border)}
-.custom-range{display:flex;flex-basis:100%;justify-content:flex-end;align-items:center;gap:.4rem}
+.mono{font-family:"Geist Mono",ui-monospace,SFMono-Regular,Menlo,monospace}
+.topbar{position:sticky;top:0;z-index:50;border-bottom:1px solid hsl(var(--border));background:hsl(var(--background) / .85);backdrop-filter:blur(12px)}
+.topbar-inner{max-width:80rem;margin:0 auto;height:3.5rem;padding:0 1.5rem;display:flex;align-items:center;gap:1.5rem}
+.brand{display:flex;align-items:center;gap:.6rem;font-size:.875rem;font-weight:600;letter-spacing:-.01em}
+.brand-mark{width:1.5rem;height:1.5rem;border-radius:.375rem;background:hsl(var(--primary));color:hsl(var(--primary-foreground));display:flex;align-items:center;justify-content:center}
+.brand-mark svg{display:block}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:.5rem}
+.page{max-width:80rem;margin:0 auto;padding:1.5rem}
+#top,#breakdown{scroll-margin-top:4.25rem}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:1.25rem}
+.page-title{font-size:1.5rem;font-weight:700;letter-spacing:-.025em;line-height:2rem}
+.page-desc{margin-top:.25rem;font-size:.875rem;color:hsl(var(--muted-foreground))}
+.period-picker{position:relative;display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
+.range-hint{font-size:.75rem;color:hsl(var(--muted-foreground));font-family:"Geist Mono",monospace;white-space:nowrap}
+.range-group{display:inline-flex;align-items:center;gap:1px;background:hsl(var(--muted));border-radius:calc(var(--radius) - 2px);padding:3px}
+.range-sm .range-btn{padding:.2rem .5rem;font-size:.6875rem}
+.range-btn{padding:.3rem .65rem;border-radius:calc(var(--radius) - 4px);font-size:.75rem;font-weight:500;color:hsl(var(--muted-foreground))}
+.range-btn:hover{color:hsl(var(--foreground))}
+.range-btn.active{background:hsl(var(--background));color:hsl(var(--foreground));box-shadow:0 1px 2px hsl(0 0% 0% / .3)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.375rem;border-radius:calc(var(--radius) - 2px);font-size:.875rem;font-weight:500;height:2.25rem;padding:0 1rem;white-space:nowrap;border:1px solid transparent}
+.btn-sm{height:2rem;padding:0 .75rem;font-size:.8125rem}
+.btn-default{background:hsl(var(--primary));color:hsl(var(--primary-foreground))}
+.btn-default:hover{opacity:.9}
+.btn-outline{border-color:hsl(var(--input));background:hsl(var(--background))}
+.btn-outline:hover{background:hsl(var(--accent))}
+.custom-range{position:absolute;top:calc(100% + 6px);right:0;z-index:30;display:flex;align-items:center;gap:.4rem;padding:.6rem .7rem;background:hsl(var(--popover));border:1px solid hsl(var(--border));border-radius:var(--radius);box-shadow:0 8px 24px hsl(0 0% 0% / .45)}
 .custom-range.hidden{display:none}
-.custom-range input[type="date"]{padding:.25rem .4rem;background:var(--bg);border:1px solid var(--border);color:var(--fg);font-family:var(--mono);font-size:.625rem;color-scheme:dark}
-.custom-range input[type="date"]:focus{outline:none;border-color:var(--muted-fg)}
-.range-sep{color:var(--muted-fg);font-size:.625rem}
-.custom-range{position:relative}
-.cal-pop{position:absolute;top:calc(100% + 5px);z-index:30;min-width:250px;padding:.65rem .7rem;background:var(--card);border:1px solid var(--border);box-shadow:0 8px 24px oklch(0% 0 0 / .45)}
+.custom-range input[type="date"]{height:2rem;padding:.25rem .5rem;background:hsl(var(--background));border:1px solid hsl(var(--input));border-radius:calc(var(--radius) - 2px);color:hsl(var(--foreground));font-family:"Geist Mono",monospace;font-size:.75rem;color-scheme:dark}
+.custom-range input[type="date"]:focus{outline:2px solid hsl(var(--ring));outline-offset:1px}
+.range-sep{color:hsl(var(--muted-foreground));font-size:.75rem}
+.cal-pop{position:absolute;top:calc(100% + 5px);right:0;z-index:31;min-width:260px;padding:.75rem;background:hsl(var(--popover));border:1px solid hsl(var(--border));border-radius:var(--radius);box-shadow:0 12px 32px hsl(0 0% 0% / .5)}
 .cal-head{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.5rem}
-.cal-title{font-family:var(--mono);font-size:.6875rem}
-.cal-nav{padding:.15rem .45rem;border:1px solid var(--border);background:var(--bg);color:var(--muted-fg);font-family:var(--mono);font-size:.625rem;cursor:pointer}
-.cal-nav:hover{color:var(--fg);background:var(--muted)}
-.cal-grid{display:grid;grid-template-columns:repeat(7,2rem);gap:2px}
-.cal-dow{color:var(--muted-fg);font-family:var(--mono);font-size:.5625rem;text-align:center;padding:.15rem 0}
-.cal-day{padding:.28rem 0;border:0;background:none;color:var(--fg);font-family:var(--mono);font-size:.625rem;text-align:center;cursor:pointer}
-.cal-day:hover{background:var(--muted)}
+.cal-title{font-size:.8125rem;font-weight:500}
+.cal-nav{width:1.75rem;height:1.75rem;display:flex;align-items:center;justify-content:center;border:1px solid hsl(var(--border));border-radius:calc(var(--radius) - 2px);color:hsl(var(--muted-foreground));font-size:.875rem}
+.cal-nav:hover{color:hsl(var(--foreground));background:hsl(var(--accent))}
+.cal-grid{display:grid;grid-template-columns:repeat(7,2.25rem);gap:2px;justify-content:center}
+.cal-dow{color:hsl(var(--muted-foreground));font-size:.7rem;text-align:center;padding:.2rem 0;font-weight:500}
+.cal-day{height:2.25rem;border-radius:calc(var(--radius) - 2px);font-family:"Geist Mono",monospace;font-size:.75rem;text-align:center}
+.cal-day:hover{background:hsl(var(--accent))}
 .cal-day.dim{visibility:hidden}
-.cal-day.today{outline:1px solid var(--muted-fg);outline-offset:-1px}
-.cal-day.in-range{background:var(--muted)}
-.cal-day.picked{background:var(--fg);color:var(--bg)}
-.chart-layout{display:flex;align-items:center;gap:1.5rem;margin-top:1rem}
-.chart-canvas{min-width:0;flex:1}
-canvas#tokenChart{display:block;width:100%;height:280px}
-.chart-key{width:190px;flex:0 0 190px;min-width:0}
-.chart-key-list{display:flex;flex-direction:column;gap:.35rem}
-.legend-item{display:grid;grid-template-columns:1rem 8px minmax(0,1fr) auto;align-items:center;gap:.35rem;width:100%;padding:.08rem 0;border:0;background:none;color:var(--muted-fg);font-size:.6875rem;text-align:left;cursor:pointer;user-select:none}
-.legend-item:hover{color:var(--fg)}
-.legend-item.off{opacity:.3;text-decoration:line-through}
-.legend-rank{font-family:var(--mono);font-size:.625rem;color:var(--muted-fg);text-align:right}
-.legend-dot{width:8px;height:8px;flex-shrink:0}
-.legend-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.legend-value{font-family:var(--mono);font-size:.625rem;color:var(--muted-fg);white-space:nowrap}
-.legend-more{margin-top:.45rem;color:var(--muted-fg);font-size:.6875rem}
-.chart-empty{height:280px;display:flex;align-items:center;justify-content:center;color:var(--muted-fg);font-size:.8125rem}
-.chart-canvas{position:relative}
+.cal-day.today{outline:1px solid hsl(var(--muted-foreground));outline-offset:-1px}
+.cal-day.in-range{background:hsl(var(--accent))}
+.cal-day.picked{background:hsl(var(--primary));color:hsl(var(--primary-foreground));font-weight:600}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1rem;margin-bottom:1rem}
+.card{border:1px solid hsl(var(--border));border-radius:var(--radius);background:hsl(var(--card));color:hsl(var(--card-foreground));box-shadow:0 1px 2px hsl(0 0% 0% / .25)}
+.card-header{display:flex;flex-direction:column;gap:.375rem;padding:1.25rem 1.5rem 0}
+.card-title{font-size:.875rem;font-weight:500}
+.card-row{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.card-desc{font-size:.875rem;color:hsl(var(--muted-foreground))}
+.card-content{padding:1.25rem 1.5rem}
+.kpi-body{padding:1.25rem 1.5rem}
+.stat-num{display:block;font-size:1.5rem;font-weight:600;letter-spacing:-.025em;line-height:2rem;font-variant-numeric:tabular-nums}
+.stat-sub{display:block;margin-top:.25rem;font-size:.75rem;color:hsl(var(--muted-foreground));white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stat-top{display:flex;align-items:center;justify-content:space-between;gap:.75rem}
+.chart-card{margin-bottom:1rem}
+.chart-layout{display:flex;gap:1.5rem;align-items:stretch}
+.chart-canvas{min-width:0;flex:1;position:relative}
+canvas#tokenChart{display:block;width:100%;height:300px}
 canvas#tokenChart.active{cursor:pointer}
-.chart-tip{position:absolute;z-index:20;min-width:180px;max-width:280px;padding:.6rem .7rem;background:var(--card);border:1px solid var(--border);box-shadow:0 8px 24px oklch(0% 0 0 / .45);pointer-events:none;font-size:.6875rem}
-.chart-tip-head{display:flex;align-items:baseline;justify-content:space-between;gap:.75rem;margin-bottom:.4rem;padding-bottom:.35rem;border-bottom:1px solid var(--border)}
+.chart-key{width:220px;flex:0 0 220px;min-width:0;border-left:1px solid hsl(var(--border));padding-left:1.25rem}
+.chart-key-title{font-size:.75rem;font-weight:500;color:hsl(var(--muted-foreground));margin-bottom:.5rem}
+.chart-key-list{display:flex;flex-direction:column;gap:.15rem}
+.legend-item{display:grid;grid-template-columns:8px minmax(0,1fr) auto;align-items:center;gap:.5rem;width:100%;padding:.35rem .5rem;border-radius:calc(var(--radius) - 2px);font-size:.8125rem;text-align:left;user-select:none}
+.legend-item:hover{background:hsl(var(--accent))}
+.legend-item.off{opacity:.35}
+.legend-item.off .legend-name{text-decoration:line-through}
+.legend-dot{width:8px;height:8px;border-radius:9999px;flex-shrink:0}
+.legend-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.legend-value{font-family:"Geist Mono",monospace;font-size:.75rem;color:hsl(var(--muted-foreground));white-space:nowrap}
+.legend-more{margin-top:.5rem;font-size:.75rem;color:hsl(var(--muted-foreground))}
+.chart-empty{height:300px;display:flex;align-items:center;justify-content:center;color:hsl(var(--muted-foreground));font-size:.875rem}
+.chart-tip{position:absolute;z-index:20;min-width:190px;max-width:290px;padding:.75rem;background:hsl(var(--popover));border:1px solid hsl(var(--border));border-radius:var(--radius);box-shadow:0 8px 24px hsl(0 0% 0% / .45);pointer-events:none;font-size:.8125rem}
+.chart-tip-head{display:flex;align-items:baseline;justify-content:space-between;gap:.75rem;margin-bottom:.5rem;padding-bottom:.5rem;border-bottom:1px solid hsl(var(--border))}
 .chart-tip-date{font-weight:500;white-space:nowrap}
-.chart-tip-total{font-family:var(--mono);color:var(--fg);white-space:nowrap}
-.chart-tip-list{display:flex;flex-direction:column;gap:.22rem}
-.chart-tip-row{display:grid;grid-template-columns:8px minmax(0,1fr) auto;align-items:center;gap:.4rem}
-.chart-tip-row .dot{width:8px;height:8px;flex-shrink:0}
+.chart-tip-total{font-family:"Geist Mono",monospace;white-space:nowrap}
+.chart-tip-list{display:flex;flex-direction:column;gap:.25rem}
+.chart-tip-row{display:grid;grid-template-columns:8px minmax(0,1fr) auto;align-items:center;gap:.5rem}
+.chart-tip-row .dot{width:8px;height:8px;border-radius:9999px;flex-shrink:0}
 .chart-tip-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.chart-tip-value{font-family:var(--mono);color:var(--muted-fg);white-space:nowrap}
-.chart-tip-more{margin-top:.35rem;color:var(--muted-fg);font-size:.625rem}
-.chart-tip-foot{margin-top:.45rem;padding-top:.35rem;border-top:1px solid var(--border);color:var(--muted-fg);font-size:.625rem}
-.chart-tip-hint{margin-top:.35rem;color:var(--muted-fg);font-size:.625rem}
-.details-grid{display:grid;grid-template-columns:minmax(0,.6fr) minmax(0,2.4fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border)}
-.detail-panel{min-width:0;background:var(--bg);padding:1.25rem}
-.detail-heading{display:flex;align-items:baseline;justify-content:space-between;gap:.75rem;margin-bottom:1rem}
-.detail-title{font-size:1rem;font-weight:500}
-.detail-hint{font-size:.6875rem;color:var(--muted-fg);white-space:nowrap}
-.sources-list{display:flex;flex-direction:column;width:100%}
-.source-chip{display:grid;grid-template-columns:8px minmax(0,1fr) auto;align-items:center;gap:.5rem;width:100%;padding:.52rem .35rem;border:0;border-top:1px solid var(--border);background:transparent;color:var(--muted-fg);font-size:.75rem;text-align:left;cursor:pointer;user-select:none}
-.source-chip:hover{background:var(--card);color:var(--fg)}
-.source-chip.off{opacity:.32;text-decoration:line-through}
-.source-dot{width:7px;height:7px;flex-shrink:0}
-.source-count{font-family:var(--mono);font-size:.625rem;color:var(--muted-fg);white-space:nowrap;text-align:right}
-.source-metrics{display:flex;flex-direction:column;align-items:flex-end;gap:.1rem}
-.source-cache{font-family:var(--mono);font-size:.5625rem;color:var(--muted-fg);white-space:nowrap}
-.source-cache.na{opacity:.6}
-.empty-detail{color:var(--muted-fg);font-size:.8125rem}
-.breakdown-bar{display:flex;height:1.5rem;overflow:hidden;margin-bottom:.85rem;background:var(--muted)}
-.breakdown-segment{min-width:1px;transition:width .25s ease}
-.breakdown-items{display:flex;flex-direction:column}
-.breakdown-head,.breakdown-item{display:grid;grid-template-columns:minmax(0,1fr) 4.75rem 3.5rem 4.5rem 10.5rem;align-items:center;gap:.75rem;padding:.52rem .35rem;font-size:.75rem}
-.breakdown-head{padding-top:0;padding-bottom:.3rem;color:var(--muted-fg);font-family:var(--mono);font-size:.5625rem;letter-spacing:.04em;text-transform:uppercase}
-.breakdown-item{border-top:1px solid var(--border);cursor:pointer;user-select:none}
-.breakdown-item:hover{background:var(--card)}
-.breakdown-item.off{opacity:.3;text-decoration:line-through}
-.model-name{display:flex;align-items:center;gap:.5rem;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.model-name .dot{width:8px;height:8px;flex-shrink:0}
-.model-total,.model-share,.model-cache,.model-io{font-family:var(--mono);font-size:.625rem;white-space:nowrap}
-.model-total{text-align:right}
-.model-share,.model-cache,.model-io{color:var(--muted-fg);text-align:right}
-.model-cache{color:var(--fg)}
-.model-io{overflow:hidden;text-overflow:ellipsis}
-.model-io.off{visibility:hidden}
-.page-meta{padding:.9rem 1.25rem;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:.6875rem;color:var(--muted-fg);text-align:center}
-.site-footer{max-width:64rem;margin:-1px auto 4rem;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--border);border:1px solid var(--border);font-family:var(--mono);font-size:.6875rem}
-.site-footer a,.site-footer span{display:flex;align-items:center;justify-content:center;min-height:42px;padding:.65rem .5rem;background:var(--bg);color:var(--muted-fg);text-align:center}
-.site-footer a:hover{color:var(--fg);background:var(--card)}
-.loading{display:flex;align-items:center;justify-content:center;padding:5rem 1rem;color:var(--muted-fg)}
-.spinner{width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--fg);animation:spin .6s linear infinite;margin-right:.75rem}
-@keyframes spin{to{transform:rotate(360deg)}}
-.error-box{padding:3rem 1rem;text-align:center;color:var(--muted-fg)}
-.error-box .retry-btn{margin-top:.75rem;padding:.5rem 1rem;border:1px solid var(--border);background:var(--card);color:var(--fg);cursor:pointer;font-size:.875rem}
-.edit-overlay{position:fixed;inset:0;background:oklch(0% 0 0 / .64);display:flex;align-items:center;justify-content:center;z-index:100}
-.edit-card{background:var(--card);border:1px solid var(--border);padding:1.5rem;width:90%;max-width:400px}
-.edit-card h3{font-size:1rem;font-weight:500;margin-bottom:1rem}
-.edit-card label{display:block;font-size:.75rem;color:var(--muted-fg);margin-bottom:.25rem}
-.edit-card input{width:100%;padding:.5rem .75rem;font-size:.875rem;background:var(--bg);border:1px solid var(--border);color:var(--fg);margin-bottom:.75rem;outline:none}
-.edit-card input:focus{border-color:var(--muted-fg)}
-.edit-actions{display:flex;gap:.5rem;justify-content:flex-end;margin-top:.5rem}
-.edit-actions button{padding:.375rem .75rem;font-size:.875rem;border:1px solid var(--border);cursor:pointer}
-.edit-actions .save-btn{background:var(--fg);color:var(--bg);border-color:var(--fg)}
-.edit-actions .cancel-btn{background:var(--card);color:var(--muted-fg)}
-@media(max-width:800px){
-  .site-header-inner{grid-template-columns:1fr auto}
-  .site-nav{display:none}
-  .chart-layout{align-items:stretch;flex-direction:column;gap:1rem}
-  .chart-key{width:100%;flex-basis:auto}
+.chart-tip-value{font-family:"Geist Mono",monospace;font-size:.75rem;color:hsl(var(--muted-foreground));white-space:nowrap}
+.chart-tip-more{margin-top:.4rem;color:hsl(var(--muted-foreground));font-size:.75rem}
+.chart-tip-hint{margin-top:.5rem;padding-top:.5rem;border-top:1px solid hsl(var(--border));color:hsl(var(--muted-foreground));font-size:.6875rem}
+.tabs-list{display:inline-flex;align-items:center;gap:1px;background:hsl(var(--muted));border-radius:calc(var(--radius) - 2px);padding:3px}
+.tabs-trigger{padding:.35rem .8rem;border-radius:calc(var(--radius) - 4px);font-size:.8125rem;font-weight:500;color:hsl(var(--muted-foreground));display:inline-flex;align-items:center;gap:.4rem}
+.tabs-trigger:hover{color:hsl(var(--foreground))}
+.tabs-trigger.active{background:hsl(var(--background));color:hsl(var(--foreground));box-shadow:0 1px 2px hsl(0 0% 0% / .3)}
+.tabs-badge{font-family:"Geist Mono",monospace;font-size:.6875rem;color:hsl(var(--muted-foreground))}
+.data-table{width:100%;border-collapse:collapse;font-size:.8125rem}
+.data-table thead th{padding:.65rem .75rem;text-align:left;font-size:.75rem;font-weight:500;color:hsl(var(--muted-foreground));border-bottom:1px solid hsl(var(--border))}
+.data-table thead th.num,.data-table tbody td.num{text-align:right;font-family:"Geist Mono",monospace;font-size:.75rem;white-space:nowrap;font-variant-numeric:tabular-nums}
+.data-table thead th.num-r,.data-table tbody td.num-r{text-align:right;white-space:nowrap}
+.data-table tbody tr{border-bottom:1px solid hsl(var(--border));cursor:pointer}
+.data-table tbody tr:last-child{border-bottom:0}
+.data-table tbody tr:hover{background:hsl(var(--muted) / .5)}
+.data-table tbody tr.off{opacity:.35}
+.data-table tbody tr.off .cell-name{text-decoration:line-through}
+.data-table td{padding:.55rem .75rem;vertical-align:middle}
+.cell-name{display:flex;align-items:center;gap:.6rem;min-width:0}
+.cell-name .dot{width:8px;height:8px;border-radius:9999px;flex-shrink:0}
+.cell-name span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cell-share{display:grid;grid-template-columns:4.5rem 3.8ch;align-items:center;justify-content:end;gap:.5rem}
+.share-pct{font-family:"Geist Mono",monospace;font-size:.75rem;color:hsl(var(--muted-foreground));text-align:right;font-variant-numeric:tabular-nums}
+.progress{width:4.5rem;height:.5rem;border-radius:9999px;background:hsl(var(--secondary));overflow:hidden;flex-shrink:0}
+.progress-bar{display:block;height:100%;border-radius:9999px}
+.cell-muted{color:hsl(var(--muted-foreground))}
+.page-meta{padding:1rem 0 2rem;text-align:center;font-family:"Geist Mono",monospace;font-size:.75rem;color:hsl(var(--muted-foreground))}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.site-footer{border-top:1px solid hsl(var(--border))}
+.site-footer-inner{max-width:80rem;margin:0 auto;padding:1.25rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;font-size:.8125rem;color:hsl(var(--muted-foreground))}
+.site-footer nav{display:flex;gap:1.25rem}
+.site-footer a:hover{color:hsl(var(--foreground))}
+.avatar{width:2rem;height:2rem;border-radius:9999px;overflow:hidden;flex-shrink:0;background:hsl(var(--muted));display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:600;color:hsl(var(--muted-foreground))}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.menu{position:absolute;top:calc(100% + 6px);right:0;z-index:60;min-width:11rem;padding:.25rem;background:hsl(var(--popover));border:1px solid hsl(var(--border));border-radius:var(--radius);box-shadow:0 8px 24px hsl(0 0% 0% / .45)}
+.menu.hidden{display:none}
+.menu-label{padding:.4rem .6rem .35rem;font-size:.75rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-bottom:1px solid hsl(var(--border));margin-bottom:.25rem}
+.menu [role="menuitem"]{display:block;width:100%;text-align:left;padding:.45rem .6rem;border-radius:calc(var(--radius) - 2px);font-size:.8125rem}
+.menu [role="menuitem"]:hover{background:hsl(var(--accent))}
+.dialog-overlay{position:fixed;inset:0;background:hsl(0 0% 0% / .7);display:flex;align-items:center;justify-content:center;z-index:100;padding:1rem}
+.dialog{background:hsl(var(--card));border:1px solid hsl(var(--border));border-radius:var(--radius);padding:1.5rem;width:100%;max-width:26rem;box-shadow:0 12px 32px hsl(0 0% 0% / .5)}
+.dialog h3{font-size:1.125rem;font-weight:600;margin-bottom:.25rem}
+.dialog p.dialog-desc{font-size:.875rem;color:hsl(var(--muted-foreground));margin-bottom:1.25rem}
+.dialog label{display:block;font-size:.8125rem;font-weight:500;margin-bottom:.35rem}
+.dialog input{width:100%;height:2.25rem;padding:0 .75rem;font-size:.875rem;background:hsl(var(--background));border:1px solid hsl(var(--input));border-radius:calc(var(--radius) - 2px);color:hsl(var(--foreground));margin-bottom:1rem;outline:none}
+.dialog input:focus{border-color:hsl(var(--ring))}
+.dialog-actions{display:flex;gap:.5rem;justify-content:flex-end}
+.alert{display:flex;align-items:center;gap:.75rem;border:1px solid hsl(var(--destructive));border-radius:var(--radius);background:hsl(var(--destructive) / .1);padding:1rem;color:hsl(var(--foreground));font-size:.875rem}
+.alert button{margin-left:auto;flex-shrink:0}
+@media(max-width:1024px){
+  .kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .chart-layout{flex-direction:column;align-items:stretch}
+  .chart-key{width:100%;flex-basis:auto;border-left:0;border-top:1px solid hsl(var(--border));padding-left:0;padding-top:1rem}
   .chart-key-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:1rem}
-  .details-grid{grid-template-columns:1fr}
-  .sources-list{width:100%}
 }
 @media(max-width:640px){
-  .breakdown-head,.breakdown-item{grid-template-columns:minmax(0,1fr) 4.5rem 3.25rem 4.25rem;gap:.5rem}
-  .breakdown-head .model-io,.model-io{display:none}
-}
-@media(max-width:560px){
-  .site-header-inner{padding:0 .75rem}
-  .site-status{display:none}
-  .profile-header{padding:1.5rem .75rem}
-  .username{font-size:1.25rem}
-  .profile-actions{gap:.25rem}
-  .profile-action{padding:.32rem .45rem;font-size:.6875rem}
-  .stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .stat-card{padding:.8rem .7rem}
-  .stat-value{font-size:1.1rem}
-  .stat-value.small{font-size:.95rem}
-  .dashboard-section,.detail-panel{padding:1rem .75rem}
-  canvas#tokenChart,.chart-empty{height:240px}
+  .page{padding:1rem}
+  .topbar-inner{padding:0 1rem}
+  .kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem}
+  .stat-num{font-size:1.125rem;line-height:1.5rem}
+  .custom-range input[type="date"]{font-size:16px}
+  .hide-sm{display:none}
+  .progress{width:3rem}
+  .cell-share{grid-template-columns:3rem 3.8ch}
+  .card-content{padding:1rem}
+  canvas#tokenChart{height:240px}
+  .chart-empty{height:240px}
   .chart-key-list{grid-template-columns:1fr}
-  .site-footer{grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:2rem}
 }
+.table-scroll{overflow-x:auto;margin:0 -1.5rem;padding:0 1.5rem}
+.table-scroll .data-table{min-width:34rem}
+.data-table td:first-child,.data-table th:first-child{position:sticky;left:-1.5rem;background:hsl(var(--card));z-index:1}
+.data-table tbody tr:hover td:first-child{background:hsl(var(--muted) / .5)}
+.table-scroll{scrollbar-width:thin;background:linear-gradient(to right,hsl(var(--card)) 96%,transparent),linear-gradient(to left,hsl(var(--muted)) 0,transparent 12px);background-repeat:no-repeat;background-attachment:local,scroll}
 </style>
 </head>
 <body>
-<header class="site-header">
-  <div class="site-header-inner">
-    <a class="site-brand" href="#dashboard">My Tokenmaxxing</a>
-    <nav class="site-nav" aria-label="Dashboard navigation">
-      <a href="#dashboard">Dashboard</a>
-      <a href="#details">Details</a>
-    </nav>
-    <div class="site-actions">
-      <span class="site-status">local profile</span>
-      <button class="site-action" onclick="showEdit()">Edit</button>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="#top"><span class="brand-mark" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="7.5" width="3" height="5" rx="1" fill="currentColor" opacity=".55"/><rect x="5.5" y="4.5" width="3" height="8" rx="1" fill="currentColor" opacity=".8"/><rect x="9.5" y="1.5" width="3" height="11" rx="1" fill="currentColor"/></svg></span>My Tokenmaxxing</a>
+    <div class="topbar-right" style="position:relative">
+      <button class="avatar" id="avatarBtn" title="Profile menu" aria-label="Profile menu" aria-haspopup="menu" aria-expanded="false"></button>
+      <div class="menu hidden" id="avatarMenu" role="menu">
+        <div class="menu-label" id="avatarMenuName"></div>
+        <button role="menuitem" id="menuEdit">Edit profile</button>
+      </div>
     </div>
   </div>
 </header>
 
-<main class="container" id="app">
-  <div class="loading" id="loadingState">
-    <div class="spinner"></div>
-    <span>Loading token data...</span>
+<main class="page" id="top">
+  <div class="page-head">
+    <div>
+      <h1 class="page-title">Overview</h1>
+      <p class="page-desc" id="pageDesc">Local token usage across every coding agent.</p>
+    </div>
+    <div class="period-picker">
+      <div class="range-group" role="group" aria-label="Stats period" id="statsRangeGroup"></div>
+      <div class="custom-range hidden" id="customRange">
+        <input type="date" id="customFrom" aria-label="From">
+        <span class="range-sep">–</span>
+        <input type="date" id="customTo" aria-label="To">
+      </div>
+    </div>
   </div>
+
+  <div id="kpiGrid" class="kpi-grid"></div>
+
+  <section class="card chart-card" aria-labelledby="tokens-title">
+    <div class="card-header">
+      <div class="card-row">
+        <div>
+          <h2 class="card-title" id="tokens-title">Token usage</h2>
+          <p class="card-desc" id="chartRangeLabel"></p>
+        </div>
+        <div class="range-group range-sm" role="group" aria-label="Chart range" id="chartRangeGroup"></div>
+      </div>
+    </div>
+    <div class="card-content">
+      <div class="chart-layout">
+        <div class="chart-canvas"><canvas id="tokenChart" role="img" aria-label="Daily tokens by model"></canvas></div>
+        <aside class="chart-key" aria-label="Models">
+          <p class="chart-key-title">Top models</p>
+          <div id="chartLegend"></div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="breakdown" aria-labelledby="breakdown-title">
+    <div class="card-header">
+      <div class="card-row">
+        <div>
+          <h2 class="card-title" id="breakdown-title">Breakdown</h2>
+          <p class="card-desc">Click a row to hide it · click again to restore</p>
+        </div>
+        <div class="tabs-list" role="tablist" aria-label="Breakdown view" id="breakTabs"></div>
+      </div>
+    </div>
+    <div class="card-content" id="breakTableWrap"></div>
+  </section>
+
+  <p class="page-meta sr-only" id="pageMeta" aria-live="polite"></p>
 </main>
 
 <footer class="site-footer">
-  <a href="https://github.com/nico2525nn/my-tokenmaxxing" target="_blank" rel="noreferrer">GitHub</a>
-  <a href="https://tokenmaxxing.sh" target="_blank" rel="noreferrer">Reference</a>
-  <span>Local data</span>
-  <span id="footerRange">Auto refresh 60s</span>
+  <div class="site-footer-inner">
+    <span id="footerMeta">Local data · auto refresh 60s</span>
+    <nav>
+      <a href="https://github.com/nico2525nn/my-tokenmaxxing" target="_blank" rel="noreferrer">GitHub</a>
+      <a href="https://tokenmaxxing.sh" target="_blank" rel="noreferrer">Reference</a>
+    </nav>
+  </div>
 </footer>
 
+<div id="dialogRoot"></div>
+
 <script>
-const COLORS = ['#f59e0b','#10b981','#3b82f6','#ef4444','#8b5cf6','#ec4899','#06b6d4','#84cc16','#f97316','#6366f1','#14b8a6','#eab308'];
-const SOURCE_COLORS = ['#94a3b8','#38bdf8','#34d399','#fbbf24','#a78bfa','#fb7185'];
-const SOURCE_LABELS = { opencode:'OpenCode', opengrok:'OpenGrok', omp:'OMP', zcode:'ZCode', reasonix:'Reasonix', dsh:'DSH' };
-const MODEL_COLORS = {};
-let colorIdx = 0;
-let sourceColorIdx = 0;
-const profileParams = new URLSearchParams(location.search);
-let userName = profileParams.get('name')?.trim() || localStorage.getItem('tmx_name') || 'nico2525nn';
-let avatarUrl = profileParams.get('avatar')?.trim() || localStorage.getItem('tmx_avatar') || 'https://avatars.githubusercontent.com/u/173241093?v=4';
-let DASH = null;
-let ALL_STATS = null;
+// ---- page state ----
+let DASH = null;          // server summary payload
+let ALL_STATS = null;     // current filtered view (buildView output)
 let hasLoaded = false;
 const hiddenModels = new Set();
 const hiddenSources = new Set();
 let statsPeriod = 'all';
 let statsCustom = {from:'', to:''};
+let chartRange = '30d';
+let breakTab = 'models';
+let pinnedBucket = -1;
+let chartView = null;
+let calTarget = 'from';
+let calCursor = '';
+
+const profileParams = new URLSearchParams(location.search);
+let userName = profileParams.get('name')?.trim() || localStorage.getItem('tmx_name') || 'nico2525nn';
+let avatarUrl = profileParams.get('avatar')?.trim() || localStorage.getItem('tmx_avatar') || 'https://avatars.githubusercontent.com/u/173241093?v=4';
 
 function saveStatsPeriod() {
   try {
@@ -236,331 +319,147 @@ function saveStatsPeriod() {
     localStorage.setItem('tmx_stats_custom', JSON.stringify(statsCustom));
   } catch {}
 }
-
 function loadStatsPeriod() {
   try {
     const saved = localStorage.getItem('tmx_stats_period');
-    if (saved === '7' || saved === '30' || saved === '90' || saved === 'all' || saved === 'custom') {
-      statsPeriod = saved;
-    }
+    if (saved === '7' || saved === '30' || saved === '90' || saved === 'all' || saved === 'custom') statsPeriod = saved;
     const custom = JSON.parse(localStorage.getItem('tmx_stats_custom') || '{}');
-    if (/^\d{4}-\d{2}-\d{2}$/.test(custom.from || '') && /^\d{4}-\d{2}-\d{2}$/.test(custom.to || '')) {
-      statsCustom = {from:custom.from, to:custom.to};
-    } else {
-      statsCustom = {from:'', to:''};
-    }
-  } catch {
-    statsPeriod = 'all';
-    statsCustom = {from:'', to:''};
-  }
+    if (/^\d{4}-\d{2}-\d{2}$/.test(custom.from || '') && /^\d{4}-\d{2}-\d{2}$/.test(custom.to || '')) statsCustom = {from:custom.from, to:custom.to};
+    else statsCustom = {from:'', to:''};
+  } catch { statsPeriod = 'all'; statsCustom = {from:'', to:''}; }
 }
+const initialTab = new URLSearchParams(location.search).get('tab');
+if (initialTab === 'harness') breakTab = 'harness';
 
-function getModelColor(m) {
-  const key = m || 'unknown';
-  if (!MODEL_COLORS[key]) { MODEL_COLORS[key] = COLORS[colorIdx % COLORS.length]; colorIdx++; }
-  return MODEL_COLORS[key];
-}
-function getSourceColor(source) {
-  if (!getSourceColor.values) getSourceColor.values = {};
-  if (!getSourceColor.values[source]) {
-    getSourceColor.values[source] = SOURCE_COLORS[sourceColorIdx % SOURCE_COLORS.length];
-    sourceColorIdx++;
-  }
-  return getSourceColor.values[source];
-}
-function escapeHtml(value) {
-  return String(value ?? '').replace(/[&<>"']/g, function(ch) {
-    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];
+// ---- stats period filter + KPI cards ----
+function renderPeriod() {
+  const presets = [['7','7D'],['30','30D'],['90','90D'],['all','ALL'],['custom','Custom']];
+  const active = document.activeElement && (document.activeElement.id === 'customFrom' || document.activeElement.id === 'customTo') ? document.activeElement.id : null;
+  const draft = active ? {
+    from: document.getElementById('customFrom')?.value || '',
+    to: document.getElementById('customTo')?.value || '',
+  } : null;
+  document.getElementById('statsRangeGroup').innerHTML = presets.map(function(p) {
+    return '<button class="range-btn' + (statsPeriod === p[0] ? ' active' : '') + '" data-period="' + p[0] + '" aria-pressed="' + (statsPeriod === p[0]) + '">' + p[1] + '</button>';
+  }).join('');
+  document.getElementById('statsRangeGroup').querySelectorAll('button').forEach(function(btn) {
+    btn.onclick = function() { setStatsPeriod(btn.dataset.period); };
   });
-}
-function inlineArg(value) {
-  return escapeHtml(JSON.stringify(value));
-}
-function fmt(n) {
-  n = Number(n) || 0;
-  if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B';
-  if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
-  if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
-  return String(Math.round(n));
-}
-function shortModel(name) {
-  const value = name || 'unknown';
-  if (value.length > 22) {
-    const parts = value.split('/');
-    return parts.length > 1 ? parts[parts.length - 1] : value.slice(0, 20) + '\u2026';
-  }
-  return value;
-}
-function titleCase(value) {
-  return value.replace(/(^|[-_])([a-z])/g, function(_, prefix, letter) { return prefix + letter.toUpperCase(); });
-}
-function sourceLabel(value) {
-  return SOURCE_LABELS[value] || titleCase(value);
-}
-function dateFromIso(value) {
-  const parts = value.split('-').map(Number);
-  return new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
-}
-function isoDate(date) {
-  return date.toISOString().slice(0, 10);
-}
-function addDays(value, amount) {
-  const date = dateFromIso(value);
-  date.setUTCDate(date.getUTCDate() + amount);
-  return isoDate(date);
-}
-function daySpan(first, last) {
-  if (!first || !last) return 0;
-  return Math.round((dateFromIso(last) - dateFromIso(first)) / 86400000) + 1;
-}
-// DeepSeek Platform 風: 全体統計の期間絞り込み。null は無制限。
-function statsPeriodWindow(days) {
-  if (statsPeriod === 'custom') {
-    if (statsCustom.from && statsCustom.to && statsCustom.from <= statsCustom.to) {
-      return {from:statsCustom.from, to:statsCustom.to};
-    }
-    return null;
-  }
-  if (!days || !days.length) return null;
-  const span = parseInt(statsPeriod, 10);
-  if (statsPeriod === 'all' || !isFinite(span) || span <= 0) return null;
-  const last = days[days.length - 1].date;
-  const first = days[0].date;
-  return {from:addDays(last, -(Math.min(span, daySpan(first, last)) - 1)), to:last};
-}
-function niceMax(value) {
-  if (!value || value <= 0) return 1;
-  const padded = value * 1.1;
-  const exponent = Math.pow(10, Math.floor(Math.log10(padded)));
-  const normalized = padded / exponent;
-  const step = normalized <= 1.5 ? .25 : normalized <= 3 ? .5 : normalized <= 7 ? 1 : 2;
-  return Math.ceil(padded / (step * exponent)) * step * exponent;
-}
-function showEdit() {
-  const overlay = document.createElement('div');
-  overlay.className = 'edit-overlay';
-  overlay.innerHTML = '<div class="edit-card"><h3>Edit Profile</h3><label for="edNm">Name</label><input id="edNm" value="' + escapeHtml(userName) + '"><label for="edAv">Avatar URL</label><input id="edAv" value="' + escapeHtml(avatarUrl) + '"><div class="edit-actions"><button class="cancel-btn" onclick="this.closest(\'.edit-overlay\').remove()">Cancel</button><button class="save-btn" onclick="saveEdit()">Save</button></div></div>';
-  document.body.appendChild(overlay);
-}
-function saveEdit() {
-  const name = document.getElementById('edNm').value.trim() || 'nico2525nn';
-  const avatar = document.getElementById('edAv').value.trim() || 'https://avatars.githubusercontent.com/u/173241093?v=4';
-  userName = name;
-  avatarUrl = avatar;
-  localStorage.setItem('tmx_name', name);
-  localStorage.setItem('tmx_avatar', avatar);
-  document.querySelector('.edit-overlay')?.remove();
-  renderAll();
-}
-async function shareProfile(button) {
-  const original = button.textContent;
-  try {
-    await navigator.clipboard.writeText(location.href);
-    button.textContent = 'Copied';
-  } catch {
-    button.textContent = 'Copy unavailable';
-  }
-  setTimeout(function() { button.textContent = original; }, 1400);
-}
-
-// Cache reads are a separate additive bucket in every source, so the hit rate
-// is the share of prompt-side tokens served from cache: read / (input + read).
-// Returns null when there is no prompt-side traffic to speak of.
-function cacheHitRate(input, cacheRead) {
-  const promptSide = (Number(input) || 0) + (Number(cacheRead) || 0);
-  if (promptSide <= 0) return null;
-  return (Number(cacheRead) || 0) / promptSide * 100;
-}
-function cacheHitText(input, cacheRead) {
-  const rate = cacheHitRate(input, cacheRead);
-  return rate === null ? '—' : rate.toFixed(1) + '%';
-}
-
-const EMPTY_STATS = {totalTokens:0,totalInput:0,totalOutput:0,totalCacheRead:0,totalCacheCreation:0,activeDays:0,sessions:0,topModel:'N/A',topModelTokens:0,currentStreak:0,longestStreak:0,daily:[],modelRows:[],firstDate:'',lastDate:''};
-
-function streakStats(daily) {
-  if (!daily.length) return {current:0, longest:0};
-  const dateSet = new Set(daily.map(function(day) { return day.date; }));
-  const today = new Date();
-  let current = 0;
-  if (dateSet.has(today.toISOString().slice(0, 10))) {
-    for (let back = 0; ; back++) {
-      const cursor = new Date(today);
-      cursor.setDate(cursor.getDate() - back);
-      if (!dateSet.has(cursor.toISOString().slice(0, 10))) break;
-      current++;
+  const range = document.getElementById('customRange');
+  const show = statsPeriod === 'custom';
+  range.classList.toggle('hidden', !show);
+  if (show) {
+    document.getElementById('customFrom').value = draft ? draft.from : statsCustom.from;
+    document.getElementById('customTo').value = draft ? draft.to : statsCustom.to;
+    if (active) {
+      const el = document.getElementById(active);
+      if (el) el.focus({preventScroll:true});
     }
   }
-  let longest = 0;
-  let run = 0;
-  for (let index = 0; index < daily.length; index++) {
-    if (index === 0) run = 1;
-    else run = (dateFromIso(daily[index].date) - dateFromIso(daily[index - 1].date)) / 86400000 === 1 ? run + 1 : 1;
-    if (run > longest) longest = run;
-  }
-  return {current, longest};
 }
 
-// Reduce the server summary to what the current source filter shows. The
-// payload is already grouped by (date, source, model), so this walks a few
-// hundred entries rather than every raw record.
-function buildView(summary) {
-  if (!summary) return Object.assign({}, EMPTY_STATS, {sourceRows:[]});
-  const visible = new Set();
-  for (const row of summary.sources || []) {
-    if (!hiddenSources.has(row.source)) visible.add(row.source);
-  }
-  const win = statsPeriodWindow(summary.daily || []);
-  const inWin = function(date) {
-    if (!win || !win.from || !win.to) return true;
-    return date >= win.from && date <= win.to;
-  };
-
-  const modelMap = new Map();
-  const sourceMap = new Map();
-  const dailyMap = new Map();
-  let totalTokens = 0, totalInput = 0, totalOutput = 0, totalCacheRead = 0, totalCacheCreation = 0;
-  let sessions = 0;
-
-  const bump = function(slot, tokens, input, output, cacheRead, cacheCreation) {
-    slot.tokens += tokens;
-    slot.input += input;
-    slot.output += output;
-    slot.cacheRead += cacheRead;
-    slot.cacheCreation += cacheCreation;
-  };
-
-  // 一度だけ daily を走査し、期間×ソース両軸でモデル・日別・合計を同時に作る。
-  for (const day of summary.daily || []) {
-    if (!inWin(day.date)) continue;
-    let dayTotal = 0;
-    let byModel = null;
-    for (const point of day.points) {
-      if (!visible.has(point.source)) continue;
-      const tokens = point.tokens || 0;
-      if (tokens <= 0) continue;
-      const input = point.input || 0;
-      const output = point.output || 0;
-      const cacheRead = point.cacheRead || 0;
-      const cacheCreation = point.cacheCreation || 0;
-      sessions++;
-      dayTotal += tokens;
-      totalTokens += tokens;
-      totalInput += input;
-      totalOutput += output;
-      totalCacheRead += cacheRead;
-      totalCacheCreation += cacheCreation;
-      if (!byModel) byModel = {};
-      byModel[point.model] = (byModel[point.model] || 0) + tokens;
-      let slot = modelMap.get(point.model);
-      if (!slot) modelMap.set(point.model, slot = {model: point.model, tokens: 0, input: 0, output: 0, cacheRead: 0, cacheCreation: 0});
-      bump(slot, tokens, input, output, cacheRead, cacheCreation);
-      let srow = sourceMap.get(point.source);
-      if (!srow) sourceMap.set(point.source, srow = {source: point.source, tokens: 0, input: 0, output: 0, cacheRead: 0, cacheCreation: 0});
-      bump(srow, tokens, input, output, cacheRead, cacheCreation);
-    }
-    if (dayTotal > 0) dailyMap.set(day.date, {date: day.date, total: dayTotal, byModel: byModel || {}});
-  }
-
-  const daily = [...dailyMap.values()].sort(function(a, b) { return a.date.localeCompare(b.date); });
-  const modelRows = [...modelMap.values()].sort(function(a, b) { return b.tokens - a.tokens; });
-  const sourceRows = (summary.sources || []).map(function(row) {
-    return sourceMap.get(row.source) || {source: row.source, tokens: 0, input: 0, output: 0, cacheRead: 0, cacheCreation: 0};
-  }).sort(function(a, b) { return b.tokens - a.tokens; });
-  const streak = streakStats(daily);
-  const stats = Object.assign({}, EMPTY_STATS, {
-    totalTokens, totalInput, totalOutput, totalCacheRead, totalCacheCreation,
-    activeDays: daily.length,
-    sessions,
-    daily,
-    modelRows,
-    sourceRows,
-    firstDate: daily.length ? daily[0].date : '',
-    lastDate: daily.length ? daily[daily.length - 1].date : '',
-    currentStreak: streak.current,
-    longestStreak: streak.longest,
-  });
-  if (modelRows.length) {
-    stats.topModel = modelRows[0].model;
-    stats.topModelTokens = modelRows[0].tokens;
-  }
-  return stats;
-}
-
-function renderAll() {
-  ALL_STATS = buildView(DASH);
-  pinnedBucket = -1;
-  renderDash();
-  renderBreakdown();
-  drawChart();
-  const win = statsPeriodWindow(DASH ? DASH.daily || [] : []);
-  const statsLabel = document.getElementById('statsRangeLabel');
-  if (statsLabel) statsLabel.textContent = win ? win.from + ' – ' + win.to : 'all time';
-  bindStatsCustomRange();
-  const footer = document.getElementById('footerRange');
-  if (footer) footer.textContent = ALL_STATS.firstDate ? ALL_STATS.firstDate + ' – ' + ALL_STATS.lastDate : 'No token data';
-}
-
-function renderDash() {
-  const app = document.getElementById('app');
-  const stats = ALL_STATS;
-  const sourceMarkup = stats.sourceRows.length ? stats.sourceRows.map(function(row) {
-    const source = row.source;
-    const off = hiddenSources.has(source) ? ' off' : '';
-    const rate = cacheHitRate(row.input, row.cacheRead);
-    return '<button class="source-chip' + off + '" onclick="toggleSource(' + inlineArg(source) + ')" aria-pressed="' + (!hiddenSources.has(source)) + '" title="' + escapeHtml(sourceLabel(source)) + ': cache hit ' + escapeHtml(cacheHitText(row.input, row.cacheRead)) + ' of ' + escapeHtml(fmt(row.input + row.cacheRead)) + ' prompt tokens"><span class="source-dot" style="background:' + getSourceColor(source) + '"></span><span>' + escapeHtml(sourceLabel(source)) + '</span><span class="source-metrics"><span class="source-count">' + fmt(row.tokens) + '</span><span class="source-cache' + (rate === null ? ' na' : '') + '">cache ' + escapeHtml(cacheHitText(row.input, row.cacheRead)) + '</span></span></button>';
-  }).join('') : '<p class="empty-detail">No sources detected</p>';
-  app.innerHTML = '<div id="dashboard"></div>'
-    + '<header class="profile-header"><div class="profile-info"><img src="' + escapeHtml(avatarUrl) + '" alt="' + escapeHtml(userName) + ' avatar" class="avatar" onerror="this.style.display=\'none\'"><h1 class="username">' + escapeHtml(userName) + '</h1></div><div class="profile-actions"><button class="profile-action" onclick="shareProfile(this)">Share</button><button class="profile-action" onclick="showEdit()">Edit profile</button></div></header>'
-    + '<div class="stats-period"><div class="section-actions"><span class="range-hint" id="statsRangeLabel"></span><div class="range-group" role="group" aria-label="Stats period"><button class="range-btn' + (statsPeriod === '7' ? ' active' : '') + '" onclick="setStatsPeriod(' + inlineArg('7') + ')">7D</button><button class="range-btn' + (statsPeriod === '30' ? ' active' : '') + '" onclick="setStatsPeriod(' + inlineArg('30') + ')">30D</button><button class="range-btn' + (statsPeriod === '90' ? ' active' : '') + '" onclick="setStatsPeriod(' + inlineArg('90') + ')">90D</button><button class="range-btn' + (statsPeriod === 'all' ? ' active' : '') + '" onclick="setStatsPeriod(' + inlineArg('all') + ')">ALL</button><button class="range-btn' + (statsPeriod === 'custom' ? ' active' : '') + '" onclick="setStatsPeriod(' + inlineArg('custom') + ')">CUSTOM</button></div></div><div class="custom-range' + (statsPeriod === 'custom' ? '' : ' hidden') + '" id="customRange"><input type="date" id="customFrom" aria-label="From" value="' + escapeHtml(statsCustom.from) + '"><span class="range-sep">–</span><input type="date" id="customTo" aria-label="To" value="' + escapeHtml(statsCustom.to) + '"></div></div>'
-    + '<div class="stats-grid">'
-    + '<div class="stat-card"><p class="stat-label">Total tokens</p><p class="stat-value">' + fmt(stats.totalTokens) + '</p></div>'
-    + '<div class="stat-card"><p class="stat-label">Sessions</p><p class="stat-value">' + stats.sessions + '</p></div>'
-    + '<div class="stat-card"><p class="stat-label">Top token model</p><p class="stat-value small" title="' + escapeHtml(stats.topModel) + '">' + escapeHtml(shortModel(stats.topModel)) + '</p></div>'
-    + '<div class="stat-card"><p class="stat-label">Active days</p><p class="stat-value">' + stats.activeDays + '</p></div>'
-    + '<div class="stat-card"><p class="stat-label">Current streak</p><p class="stat-value">' + stats.currentStreak + '</p></div>'
-    + '<div class="stat-card"><p class="stat-label">Longest streak</p><p class="stat-value">' + stats.longestStreak + '</p></div>'
-    + '<div class="stat-card"><p class="stat-label">Total input</p><p class="stat-value small">' + fmt(stats.totalInput) + '</p></div>'
-    + '<div class="stat-card"><p class="stat-label">Total output</p><p class="stat-value small">' + fmt(stats.totalOutput) + '</p></div>'
-    + '</div>'
-    + '<section class="dashboard-section" aria-labelledby="tokens-title"><div class="section-head"><h2 class="section-title" id="tokens-title">Daily Tokens</h2><div class="section-actions"><span class="range-hint" id="chartRangeLabel"></span><div class="range-group" role="group" aria-label="Chart range"><button class="range-btn' + (chartRange === '30d' ? ' active' : '') + '" onclick="setChartRange(' + inlineArg('30d') + ')">30D</button><button class="range-btn' + (chartRange === 'all' ? ' active' : '') + '" onclick="setChartRange(' + inlineArg('all') + ')">ALL</button></div></div></div><div class="chart-layout"><div class="chart-canvas"><canvas id="tokenChart" role="img" aria-label="Daily tokens by model"></canvas></div><aside class="chart-key" id="chartLegend" aria-label="Models"></aside></div></section>'
-    + '<div class="details-grid" id="details"><section class="detail-panel sources-section"><div class="detail-heading"><h2 class="detail-title">Harness</h2><span class="detail-hint">Click to filter</span></div><div class="sources-list">' + sourceMarkup + '</div></section><section class="detail-panel breakdown-section" id="modelBreakdown"><div class="detail-heading"><h2 class="detail-title">Model Breakdown</h2><span class="detail-hint">Click a model to hide it</span></div></section></div>'
-    + '<div class="page-meta">' + (stats.firstDate ? escapeHtml(stats.firstDate) + ' – ' + escapeHtml(stats.lastDate) + ' · ' + stats.activeDays + ' active days' : 'No token data') + '</div>';
-}
-
-function renderBreakdown() {
-  const element = document.getElementById('modelBreakdown');
-  if (!element) return;
-  const rows = ALL_STATS.modelRows || [];
-  const sorted = rows.map(function(row) { return [row.model, row.tokens]; });
-  const total = ALL_STATS.totalTokens;
-  if (!total) {
-    element.innerHTML = '<div class="detail-heading"><h2 class="detail-title">Model Breakdown</h2><span class="detail-hint">No data</span></div><p class="empty-detail">No models detected</p>';
+function setStatsPeriod(period) {
+  if (period !== '7' && period !== '30' && period !== '90' && period !== 'all' && period !== 'custom') return;
+  if (statsPeriod === period) {
+    if (period !== 'custom') return;
+    const range = document.getElementById('customRange');
+    const hidden = range.classList.contains('hidden');
+    range.classList.toggle('hidden', !hidden);
+    if (hidden) document.getElementById('customFrom').focus();
+    else closeCustomPopover();
     return;
   }
-  const byModel = new Map();
-  for (const row of rows) byModel.set(row.model, row);
-  let html = '<div class="detail-heading"><h2 class="detail-title">Model Breakdown</h2><span class="detail-hint">' + sorted.length + ' models</span></div><div class="breakdown-bar" aria-hidden="true">';
-  sorted.forEach(function(entry) {
-    html += '<div class="breakdown-segment" style="width:' + (entry[1] / total * 100).toFixed(2) + '%;background:' + getModelColor(entry[0]) + '"></div>';
+  statsPeriod = period;
+  if (period === 'custom' && (!statsCustom.from || !statsCustom.to)) {
+    const days = DASH ? DASH.daily || [] : [];
+    if (days.length) statsCustom = {from:days[days.length - 1].date, to:days[days.length - 1].date};
+  }
+  saveStatsPeriod();
+  renderAll();
+}
+
+function renderKpis() {
+  const s = ALL_STATS;
+  const hit = cacheHitText(s.totalInput, s.totalCacheRead);
+  const topShare = s.totalTokens > 0 ? (s.topModelTokens / s.totalTokens * 100).toFixed(1) + '%' : '—';
+  const cards = [
+    {label:'Total Tokens', value:fmt(s.totalTokens), sub:s.sessions + ' sessions · in ' + fmt(s.totalInput) + ' / out ' + fmt(s.totalOutput), title:String(s.totalTokens)},
+    {label:'Cache Hit Rate', value:hit, sub:fmt(s.totalCacheRead) + ' of ' + fmt(s.totalInput + s.totalCacheRead) + ' prompt tokens', title:fmt(s.totalCacheRead) + ' of ' + fmt(s.totalInput + s.totalCacheRead) + ' prompt tokens'},
+    {label:'Top Model', value:s.topModel === 'N/A' ? '—' : shortModel(s.topModel), sub:topShare + ' of all tokens · ' + fmt(s.topModelTokens), title:s.topModel},
+    {label:'Active Days', value:String(s.activeDays), sub:'streak ' + s.currentStreak + ' · longest ' + s.longestStreak},
+  ];
+  document.getElementById('kpiGrid').innerHTML = cards.map(function(c) {
+    return '<div class="card"><div class="kpi-body"><div class="stat-top"><span class="card-desc">' + c.label + '</span></div><span class="stat-num"' + (c.title ? ' title="' + escapeHtml(c.title) + '"' : '') + '>' + escapeHtml(c.value) + '</span><span class="stat-sub">' + escapeHtml(c.sub) + '</span></div></div>';
+  }).join('');
+}
+
+function renderChartCard() {
+  document.getElementById('chartRangeGroup').innerHTML = [['30d','30D'],['all','ALL']].map(function(p) {
+    return '<button class="range-btn' + (chartRange === p[0] ? ' active' : '') + '" data-range="' + p[0] + '" aria-pressed="' + (chartRange === p[0]) + '">' + p[1] + '</button>';
+  }).join('');
+  document.getElementById('chartRangeGroup').querySelectorAll('button').forEach(function(btn) {
+    btn.onclick = function() { setChartRange(btn.dataset.range); };
   });
-  html += '</div><div class="breakdown-items">'
-    + '<div class="breakdown-head" aria-hidden="true"><span>Model</span><span style="text-align:right">Tokens</span><span style="text-align:right">Share</span><span style="text-align:right">Cache</span><span class="model-io">In / Out</span></div>';
-  sorted.forEach(function(entry) {
-    const model = entry[0];
-    const row = byModel.get(model);
-    const off = hiddenModels.has(model) ? ' off' : '';
-    const cacheLabel = cacheHitText(row.input, row.cacheRead);
-    html += '<div class="breakdown-item' + off + '" onclick="toggleModel(' + inlineArg(model) + ')" role="button" tabindex="0" title="' + escapeHtml(model) + ' — cache hit ' + escapeHtml(cacheLabel) + ' of ' + escapeHtml(fmt(row.input + row.cacheRead)) + ' prompt tokens" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){toggleModel(' + inlineArg(model) + ')}">'
-      + '<span class="model-name"><span class="dot" style="background:' + getModelColor(model) + '"></span>' + escapeHtml(model) + '</span>'
-      + '<span class="model-total">' + fmt(entry[1]) + '</span>'
-      + '<span class="model-share">' + (entry[1] / total * 100).toFixed(1) + '%</span>'
-      + '<span class="model-cache">' + escapeHtml(cacheLabel) + '</span>'
-      + '<span class="model-io">' + fmt(row.input) + ' / ' + fmt(row.output) + '</span>'
-      + '</div>';
+}
+
+function setChartRange(range) {
+  if (range !== 'all' && range !== '30d') return;
+  if (chartRange === range) return;
+  chartRange = range;
+  pinnedBucket = -1;
+  hideChartTip();
+  renderChartCard();
+  drawChart();
+}
+
+// ---- breakdown tabs + tables ----
+function renderBreakdown() {
+  const tabDefs = [['models','Models', (ALL_STATS.modelRows || []).length], ['harness','Harness', (DASH && DASH.sources ? DASH.sources.length : 0)]];
+  document.getElementById('breakTabs').innerHTML = tabDefs.map(function(t) {
+    return '<button class="tabs-trigger' + (breakTab === t[0] ? ' active' : '') + '" data-tab="' + t[0] + '" role="tab" aria-selected="' + (breakTab === t[0]) + '">' + t[1] + ' <span class="tabs-badge">' + t[2] + '</span></button>';
+  }).join('');
+  document.getElementById('breakTabs').querySelectorAll('button').forEach(function(btn) {
+    btn.onclick = function() { if (breakTab !== btn.dataset.tab) { breakTab = btn.dataset.tab; renderBreakdown(); } };
   });
-  html += '</div>';
-  element.innerHTML = html;
+  const wrap = document.getElementById('breakTableWrap');
+  if (!ALL_STATS.totalTokens) {
+    wrap.innerHTML = '<p class="card-desc">No models detected</p>';
+    return;
+  }
+  if (breakTab === 'models') {
+    const rows = ALL_STATS.modelRows || [];
+    wrap.innerHTML = '<div class="table-scroll"><table class="data-table"><thead><tr><th>Model</th><th class="num">Tokens</th><th class="num-r">Share</th><th class="num-r">Cache</th><th class="num hide-sm">In / Out</th></tr></thead><tbody>' + rows.map(function(row) {
+      const off = hiddenModels.has(row.model) ? ' off' : '';
+      const share = (row.tokens / ALL_STATS.totalTokens * 100).toFixed(1);
+      return '<tr class="' + off.trim() + '" data-model="' + escapeHtml(row.model) + '" title="' + escapeHtml(row.model) + ' — cache hit ' + escapeHtml(cacheHitText(row.input, row.cacheRead)) + ' of ' + escapeHtml(fmt(row.input + row.cacheRead)) + ' prompt tokens">'
+        + '<td><span class="cell-name"><span class="dot" style="background:' + getModelColor(row.model) + '"></span><span>' + escapeHtml(row.model) + '</span></span></td>'
+        + '<td class="num">' + fmt(row.tokens) + '</td>'
+        + '<td class="num-r"><span class="cell-share"><span class="progress"><span class="progress-bar" style="width:' + share + '%;background:' + getModelColor(row.model) + '"></span></span><span class="share-pct">' + share + '%</span></span></td>'
+        + '<td class="num">' + escapeHtml(cacheHitText(row.input, row.cacheRead)) + '</td>'
+        + '<td class="num hide-sm cell-muted">' + fmt(row.input) + ' / ' + fmt(row.output) + '</td>'
+        + '</tr>';
+    }).join('') + '</tbody></table></div>';
+    wrap.querySelectorAll('tr[data-model]').forEach(function(tr) {
+      tr.onclick = function() { toggleModel(tr.dataset.model); };
+    });
+  } else {
+    const rows = ALL_STATS.sourceRows || [];
+    const total = rows.reduce(function(s, r) { return s + r.tokens; }, 0) || 1;
+    wrap.innerHTML = '<div class="table-scroll"><table class="data-table"><thead><tr><th>Harness</th><th class="num">Tokens</th><th class="num-r">Share</th><th class="num-r">Cache</th><th class="num hide-sm">In / Out</th></tr></thead><tbody>' + rows.map(function(row) {
+      const off = hiddenSources.has(row.source) ? ' off' : '';
+      const share = (row.tokens / total * 100).toFixed(1);
+      return '<tr class="' + off.trim() + '" data-source="' + escapeHtml(row.source) + '">'
+        + '<td><span class="cell-name"><span class="dot" style="background:' + getSourceColor(row.source) + '"></span><span>' + escapeHtml(sourceLabel(row.source)) + '</span></span></td>'
+        + '<td class="num">' + fmt(row.tokens) + '</td>'
+        + '<td class="num-r"><span class="cell-share"><span class="progress"><span class="progress-bar" style="width:' + share + '%;background:' + getSourceColor(row.source) + '"></span></span><span class="share-pct">' + share + '%</span></span></td>'
+        + '<td class="num">' + escapeHtml(cacheHitText(row.input, row.cacheRead)) + '</td>'
+        + '<td class="num hide-sm cell-muted">' + fmt(row.input) + ' / ' + fmt(row.output) + '</td>'
+        + '</tr>';
+    }).join('') + '</tbody></table></div>';
+    wrap.querySelectorAll('tr[data-source]').forEach(function(tr) {
+      tr.onclick = function() { toggleSource(tr.dataset.source); };
+    });
+  }
 }
 
 function toggleSource(source) {
@@ -576,50 +475,15 @@ function toggleModel(model) {
   renderBreakdown();
 }
 
-const CHART_RANGE_DAYS = 30;
-const CHART_RANGE_MIN_DAYS = 7;
-let chartRange = '30d';
-
-function setStatsPeriod(period) {
-  if (period !== '7' && period !== '30' && period !== '90' && period !== 'all' && period !== 'custom') return;
-  if (statsPeriod === period) return;
-  statsPeriod = period;
-  if (period === 'custom' && (!statsCustom.from || !statsCustom.to)) {
-    const days = DASH ? DASH.daily || [] : [];
-    if (days.length) {
-      statsCustom = {from:days[days.length - 1].date, to:days[days.length - 1].date};
-    }
-  }
-  saveStatsPeriod();
-  renderAll();
-}
-
-function applyStatsCustomRange() {
-  const from = document.getElementById('customFrom');
-  const to = document.getElementById('customTo');
-  if (!from || !to || !from.value || !to.value || from.value > to.value) return;
-  if (from.value !== statsCustom.from || to.value !== statsCustom.to) {
-    statsCustom.from = from.value;
-    statsCustom.to = to.value;
-    saveStatsPeriod();
-  }
-  statsPeriod = 'custom';
-  renderAll();
-}
-
-let calTarget = 'from';
-let calCursor = '';
-
+// ---- custom-range calendar popover ----
 function calOpenDays() {
   const days = DASH && DASH.daily ? DASH.daily.map(function(d) { return d.date; }) : [];
   return {first:days.length ? days[0] : isoDate(new Date()), last:days.length ? days[days.length - 1] : isoDate(new Date())};
 }
-
 function fmtMonthLabel(value) {
   const parts = value.split('-').map(Number);
   return parts[0] + '-' + String(parts[1]).padStart(2, '0');
 }
-
 function renderCalPop() {
   const host = document.getElementById('customRange');
   if (!host) return;
@@ -664,7 +528,6 @@ function renderCalPop() {
     btn.onclick = function() { calPickDay(btn.dataset.calDay); };
   });
 }
-
 function calPickDay(iso) {
   if (calTarget === 'from') {
     statsCustom.from = iso;
@@ -682,14 +545,19 @@ function calPickDay(iso) {
   if (toInput) toInput.value = statsCustom.to;
   statsPeriod = 'custom';
   closeCalPop();
+  const range = document.getElementById('customRange');
+  if (range) range.classList.remove('hidden');
   renderAll();
 }
-
 function closeCalPop() {
   const pop = document.querySelector('#customRange .cal-pop');
   if (pop) pop.remove();
 }
-
+function closeCustomPopover() {
+  closeCalPop();
+  const range = document.getElementById('customRange');
+  if (range) range.classList.add('hidden');
+}
 function bindStatsCustomRange() {
   for (const id of ['customFrom', 'customTo']) {
     const input = document.getElementById(id);
@@ -706,90 +574,70 @@ function bindStatsCustomRange() {
   if (!document.body.dataset.calBound) {
     document.body.dataset.calBound = '1';
     document.addEventListener('pointerdown', function(event) {
-      if (!event.target.closest('#customRange')) closeCalPop();
+      if (!event.target.closest('#customRange') && !event.target.closest('#statsRangeGroup')) closeCustomPopover();
     });
     document.addEventListener('keydown', function(event) {
-      if (event.key === 'Escape') closeCalPop();
+      if (event.key === 'Escape') closeCustomPopover();
     });
   }
 }
-// グラフ用の全期間日別。統計の期間フィルタとは独立で、ハーネス絞り込みのみ反映。
-function chartDaily(fullDaily, visible) {
-  const out = [];
-  for (const day of fullDaily || []) {
-    let total = 0;
-    const byModel = {};
-    for (const point of day.points) {
-      if (!visible.has(point.source) || !(point.tokens > 0)) continue;
-      total += point.tokens;
-      byModel[point.model] = (byModel[point.model] || 0) + point.tokens;
-    }
-    if (total > 0) out.push({date: day.date, total, byModel});
+function applyStatsCustomRange() {
+  const from = document.getElementById('customFrom');
+  const to = document.getElementById('customTo');
+  if (!from || !to || !from.value || !to.value || from.value > to.value) return;
+  if (from.value !== statsCustom.from || to.value !== statsCustom.to) {
+    statsCustom.from = from.value;
+    statsCustom.to = to.value;
+    saveStatsPeriod();
   }
-  return out.sort(function(a, b) { return a.date.localeCompare(b.date); });
+  statsPeriod = 'custom';
+  renderAll();
 }
 
-function setChartRange(range) {
-  if (range !== 'all' && range !== '30d') return;
-  if (chartRange === range) return;
-  chartRange = range;
-  pinnedBucket = -1;
-  hideChartTip();
-  const buttons = document.querySelectorAll('.dashboard-section .range-btn');
-  for (const button of buttons) {
-    const active = button.textContent.trim().toLowerCase() === range;
-    button.classList.toggle('active', active);
-    button.setAttribute('aria-pressed', String(active));
-  }
-  drawChart();
+// ---- profile menu + edit dialog ----
+function renderAvatar() {
+  const btn = document.getElementById('avatarBtn');
+  if (!btn) return;
+  btn.innerHTML = '<img src="' + escapeHtml(avatarUrl) + '" alt="' + escapeHtml(userName) + ' avatar" onerror="this.outerHTML=\'<span>' + escapeHtml((userName[0] || '?').toUpperCase()) + '</span>\'">';
+}
+function showEdit() {
+  const root = document.getElementById('dialogRoot');
+  root.innerHTML = '<div class="dialog-overlay"><div class="dialog" role="dialog" aria-modal="true" aria-label="Edit profile"><h3>Edit profile</h3><p class="dialog-desc">Stored in this browser only. URL params override it.</p><label for="edNm">Name</label><input id="edNm" value="' + escapeHtml(userName) + '"><label for="edAv">Avatar URL</label><input id="edAv" value="' + escapeHtml(avatarUrl) + '"><div class="dialog-actions"><button class="btn btn-outline btn-sm" id="edCancel">Cancel</button><button class="btn btn-default btn-sm" id="edSave">Save changes</button></div></div></div>';
+  document.getElementById('edCancel').onclick = function() { root.innerHTML = ''; };
+  document.getElementById('edSave').onclick = function() { saveEdit(); };
+  root.querySelector('.dialog-overlay').addEventListener('pointerdown', function(e) { if (e.target.classList.contains('dialog-overlay')) root.innerHTML = ''; });
+}
+function saveEdit() {
+  const name = document.getElementById('edNm').value.trim() || 'nico2525nn';
+  const avatar = document.getElementById('edAv').value.trim() || 'https://avatars.githubusercontent.com/u/173241093?v=4';
+  userName = name;
+  avatarUrl = avatar;
+  localStorage.setItem('tmx_name', name);
+  localStorage.setItem('tmx_avatar', avatar);
+  document.getElementById('dialogRoot').innerHTML = '';
+  renderAll();
+}
+function toggleAvatarMenu(force) {
+  const menu = document.getElementById('avatarMenu');
+  const btn = document.getElementById('avatarBtn');
+  if (!menu || !btn) return;
+  const show = typeof force === 'boolean' ? force : menu.classList.contains('hidden');
+  menu.classList.toggle('hidden', !show);
+  btn.setAttribute('aria-expanded', String(show));
+  if (show) document.getElementById('avatarMenuName').textContent = userName;
 }
 
-// Resolve the plotted window. The default window keeps the bars wide enough to
-// aim a cursor at, so it never collapses below CHART_RANGE_MIN_DAYS even when
-// the whole history is shorter than that; 'all' always plots the exact range.
-function chartWindow(daily, range) {
-  if (!daily.length) return null;
-  const first = daily[0].date;
-  const last = daily[daily.length - 1].date;
-  const span = daySpan(first, last);
-  if (range === 'all') return {from:first, to:last, days:span, clamped:false};
-  const wanted = Math.min(CHART_RANGE_DAYS, Math.max(CHART_RANGE_MIN_DAYS, span));
-  const from = span > wanted ? addDays(last, -(wanted - 1)) : first;
-  return {from, to:last, days:daySpan(from, last), clamped:span < CHART_RANGE_DAYS};
-}
-
-function makeCalendarBuckets(daily, from, to) {
-  const span = Math.max(0, daySpan(from, to));
-  const step = span > 180 ? 7 : span > 90 ? 3 : 1;
-  const byDate = new Map(daily.map(function(day) { return [day.date, day]; }));
-  const buckets = [];
-  for (let offset = 0; offset < span; offset += step) {
-    const start = addDays(from, offset);
-    const bucket = {date:start, total:0, models:{}};
-    for (let index = 0; index < step && offset + index < span; index++) {
-      const day = byDate.get(addDays(from, offset + index));
-      if (!day) continue;
-      bucket.total += day.total;
-      for (const model in day.byModel) bucket.models[model] = (bucket.models[model] || 0) + day.byModel[model];
-    }
-    buckets.push(bucket);
-  }
-  return {buckets,span,step,from,to};
-}
-function axisLabel(value, span) {
-  const date = dateFromIso(value);
-  if (span <= 45) return String(date.getUTCMonth() + 1).padStart(2, '0') + '-' + String(date.getUTCDate()).padStart(2, '0');
-  return date.toLocaleDateString('en-US', {month:'short', timeZone:'UTC'});
-}
-let chartView = null;
-let pinnedBucket = -1;
+// ---- canvas chart (same engine as the legacy page) ----
+const CHART_RANGE_DAYS = 30;
+const CHART_RANGE_MIN_DAYS = 7;
 
 function chartTipHtml(index) {
   if (!chartView) return '';
   const bucket = chartView.buckets[index];
   if (!bucket) return '';
   const start = bucket.date;
-  const label = chartView.calendar.step === 1 ? start : start + ' – ' + addDays(start, chartView.calendar.step - 1);
+  const step = chartView.calendar.step;
+  const label = step === 1 ? start : start + ' – ' + addDays(start, step - 1);
   const rows = Object.entries(bucket.models)
     .filter(function(entry) { return entry[1] > 0 && !hiddenModels.has(entry[0]); })
     .sort(function(a, b) { return b[1] - a[1]; });
@@ -859,7 +707,7 @@ function drawChart() {
     if (!hiddenSources.has(row.source)) visible.add(row.source);
   }
   const daily = chartDaily(DASH ? DASH.daily || [] : [], visible);
-  const window_ = chartWindow(daily, chartRange);
+  const window_ = chartWindow(daily, chartRange, CHART_RANGE_DAYS, CHART_RANGE_MIN_DAYS);
   const calendar = window_ ? makeCalendarBuckets(daily, window_.from, window_.to) : {buckets:[],span:0,step:1};
   const buckets = calendar.buckets;
 
@@ -871,14 +719,18 @@ function drawChart() {
   });
   const names = Object.keys(totals);
   const ranked = Object.entries(totals).sort(function(a,b) { return b[1] - a[1]; });
-  const windowTotal = buckets.reduce(function(sum, bucket) { return sum + bucket.total; }, 0);
+  // Legend shares use only visible models so the percentages match the bars.
+  const visibleWindowTotal = ranked.reduce(function(sum, entry) { return sum + (hiddenModels.has(entry[0]) ? 0 : entry[1]); }, 0);
   const colors = {};
   names.forEach(function(name) { colors[name] = getModelColor(name); });
   legend.innerHTML = ranked.length ? '<div class="chart-key-list">' + ranked.slice(0, 8).map(function(entry, index) {
     const model = entry[0];
     const off = hiddenModels.has(model) ? ' off' : '';
-    return '<button class="legend-item' + off + '" onclick="toggleModel(' + inlineArg(model) + ')" aria-pressed="' + (!hiddenModels.has(model)) + '"><span class="legend-rank">' + (index + 1) + '</span><span class="legend-dot" style="background:' + colors[model] + '"></span><span class="legend-name" title="' + escapeHtml(model) + '">' + escapeHtml(shortModel(model)) + '</span><span class="legend-value">' + (entry[1] / (windowTotal || 1) * 100).toFixed(1) + '%</span></button>';
-  }).join('') + '</div>' + (ranked.length > 8 ? '<p class="legend-more">+' + (ranked.length - 8) + ' more in Model Breakdown</p>' : '') : '<p class="empty-detail">No model data</p>';
+    return '<button class="legend-item' + off + '" data-model="' + escapeHtml(model) + '" aria-pressed="' + (!hiddenModels.has(model)) + '"><span class="legend-dot" style="background:' + colors[model] + '"></span><span class="legend-name" title="' + escapeHtml(model) + '">' + escapeHtml(shortModel(model)) + '</span><span class="legend-value">' + (entry[1] / (visibleWindowTotal || 1) * 100).toFixed(1) + '%</span></button>';
+  }).join('') + '</div>' + (ranked.length > 8 ? '<p class="legend-more">+' + (ranked.length - 8) + ' more in breakdown</p>' : '') + '<p class="legend-more">Shares of the plotted window</p>' : '<p class="card-desc">No model data</p>';
+  legend.querySelectorAll('button[data-model]').forEach(function(btn) {
+    btn.onclick = function() { toggleModel(btn.dataset.model); };
+  });
 
   const rangeLabel = document.getElementById('chartRangeLabel');
   if (rangeLabel) rangeLabel.textContent = window_ ? window_.from + ' – ' + window_.to : '';
@@ -897,12 +749,13 @@ function drawChart() {
   }
   canvas.style.display = 'block';
   canvas.parentElement.querySelector('.chart-empty')?.remove();
-  const visibleModels = names.filter(function(model) { return !hiddenModels.has(model); });
+  // Stack largest-first so the segment order matches the ranked legend.
+  const visibleModels = ranked.map(function(entry) { return entry[0]; }).filter(function(model) { return !hiddenModels.has(model); });
   const values = buckets.map(function(bucket) { return visibleModels.reduce(function(sum, model) { return sum + (bucket.models[model] || 0); }, 0); });
   const maxValue = niceMax(Math.max.apply(Math, values.concat([0])));
   const dpr = window.devicePixelRatio || 1;
   const width = Math.max(240, canvas.parentElement.clientWidth || 600);
-  const height = window.innerWidth <= 560 ? 240 : 280;
+  const height = window.innerWidth <= 640 ? 240 : 300;
   canvas.width = Math.round(width * dpr);
   canvas.height = Math.round(height * dpr);
   canvas.style.width = width + 'px';
@@ -913,14 +766,16 @@ function drawChart() {
   const plotWidth = Math.max(1, width - pad.left - pad.right);
   const plotHeight = Math.max(1, height - pad.top - pad.bottom);
   const slotWidth = plotWidth / buckets.length;
-  const barWidth = Math.max(2, Math.min(12, slotWidth * .72));
-  context.font = '10px "Geist Sans",sans-serif';
+  const barWidth = Math.max(2, Math.min(16, slotWidth * .86));
+  context.font = '10px Inter,sans-serif';
   context.textAlign = 'right';
+  const gridBase = 'hsl(240 5% 64.9%)';
+  const gridLine = 'hsl(240 5% 64.9% / .28)';
   for (let tick = 0; tick <= 4; tick++) {
     const y = pad.top + plotHeight - plotHeight * tick / 4;
-    context.fillStyle = 'oklch(58% .005 270)';
+    context.fillStyle = gridBase;
     context.fillText(fmt(maxValue * tick / 4), pad.left - 8, y + 3);
-    context.strokeStyle = tick === 0 ? 'oklch(58% .005 270 / .45)' : 'oklch(27% .012 270 / .72)';
+    context.strokeStyle = tick === 0 ? 'hsl(240 5% 64.9% / .6)' : gridLine;
     context.lineWidth = 1;
     context.beginPath();
     context.moveTo(pad.left, y + .5);
@@ -930,12 +785,27 @@ function drawChart() {
   buckets.forEach(function(bucket, bucketIndex) {
     const x = pad.left + bucketIndex * slotWidth + (slotWidth - barWidth) / 2;
     let bottom = pad.top + plotHeight;
+    const dayTotal = visibleModels.reduce(function(sum, model) { return sum + (bucket.models[model] || 0); }, 0);
+    if (!dayTotal) {
+      // Zero-activity slot: a 1px guide so empty days read as gaps, not missing bars.
+      context.fillStyle = 'hsl(240 5% 64.9% / .25)';
+      context.fillRect(x, pad.top + plotHeight - 1, barWidth, 1);
+      return;
+    }
     visibleModels.forEach(function(model) {
       const value = bucket.models[model] || 0;
       if (!value) return;
-      const barHeight = value / maxValue * plotHeight;
+      const barHeight = Math.max(1, value / maxValue * plotHeight);
       context.fillStyle = colors[model];
-      context.fillRect(x, bottom - barHeight, barWidth, barHeight);
+      const r = Math.min(2, barWidth / 2, barHeight / 2);
+      const y = bottom - barHeight;
+      if (typeof context.roundRect === 'function') {
+        context.beginPath();
+        context.roundRect(x, y, barWidth, barHeight, r);
+        context.fill();
+      } else {
+        context.fillRect(x, y, barWidth, barHeight);
+      }
       bottom -= barHeight;
     });
   });
@@ -953,7 +823,7 @@ function drawChart() {
   });
   if (labels.length && labels[labels.length - 1].index === buckets.length - 1 && labels.length > 1) labels.pop();
   context.textAlign = 'center';
-  context.fillStyle = 'oklch(58% .005 270)';
+  context.fillStyle = 'hsl(240 5% 64.9%)';
   labels.forEach(function(label) {
     const x = pad.left + label.index * slotWidth + slotWidth / 2;
     context.fillText(label.text, x, height - 9);
@@ -991,8 +861,24 @@ function drawChart() {
   if (pinnedBucket >= 0) showChartTip(pinnedBucket, chartView.pad.left + pinnedBucket * chartView.slotWidth);
 }
 
+// ---- render root + data loading ----
+function renderAll() {
+  ALL_STATS = buildView(DASH, {hiddenSources, statsPeriod, statsCustom});
+  pinnedBucket = -1;
+  renderPeriod();
+  renderKpis();
+  renderChartCard();
+  renderBreakdown();
+  drawChart();
+  const win = statsPeriodWindow(DASH ? DASH.daily || [] : [], statsPeriod, statsCustom);
+  document.getElementById('pageDesc').textContent = 'Local token usage across every coding agent.' + (win ? ' · ' + win.from + ' – ' + win.to : ' · all time');
+  bindStatsCustomRange();
+  document.getElementById('pageMeta').textContent = ALL_STATS.firstDate ? ALL_STATS.firstDate + ' – ' + ALL_STATS.lastDate + ' · ' + ALL_STATS.activeDays + ' active days' : 'No token data';
+  document.getElementById('footerMeta').textContent = 'Local data · auto refresh 60s' + (ALL_STATS.firstDate ? ' · ' + ALL_STATS.firstDate + ' – ' + ALL_STATS.lastDate : '');
+  renderAvatar();
+}
+
 async function loadData() {
-  const app = document.getElementById('app');
   try {
     const response = await fetch('/api/dashboard', {cache:'no-store'});
     if (response.status === 503) throw Error('still building the first snapshot — retrying');
@@ -1005,17 +891,23 @@ async function loadData() {
     }
     renderAll();
   } catch (error) {
-    // Keep the current dashboard on screen if a refresh fails; only take over
-    // the page when there is nothing to show.
     if (hasLoaded && DASH) {
       console.warn('[dashboard] refresh failed:', error.message);
       return;
     }
-    app.innerHTML = '<div class="error-box"><p>Failed to load token data</p><p style="font-size:.75rem;color:var(--muted-fg)">' + escapeHtml(error.message) + '</p><button class="retry-btn" onclick="location.reload()">Retry</button></div>';
+    document.getElementById('kpiGrid').innerHTML = '<div class="alert" role="alert"><span>Failed to load token data: ' + escapeHtml(error.message) + '</span><button class="btn btn-outline btn-sm" onclick="location.reload()">Retry</button></div>';
     setTimeout(loadData, 3000);
   }
 }
 
+document.getElementById('avatarBtn').onclick = function() { toggleAvatarMenu(); };
+document.getElementById('menuEdit').onclick = function() { toggleAvatarMenu(false); showEdit(); };
+document.addEventListener('pointerdown', function(event) {
+  if (!event.target.closest('.topbar-right')) toggleAvatarMenu(false);
+});
+document.addEventListener('keydown', function(event) {
+  if (event.key === 'Escape') toggleAvatarMenu(false);
+});
 loadStatsPeriod();
 loadData();
 setInterval(loadData, 60000);

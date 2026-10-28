@@ -1,87 +1,50 @@
 # My TokenMaxxing
 
-AIエージェント（Codex, OpenCode, OpenGrok, OMP, ZCode, Reasonix など）のLLMトークン使用量をローカルから収集し、ダッシュボードに表示します。
-<img width="1050" height="965" alt="image" src="https://github.com/user-attachments/assets/e46997f1-7fcd-4fb3-84a7-3ace577af69a" />
+Local dashboard for LLM token usage across coding agents. Collects from 11 sources, shows one page. No build step, no cost tracking.
 
+<img width="1050" alt="dashboard screenshot" src="docs/screenshot-dashboard.webp" />
 
-## 機能
-
-- **11種類のデータソース**からトークン使用量を自動収集
-  - ccusage（Codex, OpenCode, Claude, Gemini, Copilot, pi）
-  - OMP（Oh My Pi）セッションJSONL
-  - ZCode SQLiteデータベース
-  - Reasonix telemetry.json
-  - OpenGrok session usage.json
-  - DSH（DeepSeek Harness）セッション投影キャッシュ
-- **グレースケールダッシュボード** – データの可視化のみカラフル
-- **積み上げ棒グラフ** – 期間に応じて日別/3日/週単位に自動グループ化（既定は直近30日、`ALL` で全期間）
-- **日別詳細ポップアップ** – グラフにホバーまたはクリックで、その日のモデル内訳を表示
-- **モデル別内訳** – 使用モデルの割合・入出力トークン・キャッシュヒット率
-- **ハーネス別キャッシュヒット率** – ソースごとにキャッシュ読み出し率を表示
-- **期間フィルタ** – 7D / 30D / 90D / ALL / CUSTOM（自前カレンダー）。統計・ハーネス・内訳に効き、グラフとは独立
-- **プロフィール編集** – アイコンと名前をブラウザに保存可能
-- **コスト表示なし**
-
-## 必要条件
-
-- [Bun](https://bun.sh) 1.3+
-- Node.js 24+
-- ccusage（一部のデータソースに必要）
-
-## インストール
+## Quick start
 
 ```bash
-git clone <your-repo-url>
-cd my-tokenmaxxing
 bun install
-```
-
-## 起動
-
-```bash
 bun run server/index.js
 # → http://localhost:3642
 ```
 
-## プロフィールカスタマイズ
+Needs [Bun](https://bun.sh) 1.3+ or Node.js 24+, plus ccusage for the Codex-family sources.
 
-URLパラメータでも、画面上の `Edit Profile` ボタンからでも変更可能：
+## What it does
 
-```
-http://localhost:3642?name=YourName&avatar=https://example.com/avatar.png
-```
+- **Aggregates** Codex, OpenCode, Claude, Gemini, Copilot, pi (via ccusage) plus OMP, ZCode, Reasonix, OpenGrok, and DSH local logs into one daily summary
+- **Displays** a stacked token chart with per-day tooltips, period filters (7D / 30D / 90D / ALL / custom), per-model and per-harness breakdowns with cache hit rates
+- **Profile** via `?name=…&avatar=…` or the in-page Edit button (browser-local)
 
-変更は `localStorage` に保存され、ブラウザを閉じても保持されます。
+## Data sources
 
-## データソース
-
-| ソース | 読み取り方式 | 状態 |
-|--------|-------------|------|
-| Codex | `ccusage codex daily` | ✅ |
-| OpenCode | `ccusage opencode daily` | ✅ |
-| pi | `ccusage pi daily` | ✅ |
-| Claude | `ccusage claude daily` | ⚠️ 要セットアップ |
-| Gemini | `ccusage gemini daily` | ⚠️ 要セットアップ |
-| Copilot | `ccusage copilot daily` | ⚠️ 要セットアップ |
+| Source | Read from | Status |
+|--------|-----------|--------|
+| Codex, OpenCode, pi | `ccusage <name> daily` | ✅ |
+| Claude, Gemini, Copilot | `ccusage <name> daily` | ⚠️ needs setup |
 | OMP | `~/.omp/agent/sessions/*.jsonl` | ✅ |
 | ZCode | `~/.zcode/cli/db/db.sqlite` | ✅ |
 | Reasonix | `%APPDATA%/reasonix/projects/*/sessions/*.telemetry.json` | ✅ |
-| OpenGrok | `$OPENGROK_HOME/sessions/**/usage.json`（未設定時は `~/.opengrok`） | ✅ |
-| DSH | `$DSH_HOME/storages/session_projcache/sessions/*.json`（未設定時は `~/.dsh`） | ✅ |
+| OpenGrok | `$OPENGROK_HOME/sessions/**/usage.json` (else `~/.opengrok`) | ✅ |
+| DSH | `$DSH_HOME/storages/session_projcache/sessions/*.json` (else `~/.dsh`) | ✅ |
 
-## プロジェクト構成
+Reader spec: `token-reading-logic.md` (Japanese).
+
+## Layout
 
 ```
-my-tokenmaxxing/
-  server/
-    index.js           # Expressサーバー（API + 静的ファイル）
-    data-fetcher.js    # データ収集（ccusage / OpenGrok / OMP / ZCode / Reasonix）
-  public/
-    index.html         # ダッシュボードUI
-  token-reading-logic.md  # データ読み取り仕様書
-  package.json
+server/index.js            express server (API + static files)
+server/data-fetcher.js     collectors + aggregation
+server/refresh-dashboard.js  background aggregation worker
+public/index.html          dashboard UI (legacy)
+public/shadcn.html         dashboard UI (shadcn-style)
+public/tmx.js              shared dashboard helpers
 ```
 
-## ライセンス
+## License
 
 MIT
