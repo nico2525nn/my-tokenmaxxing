@@ -26,9 +26,6 @@ function escapeHtml(value) {
     return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];
   });
 }
-function inlineArg(value) {
-  return escapeHtml(JSON.stringify(value));
-}
 function fmt(n) {
   n = Number(n) || 0;
   if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B';
