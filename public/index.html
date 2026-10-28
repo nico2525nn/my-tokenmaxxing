@@ -107,8 +107,6 @@ a{color:inherit;text-decoration:none}
 .card-desc{font-size:.875rem;line-height:1.25rem;color:hsl(var(--muted-foreground))}
 .card-content{padding:0 1.5rem 1.5rem}
 .kpi-body{padding:1.5rem}
-.kpi-hero{grid-column:1 / -1}
-.kpi-hero .stat-num{font-size:2rem;line-height:2.5rem}
 .kpi-label{display:block;font-size:.875rem;line-height:1;font-weight:500;color:hsl(var(--muted-foreground))}
 .kpi-label .dot{display:inline-block;width:7px;height:7px;border-radius:9999px;margin-right:.5rem;vertical-align:baseline}
 .stat-num{display:block;margin-top:.5rem;font-size:1.5rem;font-weight:700;letter-spacing:-.025em;line-height:2rem;font-variant-numeric:tabular-nums}
@@ -202,8 +200,6 @@ button.legend-more:hover{color:hsl(var(--foreground));text-decoration:underline}
 .alert button{margin-left:auto;flex-shrink:0}
 @media(max-width:1024px){
   .kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .kpi-hero{grid-column:auto}
-  .kpi-hero .stat-num{font-size:1.5rem;line-height:2rem}
   .chart-layout{flex-direction:column;align-items:stretch;gap:1rem}
   .chart-key{width:100%;flex-basis:auto;border-left:0;border-top:1px solid hsl(var(--border));padding-left:0;padding-top:1rem}
 }
@@ -226,7 +222,6 @@ button.legend-more:hover{color:hsl(var(--foreground));text-decoration:underline}
   .kpi-label{font-size:.75rem;line-height:1.125rem}
   .kpi-label .dot{margin-right:.5rem}
   .stat-num{margin-top:.5rem;font-size:1.25rem;line-height:1.75rem}
-  .kpi-hero .stat-num{font-size:1.25rem;line-height:1.75rem}
   .stat-num-sm{font-size:1.125rem;line-height:1.5rem}
   .stat-sub{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.35;font-size:.6875rem;margin-top:auto;padding-top:.25rem}
   .stat-sub b{font-weight:600}
@@ -460,7 +455,7 @@ function renderKpis() {
   const topShare = s.totalTokens > 0 ? (s.topModelTokens / s.totalTokens * 100).toFixed(1) : null;
   const topColor = s.topModel && s.topModel !== 'N/A' ? getModelColor(s.topModel) : null;
   const cards = [
-    {label:'Total Tokens', value:fmt(s.totalTokens), title:String(s.totalTokens), hero:true,
+    {label:'Total Tokens', value:fmt(s.totalTokens), title:String(s.totalTokens),
      sub:'<b>' + s.records + '</b> records · in <b>' + fmt(s.totalInput) + '</b> / out <b>' + fmt(s.totalOutput) + '</b>'},
     {label:'Cache Hit Rate', value:hit, title:fmt(s.totalCacheRead) + ' of ' + fmt(s.totalInput + s.totalCacheRead) + ' prompt tokens',
      sub:fmtShort(s.totalCacheRead) + ' of ' + fmtShort(s.totalInput + s.totalCacheRead) + ' prompt tokens'},
@@ -470,7 +465,7 @@ function renderKpis() {
      sub:'streak <b>' + s.currentStreak + '</b> · longest <b>' + s.longestStreak + '</b>'},
   ];
   document.getElementById('kpiGrid').innerHTML = cards.map(function(c) {
-    return '<div class="card' + (c.hero ? ' kpi-hero' : '') + '"><div class="kpi-body">'
+    return '<div class="card"><div class="kpi-body">'
       + '<span class="kpi-label">' + (c.dot ? '<span class="dot" style="background:' + c.dot + '"></span>' : '') + escapeHtml(c.label) + '</span>'
       + '<span class="stat-num' + (c.small ? ' stat-num-sm' : '') + '"' + (c.title ? ' title="' + escapeHtml(c.title) + '"' : '') + '>' + escapeHtml(c.value) + '</span>'
       + '<span class="stat-sub">' + c.sub + '</span>'
