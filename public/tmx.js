@@ -1,6 +1,5 @@
 // Shared dashboard engine: pure data helpers with no DOM access.
-// Consumed by the shadcn experiment page (shadcn.html). The legacy page
-// (index.html) keeps its own inline copy so the experiment is fully isolated.
+// Consumed by public/index.html (single-file dashboard).
 const COLORS = ['#f59e0b','#10b981','#3b82f6','#ef4444','#8b5cf6','#ec4899','#06b6d4','#84cc16','#f97316','#6366f1','#14b8a6','#eab308'];
 const SOURCE_COLORS = ['#94a3b8','#38bdf8','#34d399','#fbbf24','#a78bfa','#fb7185'];
 const SOURCE_LABELS = { opencode:'OpenCode', opengrok:'OpenGrok', omp:'OMP', zcode:'ZCode', reasonix:'Reasonix', dsh:'DSH' };
@@ -31,6 +30,13 @@ function fmt(n) {
   if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B';
   if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
   if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
+  return String(Math.round(n));
+}
+function fmtShort(n) {
+  n = Number(n) || 0;
+  if (n >= 1e9) return (n / 1e9).toFixed(1) + 'B';
+  if (n >= 1e6) return Math.round(n / 1e6) + 'M';
+  if (n >= 1e3) return Math.round(n / 1e3) + 'K';
   return String(Math.round(n));
 }
 function shortModel(name) {
