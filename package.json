@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "start": "node server/index.js",
-    "dev": "bun --watch server/index.js"
+    "dev": "bun --watch server/index.js",
+    "test": "node --test \"test/*.test.js\""
   },
   "dependencies": {
     "express": "^4.21.0"

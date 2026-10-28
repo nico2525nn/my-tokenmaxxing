@@ -35,6 +35,17 @@ try {
   // Not in Bun runtime, try child_process fallback
 }
 
+// Node 22.5+ ships sqlite natively; use it when bun:sqlite is unavailable so
+// `npm start` (Node) reads ZCode instead of silently dropping the source.
+let NODE_SQLITE = null;
+if (!BUN_SQLITE) {
+  try {
+    NODE_SQLITE = await import("node:sqlite");
+  } catch {
+    // Older Node: ZCode stays unavailable with a clear log line.
+  }
+}
+
 /**
  * Fetch data from ccusage CLI for external tools.
  * Tries each runner in turn and keeps the first one that yields real report
@@ -137,20 +148,31 @@ async function fetchFromZCode() {
   }
 
   try {
+    const query = `
+      SELECT date(started_at/1000,'unixepoch') as day, model_id,
+             SUM(input_tokens) as input, SUM(output_tokens) as output,
+             SUM(cache_read_input_tokens) as cache_read,
+             SUM(cache_creation_input_tokens) as cache_creation,
+             SUM(computed_total_tokens) as total
+      FROM model_usage
+      GROUP BY day, model_id
+      ORDER BY day
+    `;
+    let rows = null;
     if (BUN_SQLITE) {
       const { Database } = BUN_SQLITE;
       const db = new Database(dbPath);
-      const rows = db.query(`
-        SELECT date(started_at/1000,'unixepoch') as day, model_id,
-               SUM(input_tokens) as input, SUM(output_tokens) as output,
-               SUM(cache_read_input_tokens) as cache_read,
-               SUM(cache_creation_input_tokens) as cache_creation,
-               SUM(computed_total_tokens) as total
-        FROM model_usage
-        GROUP BY day, model_id
-        ORDER BY day
-      `).all();
+      rows = db.query(query).all();
       db.close();
+    } else if (NODE_SQLITE) {
+      const db = new NODE_SQLITE.DatabaseSync(dbPath);
+      rows = db.prepare(query).all();
+      db.close();
+    } else {
+      console.log("[fetcher] ZCode skipped: no sqlite driver (need Bun or Node 22.5+)");
+      return [];
+    }
+    if (rows) {
       console.log(`[fetcher] ZCode: ${rows.length} rows`);
       return rows.map(r => ({
         period: r.day,
@@ -545,20 +567,23 @@ export async function aggregateAllData() {
         }
       }
     } else if (day.modelBreakdowns) {
+      // Legacy shape: day-level breakdowns with no per-agent split.
+      // metadata.agents only names candidate agents, it does not mean each
+      // agent consumed the full day total, so attribute to day.agent (or the
+      // single listed agent) instead of duplicating every breakdown per agent.
       const agents = day.metadata?.agents || ["unknown"];
-      for (const agentName of agents) {
-        for (const m of day.modelBreakdowns) {
-          allRecords.push({
-            date: day.period,
-            source: agentName,
-            model: m.modelName,
-            inputTokens: m.inputTokens || 0,
-            outputTokens: m.outputTokens || 0,
-            cacheReadTokens: m.cacheReadTokens || 0,
-            cacheCreationTokens: m.cacheCreationTokens || 0,
-            totalTokens: m.totalTokens || (m.inputTokens || 0) + (m.outputTokens || 0) + (m.cacheReadTokens || 0) + (m.cacheCreationTokens || 0),
-          });
-        }
+      const agentName = day.agent || (agents.length === 1 ? agents[0] : "unknown");
+      for (const m of day.modelBreakdowns) {
+        allRecords.push({
+          date: day.period,
+          source: agentName,
+          model: m.modelName,
+          inputTokens: m.inputTokens || 0,
+          outputTokens: m.outputTokens || 0,
+          cacheReadTokens: m.cacheReadTokens || 0,
+          cacheCreationTokens: m.cacheCreationTokens || 0,
+          totalTokens: m.totalTokens || (m.inputTokens || 0) + (m.outputTokens || 0) + (m.cacheReadTokens || 0) + (m.cacheCreationTokens || 0),
+        });
       }
     } else {
       allRecords.push({
@@ -721,12 +746,12 @@ export function summarizeDashboard(records) {
   const top = [...perModel.entries()].sort((a, b) => b[1] - a[1])[0];
 
   const dateSet = new Set(dates);
-  const today = new Date();
+  const today = new Date().toISOString().slice(0, 10);
   let currentStreak = 0;
-  if (dateSet.has(today.toISOString().slice(0, 10))) {
+  if (dateSet.has(today)) {
     for (let back = 0; ; back++) {
-      const cursor = new Date(today);
-      cursor.setDate(cursor.getDate() - back);
+      const cursor = new Date(`${today}T00:00:00Z`);
+      cursor.setUTCDate(cursor.getUTCDate() - back);
       if (!dateSet.has(cursor.toISOString().slice(0, 10))) break;
       currentStreak++;
     }
@@ -743,13 +768,13 @@ export function summarizeDashboard(records) {
     if (run > longestStreak) longestStreak = run;
   }
 
-  let sessions = 0;
-  for (const day of days.values()) sessions += day.size;
+  let recordCount = 0;
+  for (const day of days.values()) recordCount += day.size;
 
   return {
     generatedAt: new Date().toISOString(),
     totals,
-    sessions,
+    records: recordCount,
     activeDays: dates.length,
     topModel: top ? top[0] : "N/A",
     topModelTokens: top ? top[1] : 0,

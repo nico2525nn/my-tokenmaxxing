@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ja" class="dark">
+<html lang="en" class="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -107,6 +107,8 @@ a{color:inherit;text-decoration:none}
 .card-desc{font-size:.875rem;line-height:1.25rem;color:hsl(var(--muted-foreground))}
 .card-content{padding:0 1.5rem 1.5rem}
 .kpi-body{padding:1.5rem}
+.kpi-hero{grid-column:1 / -1}
+.kpi-hero .stat-num{font-size:2rem;line-height:2.5rem}
 .kpi-label{display:block;font-size:.875rem;line-height:1;font-weight:500;color:hsl(var(--muted-foreground))}
 .kpi-label .dot{display:inline-block;width:7px;height:7px;border-radius:9999px;margin-right:.5rem;vertical-align:baseline}
 .stat-num{display:block;margin-top:.5rem;font-size:1.5rem;font-weight:700;letter-spacing:-.025em;line-height:2rem;font-variant-numeric:tabular-nums}
@@ -121,6 +123,7 @@ canvas#tokenChart.active{cursor:pointer}
 .chart-key{width:244px;flex:0 0 244px;min-width:0;border-left:1px solid hsl(var(--border));padding-left:1.5rem}
 .chart-key-title{font-size:.875rem;font-weight:500;margin-bottom:.5rem}
 .chart-key-list{display:flex;flex-direction:column;gap:.25rem}
+.chart-key-list.scroll{max-height:16rem;overflow-y:auto;scrollbar-width:thin;padding-right:.25rem}
 .legend-item{display:grid;grid-template-columns:8px minmax(0,1fr) auto;align-items:center;gap:.5rem;width:100%;padding:.375rem .5rem;border-radius:calc(var(--radius) - 2px);font-size:.875rem;font-weight:500;text-align:left;user-select:none;transition:background-color .15s}
 .legend-item:hover{background:hsl(var(--accent));color:hsl(var(--accent-foreground))}
 .legend-item.off{opacity:.35}
@@ -129,6 +132,7 @@ canvas#tokenChart.active{cursor:pointer}
 .legend-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .legend-value{font-family:"Geist Mono",monospace;font-size:.75rem;color:hsl(var(--muted-foreground));white-space:nowrap}
 .legend-more{margin-top:.5rem;font-size:.75rem;color:hsl(var(--muted-foreground))}
+button.legend-more:hover{color:hsl(var(--foreground));text-decoration:underline}
 .chips{display:flex;gap:.5rem;overflow-x:auto;padding-bottom:.25rem;scrollbar-width:none}
 .chips::-webkit-scrollbar{display:none}
 .chip{display:inline-flex;align-items:center;gap:.5rem;flex:0 0 auto;padding:.125rem .625rem;border:1px solid hsl(var(--border));border-radius:.375rem;font-size:.75rem;font-weight:600;color:hsl(var(--foreground));background:hsl(var(--card));transition:background-color .15s}
@@ -163,6 +167,7 @@ canvas#tokenChart.active{cursor:pointer}
 .data-table tbody tr:hover{background:hsl(var(--muted) / .5)}
 .data-table tbody tr.off{opacity:.35}
 .data-table tbody tr.off .cell-name{text-decoration:line-through}
+.data-table tbody tr:focus-visible{outline:none;box-shadow:inset 0 0 0 2px hsl(var(--ring))}
 .data-table td{padding:.5rem;vertical-align:middle;overflow:hidden}
 .data-table thead th.num,.data-table tbody td.num{text-align:right;font-family:"Geist Mono",monospace;font-variant-numeric:tabular-nums}
 .data-table thead th.num-r,.data-table tbody td.num-r{text-align:right}
@@ -190,17 +195,20 @@ canvas#tokenChart.active{cursor:pointer}
 .menu-label{padding:.375rem .5rem;font-size:.875rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .menu [role="menuitem"]{display:flex;width:100%;align-items:center;text-align:left;padding:.375rem .5rem;border-radius:.25rem;font-size:.875rem}
 .menu [role="menuitem"]:hover{background:hsl(var(--accent));color:hsl(var(--accent-foreground))}
-.dialog-overlay{position:fixed;inset:0;background:hsl(0 0% 0% / .8);display:flex;align-items:center;justify-content:center;z-index:100;padding:1rem}
-.dialog{background:hsl(var(--card));color:hsl(var(--card-foreground));border:1px solid hsl(var(--border));border-radius:.5rem;padding:1.5rem;width:100%;max-width:26rem;box-shadow:0 10px 15px hsl(0 0% 0% / .3),0 4px 6px hsl(0 0% 0% / .3)}
-.dialog h3{font-size:1.125rem;font-weight:600;letter-spacing:-.01em;margin-bottom:.25rem}
-.dialog p.dialog-desc{font-size:.875rem;color:hsl(var(--muted-foreground));margin-bottom:1.25rem}
-.dialog label{display:block;font-size:.875rem;font-weight:500;margin-bottom:.25rem}
-.dialog input{width:100%;height:2.25rem;padding:.25rem .75rem;font-size:.875rem;background:hsl(var(--background));border:1px solid hsl(var(--input));border-radius:.375rem;color:hsl(var(--foreground));margin-bottom:1rem;outline:none;box-shadow:0 1px 2px 0 hsl(0 0% 0% / .05)}
+.dialog{padding:0;border:0;background:transparent;max-width:100%}
+.dialog::backdrop{background:hsl(0 0% 0% / .8)}
+.dialog-card{background:hsl(var(--card));color:hsl(var(--card-foreground));border:1px solid hsl(var(--border));border-radius:.5rem;padding:1.5rem;width:calc(100vw - 2rem);max-width:26rem;box-shadow:0 10px 15px hsl(0 0% 0% / .3),0 4px 6px hsl(0 0% 0% / .3)}
+.dialog-card h3{font-size:1.125rem;font-weight:600;letter-spacing:-.01em;margin-bottom:.25rem}
+.dialog-card p.dialog-desc{font-size:.875rem;color:hsl(var(--muted-foreground));margin-bottom:1.25rem}
+.dialog-card label{display:block;font-size:.875rem;font-weight:500;margin-bottom:.25rem}
+.dialog-card input{width:100%;height:2.25rem;padding:.25rem .75rem;font-size:.875rem;background:hsl(var(--background));border:1px solid hsl(var(--input));border-radius:.375rem;color:hsl(var(--foreground));margin-bottom:1rem;outline:none;box-shadow:0 1px 2px 0 hsl(0 0% 0% / .05)}
 .dialog-actions{display:flex;gap:.5rem;justify-content:flex-end}
 .alert{display:flex;align-items:center;gap:.75rem;border:1px solid hsl(var(--destructive));border-radius:var(--radius);background:hsl(var(--destructive) / .1);padding:1rem;color:hsl(var(--foreground));font-size:.875rem}
 .alert button{margin-left:auto;flex-shrink:0}
 @media(max-width:1024px){
   .kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .kpi-hero{grid-column:auto}
+  .kpi-hero .stat-num{font-size:1.5rem;line-height:2rem}
   .chart-layout{flex-direction:column;align-items:stretch;gap:1rem}
   .chart-key{width:100%;flex-basis:auto;border-left:0;border-top:1px solid hsl(var(--border));padding-left:0;padding-top:1rem}
 }
@@ -223,6 +231,7 @@ canvas#tokenChart.active{cursor:pointer}
   .kpi-label{font-size:.75rem;line-height:1.125rem}
   .kpi-label .dot{margin-right:.5rem}
   .stat-num{margin-top:.5rem;font-size:1.25rem;line-height:1.75rem}
+  .kpi-hero .stat-num{font-size:1.25rem;line-height:1.75rem}
   .stat-num-sm{font-size:1.125rem;line-height:1.5rem}
   .stat-sub{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.35;font-size:.6875rem;margin-top:auto;padding-top:.25rem}
   .stat-sub b{font-weight:600}
@@ -327,7 +336,7 @@ canvas#tokenChart.active{cursor:pointer}
     </div>
     <div class="card-content">
       <div class="chart-layout">
-        <div class="chart-canvas"><canvas id="tokenChart" role="img" aria-label="Daily tokens by model"></canvas></div>
+        <div class="chart-canvas"><canvas id="tokenChart" role="img" aria-label="Daily tokens by model. Use left and right arrows to inspect days." tabindex="0"></canvas></div>
         <aside class="chart-key" aria-label="Models">
           <p class="chart-key-title">Top models</p>
           <div id="chartLegend"></div>
@@ -346,7 +355,7 @@ canvas#tokenChart.active{cursor:pointer}
         <div class="tabs-list" role="tablist" aria-label="Breakdown view" id="breakTabs"></div>
       </div>
     </div>
-    <div class="card-content" id="breakTableWrap"></div>
+    <div class="card-content" id="breakTableWrap" role="tabpanel" aria-labelledby="breakTabs"></div>
   </section>
 
   <p class="page-meta sr-only" id="pageMeta" aria-live="polite"></p>
@@ -375,8 +384,12 @@ let statsPeriod = 'all';
 let statsCustom = {from:'', to:''};
 let chartRange = '30d';
 let breakTab = 'models';
+let legendExpanded = false;
 let pinnedBucket = -1;
 let chartView = null;
+let lastSyncAt = 0;
+let lastSyncError = '';
+let lastDashboardId = '';
 let calTarget = 'from';
 let calCursor = '';
 
@@ -455,8 +468,8 @@ function renderKpis() {
   const topShare = s.totalTokens > 0 ? (s.topModelTokens / s.totalTokens * 100).toFixed(1) : null;
   const topColor = s.topModel && s.topModel !== 'N/A' ? getModelColor(s.topModel) : null;
   const cards = [
-    {label:'Total Tokens', value:fmt(s.totalTokens), title:String(s.totalTokens),
-     sub:'<b>' + s.sessions + '</b> sessions · in <b>' + fmt(s.totalInput) + '</b> / out <b>' + fmt(s.totalOutput) + '</b>'},
+    {label:'Total Tokens', value:fmt(s.totalTokens), title:String(s.totalTokens), hero:true,
+     sub:'<b>' + s.records + '</b> records · in <b>' + fmt(s.totalInput) + '</b> / out <b>' + fmt(s.totalOutput) + '</b>'},
     {label:'Cache Hit Rate', value:hit, title:fmt(s.totalCacheRead) + ' of ' + fmt(s.totalInput + s.totalCacheRead) + ' prompt tokens',
      sub:fmtShort(s.totalCacheRead) + ' of ' + fmtShort(s.totalInput + s.totalCacheRead) + ' prompt tokens'},
     {label:'Top Model', dot:topColor, value:s.topModel === 'N/A' ? '—' : shortModel(s.topModel), title:s.topModel, small:true,
@@ -465,7 +478,7 @@ function renderKpis() {
      sub:'streak <b>' + s.currentStreak + '</b> · longest <b>' + s.longestStreak + '</b>'},
   ];
   document.getElementById('kpiGrid').innerHTML = cards.map(function(c) {
-    return '<div class="card"><div class="kpi-body">'
+    return '<div class="card' + (c.hero ? ' kpi-hero' : '') + '"><div class="kpi-body">'
       + '<span class="kpi-label">' + (c.dot ? '<span class="dot" style="background:' + c.dot + '"></span>' : '') + escapeHtml(c.label) + '</span>'
       + '<span class="stat-num' + (c.small ? ' stat-num-sm' : '') + '"' + (c.title ? ' title="' + escapeHtml(c.title) + '"' : '') + '>' + escapeHtml(c.value) + '</span>'
       + '<span class="stat-sub">' + c.sub + '</span>'
@@ -496,10 +509,23 @@ function setChartRange(range) {
 function renderBreakdown() {
   const tabDefs = [['models','Models', (ALL_STATS.modelRows || []).length], ['harness','Harness', (DASH && DASH.sources ? DASH.sources.length : 0)]];
   document.getElementById('breakTabs').innerHTML = tabDefs.map(function(t) {
-    return '<button class="tabs-trigger' + (breakTab === t[0] ? ' active' : '') + '" data-tab="' + t[0] + '" role="tab" aria-selected="' + (breakTab === t[0]) + '">' + t[1] + ' <span class="tabs-badge">' + t[2] + '</span></button>';
+    return '<button class="tabs-trigger' + (breakTab === t[0] ? ' active' : '') + '" data-tab="' + t[0] + '" role="tab" id="breakTab-' + t[0] + '" aria-selected="' + (breakTab === t[0]) + '" aria-controls="breakTableWrap" tabindex="' + (breakTab === t[0] ? '0' : '-1') + '">' + t[1] + ' <span class="tabs-badge">' + t[2] + '</span></button>';
   }).join('');
-  document.getElementById('breakTabs').querySelectorAll('button').forEach(function(btn) {
+  const tabBtns = Array.prototype.slice.call(document.getElementById('breakTabs').querySelectorAll('button'));
+  tabBtns.forEach(function(btn, btnIndex) {
     btn.onclick = function() { if (breakTab !== btn.dataset.tab) { breakTab = btn.dataset.tab; renderBreakdown(); } };
+    btn.onkeydown = function(event) {
+      let next = -1;
+      if (event.key === 'ArrowRight' || event.key === 'ArrowDown') next = (btnIndex + 1) % tabBtns.length;
+      else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') next = (btnIndex - 1 + tabBtns.length) % tabBtns.length;
+      else if (event.key === 'Home') next = 0;
+      else if (event.key === 'End') next = tabBtns.length - 1;
+      if (next >= 0) {
+        event.preventDefault();
+        tabBtns[next].focus();
+        if (breakTab !== tabBtns[next].dataset.tab) { breakTab = tabBtns[next].dataset.tab; renderBreakdown(); tabBtns[next].focus(); }
+      }
+    };
   });
   const wrap = document.getElementById('breakTableWrap');
   if (!ALL_STATS.totalTokens) {
@@ -523,7 +549,13 @@ function renderBreakdown() {
         + '</tr>';
     }).join('') + '</tbody></table></div>';
     wrap.querySelectorAll('tr[data-model]').forEach(function(tr) {
+      tr.tabIndex = 0;
+      tr.setAttribute('role', 'button');
+      tr.setAttribute('aria-pressed', String(!hiddenModels.has(tr.dataset.model)));
       tr.onclick = function() { toggleModel(tr.dataset.model); };
+      tr.onkeydown = function(event) {
+        if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); toggleModel(tr.dataset.model); }
+      };
     });
   } else {
     const rows = ALL_STATS.sourceRows || [];
@@ -534,7 +566,7 @@ function renderBreakdown() {
       const color = getSourceColor(row.source);
       const share = (row.tokens / total * 100).toFixed(1);
       const cache = cacheHitText(row.input, row.cacheRead);
-      return '<tr class="' + off.trim() + '" data-source="' + escapeHtml(row.source) + '">'
+      return '<tr class="' + off.trim() + '" data-source="' + escapeHtml(row.source) + '"' + (row.source === 'dsh' ? ' title="DSH totals are session-level and attributed to the last-prompt day, so daily spikes are approximate"' : '') + '>'
         + '<td><span class="cell-name"><span class="dot" style="background:' + color + '"></span><span>' + escapeHtml(sourceLabel(row.source)) + '</span></span></td>'
         + '<td class="num">' + fmt(row.tokens) + '</td>'
         + '<td class="num-r"><span class="cell-share"><span class="progress"><span class="progress-bar" style="width:' + share + '%;background:' + color + '"></span></span><span class="share-pct">' + share + '%</span></span></td>'
@@ -543,7 +575,13 @@ function renderBreakdown() {
         + '</tr>';
     }).join('') + '</tbody></table></div>';
     wrap.querySelectorAll('tr[data-source]').forEach(function(tr) {
+      tr.tabIndex = 0;
+      tr.setAttribute('role', 'button');
+      tr.setAttribute('aria-pressed', String(!hiddenSources.has(tr.dataset.source)));
       tr.onclick = function() { toggleSource(tr.dataset.source); };
+      tr.onkeydown = function(event) {
+        if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); toggleSource(tr.dataset.source); }
+      };
     });
   }
 }
@@ -557,8 +595,7 @@ function toggleSource(source) {
 function toggleModel(model) {
   if (hiddenModels.has(model)) hiddenModels.delete(model);
   else hiddenModels.add(model);
-  drawChart();
-  renderBreakdown();
+  renderAll();
 }
 
 // ---- custom-range calendar popover ----
@@ -688,10 +725,16 @@ function renderAvatar() {
 }
 function showEdit() {
   const root = document.getElementById('dialogRoot');
-  root.innerHTML = '<div class="dialog-overlay"><div class="dialog" role="dialog" aria-modal="true" aria-label="Edit profile"><h3>Edit profile</h3><p class="dialog-desc">Stored in this browser only. URL params override it.</p><label for="edNm">Name</label><input id="edNm" value="' + escapeHtml(userName) + '"><label for="edAv">Avatar URL</label><input id="edAv" value="' + escapeHtml(avatarUrl) + '"><div class="dialog-actions"><button class="btn btn-outline btn-sm" id="edCancel">Cancel</button><button class="btn btn-default btn-sm" id="edSave">Save changes</button></div></div></div>';
-  document.getElementById('edCancel').onclick = function() { root.innerHTML = ''; };
+  root.innerHTML = '<dialog class="dialog" id="editDialog" aria-label="Edit profile"><div class="dialog-card"><h3>Edit profile</h3><p class="dialog-desc">Stored in this browser only. URL params override it.</p><label for="edNm">Name</label><input id="edNm" value="' + escapeHtml(userName) + '"><label for="edAv">Avatar URL</label><input id="edAv" value="' + escapeHtml(avatarUrl) + '"><div class="dialog-actions"><button class="btn btn-outline btn-sm" id="edCancel">Cancel</button><button class="btn btn-default btn-sm" id="edSave">Save changes</button></div></div></dialog>';
+  const dlg = document.getElementById('editDialog');
+  const opener = document.activeElement;
+  const close = function() { root.innerHTML = ''; if (opener && opener.focus) opener.focus({preventScroll:true}); };
+  document.getElementById('edCancel').onclick = function() { close(); };
   document.getElementById('edSave').onclick = function() { saveEdit(); };
-  root.querySelector('.dialog-overlay').addEventListener('pointerdown', function(e) { if (e.target.classList.contains('dialog-overlay')) root.innerHTML = ''; });
+  dlg.addEventListener('close', function() { root.innerHTML = ''; if (opener && opener.focus) opener.focus({preventScroll:true}); });
+  dlg.addEventListener('pointerdown', function(e) { if (e.target === dlg) dlg.close(); });
+  dlg.showModal();
+  document.getElementById('edNm').focus();
 }
 function saveEdit() {
   const name = document.getElementById('edNm').value.trim() || 'nico2525nn';
@@ -734,7 +777,7 @@ function chartTipHtml(index) {
   } else {
     html += '<div class="chart-tip-list">';
     rows.slice(0, 8).forEach(function(entry) {
-      html += '<div class="chart-tip-row"><span class="dot" style="background:' + getModelColor(entry[0]) + '"></span><span class="chart-tip-name" title="' + escapeHtml(entry[0]) + '">' + escapeHtml(shortModel(entry[0])) + '</span><span class="chart-tip-value">' + (entry[1] / total * 100).toFixed(1) + '%</span></div>';
+      html += '<div class="chart-tip-row"><span class="dot" style="background:' + getModelColor(entry[0]) + '"></span><span class="chart-tip-name" title="' + escapeHtml(entry[0]) + '">' + escapeHtml(shortModel(entry[0])) + '</span><span class="chart-tip-value">' + fmt(entry[1]) + ' · ' + (entry[1] / total * 100).toFixed(1) + '%</span></div>';
     });
     html += '</div>';
     if (rows.length > 8) html += '<p class="chart-tip-more">+' + (rows.length - 8) + ' more models</p>';
@@ -805,18 +848,22 @@ function drawChart() {
   });
   const names = Object.keys(totals);
   const ranked = Object.entries(totals).sort(function(a,b) { return b[1] - a[1]; });
-  // Legend shares use only visible models so the percentages match the bars.
-  const visibleWindowTotal = ranked.reduce(function(sum, entry) { return sum + (hiddenModels.has(entry[0]) ? 0 : entry[1]); }, 0);
+  // Legend shares use the full plotted total so hidden entries keep their
+  // original share instead of inflating past 100%.
+  const windowTotal = ranked.reduce(function(sum, entry) { return sum + entry[1]; }, 0);
   const colors = {};
   names.forEach(function(name) { colors[name] = getModelColor(name); });
   const chipMode = window.innerWidth <= 1024;
-  legend.innerHTML = ranked.length ? '<div class="' + (chipMode ? 'chips' : 'chart-key-list') + '">' + ranked.slice(0, 8).map(function(entry, index) {
+  const shown = legendExpanded ? ranked : ranked.slice(0, 8);
+  legend.innerHTML = ranked.length ? '<div class="' + (chipMode ? 'chips' : 'chart-key-list' + (legendExpanded && ranked.length > 8 ? ' scroll' : '')) + '">' + shown.map(function(entry, index) {
     const model = entry[0];
     const off = hiddenModels.has(model) ? ' off' : '';
-    const pct = (entry[1] / (visibleWindowTotal || 1) * 100).toFixed(1) + '%';
+    const pct = (entry[1] / (windowTotal || 1) * 100).toFixed(1) + '%';
     if (chipMode) return '<button class="chip' + off + '" data-model="' + escapeHtml(model) + '" aria-pressed="' + (!hiddenModels.has(model)) + '"><span class="dot" style="background:' + colors[model] + '"></span><span class="chip-name" title="' + escapeHtml(model) + '">' + escapeHtml(shortModel(model)) + '</span><span class="chip-val">' + pct + '</span></button>';
     return '<button class="legend-item' + off + '" data-model="' + escapeHtml(model) + '" aria-pressed="' + (!hiddenModels.has(model)) + '"><span class="legend-dot" style="background:' + colors[model] + '"></span><span class="legend-name" title="' + escapeHtml(model) + '">' + escapeHtml(shortModel(model)) + '</span><span class="legend-value">' + pct + '</span></button>';
-  }).join('') + '</div>' + (ranked.length > 8 ? '<p class="legend-more">+' + (ranked.length - 8) + ' more in breakdown</p>' : '') + '<p class="legend-more">Shares of the plotted window</p>' : '<p class="card-desc">No model data</p>';
+  }).join('') + '</div>' + (ranked.length > 8 ? '<button class="legend-more legend-toggle" id="legendToggle" aria-expanded="' + legendExpanded + '">' + (legendExpanded ? 'Show less' : '+' + (ranked.length - 8) + ' more') + '</button>' : '') + '<p class="legend-more">Shares of the plotted window</p>' : '<p class="card-desc">No model data</p>';
+  const legendToggle = document.getElementById('legendToggle');
+  if (legendToggle) legendToggle.onclick = function() { legendExpanded = !legendExpanded; drawChart(); };
   legend.querySelectorAll('button[data-model]').forEach(function(btn) {
     btn.onclick = function() { toggleModel(btn.dataset.model); };
   });
@@ -950,13 +997,31 @@ function drawChart() {
       }
       showChartTip(pinnedBucket, event.clientX - canvas.getBoundingClientRect().left);
     });
+    canvas.addEventListener('keydown', function(event) {
+      if (!chartView || !chartView.buckets.length) return;
+      const last = chartView.buckets.length - 1;
+      let next = pinnedBucket;
+      if (event.key === 'ArrowRight' || event.key === 'ArrowDown') next = pinnedBucket < 0 ? 0 : Math.min(last, pinnedBucket + 1);
+      else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') next = pinnedBucket < 0 ? last : Math.max(0, pinnedBucket - 1);
+      else if (event.key === 'Home') next = 0;
+      else if (event.key === 'End') next = last;
+      else if (event.key === 'Escape') { pinnedBucket = -1; hideChartTip(); return; }
+      else return;
+      event.preventDefault();
+      pinnedBucket = next;
+      showChartTip(pinnedBucket, chartView.pad.left + pinnedBucket * chartView.slotWidth);
+    });
+    canvas.addEventListener('blur', function() {
+      pinnedBucket = -1;
+      hideChartTip();
+    });
   }
   if (pinnedBucket >= 0) showChartTip(pinnedBucket, chartView.pad.left + pinnedBucket * chartView.slotWidth);
 }
 
 // ---- render root + data loading ----
 function renderAll() {
-  ALL_STATS = buildView(DASH, {hiddenSources, statsPeriod, statsCustom});
+  ALL_STATS = buildView(DASH, {hiddenSources, hiddenModels, statsPeriod, statsCustom});
   pinnedBucket = -1;
   renderPeriod();
   renderKpis();
@@ -967,8 +1032,17 @@ function renderAll() {
   document.getElementById('pageDesc').textContent = 'Local token usage across every coding agent.' + (win ? ' · ' + win.from + ' – ' + win.to : ' · all time');
   bindStatsCustomRange();
   document.getElementById('pageMeta').textContent = ALL_STATS.firstDate ? ALL_STATS.firstDate + ' – ' + ALL_STATS.lastDate + ' · ' + ALL_STATS.activeDays + ' active days' : 'No token data';
-  document.getElementById('footerMeta').textContent = 'Local data · auto refresh 60s' + (ALL_STATS.firstDate ? ' · ' + ALL_STATS.firstDate + ' – ' + ALL_STATS.lastDate : '');
+  updateSyncFooter();
   renderAvatar();
+}
+
+function updateSyncFooter() {
+  const el = document.getElementById('footerMeta');
+  if (!el) return;
+  let text = 'Local data · auto refresh 60s' + (ALL_STATS && ALL_STATS.firstDate ? ' · ' + ALL_STATS.firstDate + ' – ' + ALL_STATS.lastDate : '');
+  if (lastSyncError) text += ' · update failed ' + lastSyncError;
+  else if (lastSyncAt) text += ' · updated ' + new Date(lastSyncAt).toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+  el.textContent = text;
 }
 
 async function loadData() {
@@ -977,14 +1051,23 @@ async function loadData() {
     if (response.status === 503) throw Error('still building the first snapshot — retrying');
     if (!response.ok) throw Error('API error ' + response.status);
     DASH = await response.json();
+    lastSyncAt = Date.now();
+    lastSyncError = '';
     if (!hasLoaded) {
       hiddenModels.clear();
       hiddenSources.clear();
       hasLoaded = true;
     }
+    if (DASH.generatedAt && DASH.generatedAt === lastDashboardId) {
+      updateSyncFooter();
+      return;
+    }
+    lastDashboardId = DASH.generatedAt || '';
     renderAll();
   } catch (error) {
     if (hasLoaded && DASH) {
+      lastSyncError = new Date().toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+      updateSyncFooter();
       console.warn('[dashboard] refresh failed:', error.message);
       return;
     }

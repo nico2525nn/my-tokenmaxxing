@@ -1,6 +1,6 @@
 // Shared dashboard engine: pure data helpers with no DOM access.
 // Consumed by public/index.html (single-file dashboard).
-const COLORS = ['#f59e0b','#10b981','#3b82f6','#ef4444','#8b5cf6','#ec4899','#06b6d4','#84cc16','#f97316','#6366f1','#14b8a6','#eab308'];
+const COLORS = ['#f59e0b','#10b981','#3b82f6','#ef4444','#8b5cf6','#ec4899','#06b6d4','#84cc16','#f97316','#6366f1','#14b8a6','#eab308','#f43f5e','#0ea5e9','#a3e635','#facc15','#c084fc','#5eead4','#fb923c','#93c5fd','#4ade80','#f87171','#2dd4bf','#a78bfa'];
 const SOURCE_COLORS = ['#94a3b8','#38bdf8','#34d399','#fbbf24','#a78bfa','#fb7185'];
 const SOURCE_LABELS = { opencode:'OpenCode', opengrok:'OpenGrok', omp:'OMP', zcode:'ZCode', reasonix:'Reasonix', dsh:'DSH' };
 const MODEL_COLORS = {};
@@ -90,18 +90,16 @@ function cacheHitText(input, cacheRead) {
   return rate === null ? '—' : rate.toFixed(1) + '%';
 }
 
-const EMPTY_STATS = {totalTokens:0,totalInput:0,totalOutput:0,totalCacheRead:0,totalCacheCreation:0,activeDays:0,sessions:0,topModel:'N/A',topModelTokens:0,currentStreak:0,longestStreak:0,daily:[],modelRows:[],firstDate:'',lastDate:''};
+const EMPTY_STATS = {totalTokens:0,totalInput:0,totalOutput:0,totalCacheRead:0,totalCacheCreation:0,activeDays:0,records:0,topModel:'N/A',topModelTokens:0,currentStreak:0,longestStreak:0,daily:[],modelRows:[],firstDate:'',lastDate:''};
 
 function streakStats(daily) {
   if (!daily.length) return {current:0, longest:0};
   const dateSet = new Set(daily.map(function(day) { return day.date; }));
-  const today = new Date();
+  const today = isoDate(new Date());
   let current = 0;
-  if (dateSet.has(today.toISOString().slice(0, 10))) {
+  if (dateSet.has(today)) {
     for (let back = 0; ; back++) {
-      const cursor = new Date(today);
-      cursor.setDate(cursor.getDate() - back);
-      if (!dateSet.has(cursor.toISOString().slice(0, 10))) break;
+      if (!dateSet.has(addDays(today, -back))) break;
       current++;
     }
   }
@@ -136,6 +134,7 @@ function statsPeriodWindow(days, period, custom) {
 function buildView(summary, opts) {
   opts = opts || {};
   const hiddenSources = opts.hiddenSources || new Set();
+  const hiddenModels = opts.hiddenModels || new Set();
   if (!summary) return Object.assign({}, EMPTY_STATS, {sourceRows:[]});
   const visible = new Set();
   for (const row of summary.sources || []) {
@@ -151,7 +150,7 @@ function buildView(summary, opts) {
   const sourceMap = new Map();
   const dailyMap = new Map();
   let totalTokens = 0, totalInput = 0, totalOutput = 0, totalCacheRead = 0, totalCacheCreation = 0;
-  let sessions = 0;
+  let records = 0;
 
   const bump = function(slot, tokens, input, output, cacheRead, cacheCreation) {
     slot.tokens += tokens;
@@ -169,11 +168,17 @@ function buildView(summary, opts) {
       if (!visible.has(point.source)) continue;
       const tokens = point.tokens || 0;
       if (tokens <= 0) continue;
+      if (hiddenModels.has(point.model)) {
+        // Keep a zero row so the hidden model stays toggleable,
+        // but exclude it from every aggregate like hidden sources.
+        if (!modelMap.has(point.model)) modelMap.set(point.model, {model: point.model, tokens: 0, input: 0, output: 0, cacheRead: 0, cacheCreation: 0});
+        continue;
+      }
       const input = point.input || 0;
       const output = point.output || 0;
       const cacheRead = point.cacheRead || 0;
       const cacheCreation = point.cacheCreation || 0;
-      sessions++;
+      records++;
       dayTotal += tokens;
       totalTokens += tokens;
       totalInput += input;
@@ -201,7 +206,7 @@ function buildView(summary, opts) {
   const stats = Object.assign({}, EMPTY_STATS, {
     totalTokens, totalInput, totalOutput, totalCacheRead, totalCacheCreation,
     activeDays: daily.length,
-    sessions,
+    records,
     daily,
     modelRows,
     sourceRows,
@@ -210,7 +215,7 @@ function buildView(summary, opts) {
     currentStreak: streak.current,
     longestStreak: streak.longest,
   });
-  if (modelRows.length) {
+  if (modelRows.length && modelRows[0].tokens > 0) {
     stats.topModel = modelRows[0].model;
     stats.topModelTokens = modelRows[0].tokens;
   }

@@ -27,10 +27,10 @@ Needs [Bun](https://bun.sh) 1.3+ or Node.js 24+, plus ccusage for the Codex-fami
 | Codex, OpenCode, pi | `ccusage <name> daily` | ✅ |
 | Claude, Gemini, Copilot | `ccusage <name> daily` | ⚠️ needs setup |
 | OMP | `~/.omp/agent/sessions/*.jsonl` | ✅ |
-| ZCode | `~/.zcode/cli/db/db.sqlite` | ✅ |
+| ZCode | `~/.zcode/cli/db/db.sqlite` | ✅ (Bun, or Node 22.5+ via node:sqlite) |
 | Reasonix | `%APPDATA%/reasonix/projects/*/sessions/*.telemetry.json` | ✅ |
 | OpenGrok | `$OPENGROK_HOME/sessions/**/usage.json` (else `~/.opengrok`) | ✅ |
-| DSH | `$DSH_HOME/storages/session_projcache/sessions/*.json` (else `~/.dsh`) | ✅ |
+| DSH | `$DSH_HOME/storages/session_projcache/sessions/*.json` (else `~/.dsh`) | ✅ session totals attributed to the last-prompt day (daily spikes are approximate) |
 
 Reader spec: `token-reading-logic.md` (Japanese).
 
@@ -40,8 +40,7 @@ Reader spec: `token-reading-logic.md` (Japanese).
 server/index.js            express server (API + static files)
 server/data-fetcher.js     collectors + aggregation
 server/refresh-dashboard.js  background aggregation worker
-public/index.html          dashboard UI (legacy)
-public/shadcn.html         dashboard UI (shadcn-style)
+public/index.html          dashboard UI (shadcn-style, zero dependencies)
 public/tmx.js              shared dashboard helpers
 ```
 
