@@ -170,14 +170,9 @@ button.legend-more:hover{color:hsl(var(--foreground));text-decoration:underline}
 .data-table tbody tr:focus-visible{outline:none;box-shadow:inset 0 0 0 2px hsl(var(--ring))}
 .data-table td{padding:.5rem;vertical-align:middle;overflow:hidden}
 .data-table thead th.num,.data-table tbody td.num{text-align:right;font-family:"Geist Mono",monospace;font-variant-numeric:tabular-nums}
-.data-table thead th.num-r,.data-table tbody td.num-r{text-align:right}
 .cell-name{display:flex;align-items:center;gap:.5rem;min-width:0;font-weight:500}
 .cell-name .dot{width:8px;height:8px;border-radius:9999px;flex-shrink:0}
 .cell-name span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
-.cell-share{display:flex;align-items:center;justify-content:flex-end;gap:.5rem}
-.share-pct{font-family:"Geist Mono",monospace;font-size:.75rem;color:hsl(var(--muted-foreground));font-variant-numeric:tabular-nums}
-.progress{position:relative;width:100%;max-width:4.5rem;height:.5rem;overflow:hidden;border-radius:9999px;background:hsl(var(--primary) / .2);flex:1 1 0;min-width:0}
-.progress-bar{display:block;height:100%;border-radius:9999px;background:hsl(var(--primary));transition:width .15s}
 .cell-muted{color:hsl(var(--muted-foreground))}
 .io-short{display:none}
 .io-short i{font-style:normal}
@@ -262,14 +257,11 @@ button.legend-more:hover{color:hsl(var(--foreground));text-decoration:underline}
   .data-table td{padding:.375rem .25rem;white-space:nowrap}
   .data-table col.c-name{width:auto}
   .data-table col.c-tok{width:3.5rem}
-  .data-table col.c-share{width:4.25rem}
+  .data-table col.c-share{width:2.75rem}
   .data-table col.c-cache{width:2.75rem}
   .data-table col.c-io{width:2.4rem}
   .cell-name{gap:.5rem}
   .cell-name .dot{width:7px;height:7px}
-  .cell-share{gap:.25rem}
-  .share-pct{font-size:.6875rem}
-  .progress{width:1.25rem;max-width:1.25rem;height:.5rem;flex:0 0 1.25rem}
   .io-short{font-size:.6875rem}
   .io-full{display:none}
   .io-short{display:flex;flex-direction:column;line-height:1rem}
@@ -535,7 +527,7 @@ function renderBreakdown() {
   if (breakTab === 'models') {
     const rows = ALL_STATS.modelRows || [];
     const cols = '<colgroup><col class="c-name"><col class="c-tok"><col class="c-share"><col class="c-cache"><col class="c-io"></colgroup>';
-    wrap.innerHTML = '<div class="table-scroll"><table class="data-table">' + cols + '<thead><tr><th>Model</th><th class="num">Tokens</th><th class="num-r"><span class="th-full">Share</span><span class="th-abbr">Shr</span></th><th class="num-r"><span class="th-full">Cache</span><span class="th-abbr">Cch</span></th><th class="num"><span class="th-full">In / Out</span><span class="th-abbr">I/O</span></th></tr></thead><tbody>' + rows.map(function(row) {
+    wrap.innerHTML = '<div class="table-scroll"><table class="data-table">' + cols + '<thead><tr><th>Model</th><th class="num">Tokens</th><th class="num"><span class="th-full">Share</span><span class="th-abbr">Shr</span></th><th class="num"><span class="th-full">Cache</span><span class="th-abbr">Cch</span></th><th class="num"><span class="th-full">In / Out</span><span class="th-abbr">I/O</span></th></tr></thead><tbody>' + rows.map(function(row) {
       const off = hiddenModels.has(row.model) ? ' off' : '';
       const color = getModelColor(row.model);
       const share = (row.tokens / ALL_STATS.totalTokens * 100).toFixed(1);
@@ -543,7 +535,7 @@ function renderBreakdown() {
       return '<tr class="' + off.trim() + '" data-model="' + escapeHtml(row.model) + '" title="' + escapeHtml(row.model) + ' — cache hit ' + escapeHtml(cache) + ' of ' + escapeHtml(fmt(row.input + row.cacheRead)) + ' prompt tokens">'
         + '<td><span class="cell-name"><span class="dot" style="background:' + color + '"></span><span>' + escapeHtml(row.model) + '</span></span></td>'
         + '<td class="num">' + fmt(row.tokens) + '</td>'
-        + '<td class="num-r"><span class="cell-share"><span class="progress"><span class="progress-bar" style="width:' + share + '%;background:' + color + '"></span></span><span class="share-pct">' + share + '%</span></span></td>'
+        + '<td class="num">' + share + '%</td>'
         + '<td class="num">' + escapeHtml(cache) + '</td>'
         + '<td class="num cell-muted"><span class="io-full">' + fmt(row.input) + ' / ' + fmt(row.output) + '</span><span class="io-short"><i>' + fmtShort(row.input) + '</i><i>' + fmtShort(row.output) + '</i></span></td>'
         + '</tr>';
@@ -561,7 +553,7 @@ function renderBreakdown() {
     const rows = ALL_STATS.sourceRows || [];
     const total = rows.reduce(function(s, r) { return s + r.tokens; }, 0) || 1;
     const cols = '<colgroup><col class="c-name"><col class="c-tok"><col class="c-share"><col class="c-cache"><col class="c-io"></colgroup>';
-    wrap.innerHTML = '<div class="table-scroll"><table class="data-table">' + cols + '<thead><tr><th>Harness</th><th class="num">Tokens</th><th class="num-r"><span class="th-full">Share</span><span class="th-abbr">Shr</span></th><th class="num-r"><span class="th-full">Cache</span><span class="th-abbr">Cch</span></th><th class="num"><span class="th-full">In / Out</span><span class="th-abbr">I/O</span></th></tr></thead><tbody>' + rows.map(function(row) {
+    wrap.innerHTML = '<div class="table-scroll"><table class="data-table">' + cols + '<thead><tr><th>Harness</th><th class="num">Tokens</th><th class="num"><span class="th-full">Share</span><span class="th-abbr">Shr</span></th><th class="num"><span class="th-full">Cache</span><span class="th-abbr">Cch</span></th><th class="num"><span class="th-full">In / Out</span><span class="th-abbr">I/O</span></th></tr></thead><tbody>' + rows.map(function(row) {
       const off = hiddenSources.has(row.source) ? ' off' : '';
       const color = getSourceColor(row.source);
       const share = (row.tokens / total * 100).toFixed(1);
@@ -569,7 +561,7 @@ function renderBreakdown() {
       return '<tr class="' + off.trim() + '" data-source="' + escapeHtml(row.source) + '"' + (row.source === 'dsh' ? ' title="DSH totals are session-level and attributed to the last-prompt day, so daily spikes are approximate"' : '') + '>'
         + '<td><span class="cell-name"><span class="dot" style="background:' + color + '"></span><span>' + escapeHtml(sourceLabel(row.source)) + '</span></span></td>'
         + '<td class="num">' + fmt(row.tokens) + '</td>'
-        + '<td class="num-r"><span class="cell-share"><span class="progress"><span class="progress-bar" style="width:' + share + '%;background:' + color + '"></span></span><span class="share-pct">' + share + '%</span></span></td>'
+        + '<td class="num">' + share + '%</td>'
         + '<td class="num">' + escapeHtml(cache) + '</td>'
         + '<td class="num cell-muted"><span class="io-full">' + fmt(row.input) + ' / ' + fmt(row.output) + '</span><span class="io-short"><i>' + fmtShort(row.input) + '</i><i>' + fmtShort(row.output) + '</i></span></td>'
         + '</tr>';
