@@ -2,7 +2,7 @@
 
 Local dashboard for LLM token usage across coding agents. Single Go binary, no runtime dependencies, no external services.
 
-<img width="1050" alt="dashboard screenshot" src="docs/screenshot.webp" />
+<img width="1050" alt="dashboard screenshot" src="docs/screenshot.webp?v=3" />
 
 ## Run
 
