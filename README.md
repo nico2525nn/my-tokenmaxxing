@@ -52,6 +52,23 @@ published immediately, then the immutable `.jsonl.zst` archives are folded in
 behind them. The page shows the early snapshot with "archives still loading"
 until the complete totals land.
 
+### Page load
+
+Measured with Chrome DevTools throttling at 300ms RTT / 1.5 Mbit, cache disabled:
+
+| | before | now |
+|---|---|---|
+| First contentful paint | 752ms | **470ms** |
+| Load complete | 1848ms | **1216ms** |
+| Bytes transferred | ~111KB + third-party | **78KB, zero third-party** |
+| Combined requests | 4 (2 external) | **3 (all local)** |
+
+What changed: responses are gzipped (75KB HTML → 19KB, 35KB JSON → 6KB), the
+script is inlined so the page needs no second round trip, the favicon request is
+suppressed, and the two fonts are self-hosted variable files instead of a
+render-blocking Google Fonts stylesheet. The avatar no longer phones GitHub on
+every load.
+
 The win comes from four things: byte-level scanning that never decodes lines it
 does not need, splitting multi-gigabyte rollouts across cores, allocation-free
 JSON field extraction, and caching each file's aggregated rows by mtime+size so
@@ -67,8 +84,8 @@ internal/jsonx/            allocation-free JSON field extraction
 internal/aggregate/        rollups, streaks, change stamp
 internal/cache/            hashed, size-capped parse cache
 internal/model/            dashboard payload types
-public/index.html          dashboard UI (shadcn-style, zero dependencies)
-public/tmx.js              shared dashboard helpers
+public/index.html          dashboard UI (shadcn-style, inlined CSS+JS)
+public/fonts/              self-hosted Inter and Geist Mono (variable)
 ```
 
 ## License
