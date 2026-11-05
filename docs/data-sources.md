@@ -48,11 +48,11 @@ cacheCreation`. Cache hits are reported as `cacheRead / (input + cacheRead)`.
 ## Dates
 
 All day buckets use the machine's local calendar date. `localIsoDate` in
-`server/readers.js` is the single formatter; date-only arithmetic in
+`internal/sources/sources.go` (`localDate`) is the single formatter; date-only arithmetic in
 `public/tmx.js` stays on UTC so adding days never drifts across a DST edge.
 
 ## ZCode driver
 
-ZCode needs SQLite. Bun uses `bun:sqlite`; Node 22.5+ uses the built-in
-`node:sqlite`. Without either, the source is skipped with a log line rather than
-silently dropped.
+ZCode and OpenCode need SQLite. Both use `modernc.org/sqlite`, a pure-Go driver,
+so the binary stays CGO-free and builds anywhere Go does. A database that cannot
+be opened is logged rather than silently dropped.
