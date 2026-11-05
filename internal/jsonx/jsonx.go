@@ -7,6 +7,8 @@
 // correctly, and only materialize the values the caller asked for.
 package jsonx
 
+import "bytes"
+
 // Value returns the raw bytes of `key`'s value in the object `data`.
 // It reports false when the key is absent or `data` is not an object.
 func Value(data []byte, key string) ([]byte, bool) {
@@ -239,3 +241,81 @@ func skipValue(data []byte, start int) (int, bool) {
 		return index, true
 	}
 }
+
+// Find* helpers locate a key by scanning for its literal `"key":` spelling and
+// read the value in place. This skips the surrounding document entirely, which
+// matters for session logs whose `content` arrays dwarf the usage record.
+//
+// A JSON string escapes its quotes, so the byte sequence `"key":` cannot occur
+// inside a string value; it only ever marks a key. That makes the search safe
+// without a full parse.
+
+func findValueStart(data []byte, key string) (int, bool) {
+	needle := make([]byte, 0, len(key)+3)
+	needle = append(needle, '"')
+	needle = append(needle, key...)
+	needle = append(needle, '"', ':')
+	index := bytesIndex(data, needle)
+	if index < 0 {
+		return 0, false
+	}
+	start := index + len(needle)
+	skipSpace(data, &start)
+	if start >= len(data) {
+		return 0, false
+	}
+	return start, true
+}
+
+// FindObject returns the object stored at `key`.
+func FindObject(data []byte, key string) ([]byte, bool) {
+	start, ok := findValueStart(data, key)
+	if !ok || data[start] != '{' {
+		return nil, false
+	}
+	end, ok := skipValue(data, start)
+	if !ok {
+		return nil, false
+	}
+	return data[start:end], true
+}
+
+// FindString returns the decoded string stored at `key`.
+func FindString(data []byte, key string) (string, bool) {
+	start, ok := findValueStart(data, key)
+	if !ok || data[start] != '"' {
+		return "", false
+	}
+	value, _, ok := readString(data, start)
+	return value, ok
+}
+
+// FindInt returns the integer stored at `key`.
+func FindInt(data []byte, key string) (int64, bool) {
+	start, ok := findValueStart(data, key)
+	if !ok {
+		return 0, false
+	}
+	index := start
+	negative := false
+	if index < len(data) && data[index] == '-' {
+		negative = true
+		index++
+	}
+	var value int64
+	digits := 0
+	for index < len(data) && data[index] >= '0' && data[index] <= '9' {
+		value = value*10 + int64(data[index]-'0')
+		index++
+		digits++
+	}
+	if digits == 0 {
+		return 0, false
+	}
+	if negative {
+		value = -value
+	}
+	return value, true
+}
+
+func bytesIndex(haystack, needle []byte) int { return bytes.Index(haystack, needle) }

@@ -12,8 +12,7 @@ import (
 	"github.com/nico2525nn/my-tokenmaxxing/internal/cache"
 )
 
-// SQLite-backed sources: OpenCode and ZCode keep per-message usage in a database
-// rather than in JSONL logs.
+// ZCode keeps aggregated per-model usage in SQLite.
 
 func homeDir() string {
 	dir, err := os.UserHomeDir()
@@ -52,66 +51,6 @@ func normalizeModel(model string) string {
 		clean = strings.Join(kept, "-")
 	}
 	return clean
-}
-
-const openCodeQuery = `
-  SELECT json_extract(data, '$.time.created') AS created,
-         json_extract(data, '$.model.id')     AS model,
-         json_extract(data, '$.tokens.input') AS input,
-         json_extract(data, '$.tokens.output') AS output,
-         json_extract(data, '$.tokens.reasoning') AS reasoning,
-         json_extract(data, '$.tokens.cache.read')  AS cache_read,
-         json_extract(data, '$.tokens.cache.write') AS cache_write
-  FROM session_message
-  WHERE json_extract(data, '$.tokens') IS NOT NULL`
-
-// ReadOpenCode reads per-message usage. `tokens` is additive; reasoning is
-// folded into output to match the dashboard contract.
-func ReadOpenCode() ([]cache.Tuple, int64, int64, bool) {
-	path := filepath.Join(homeDir(), ".local", "share", "opencode", "opencode.db")
-	info, err := os.Stat(path)
-	if err != nil {
-		return nil, 0, 0, false
-	}
-	mtime, size := info.ModTime().UnixMilli(), info.Size()
-	if wal, werr := os.Stat(path + "-wal"); werr == nil {
-		mtime += wal.ModTime().UnixMilli()
-		size += wal.Size()
-	}
-
-	db, err := sql.Open("sqlite", "file:"+path+"?mode=ro")
-	if err != nil {
-		return nil, mtime, size, false
-	}
-	defer db.Close()
-
-	rows, err := db.Query(openCodeQuery)
-	if err != nil {
-		return nil, mtime, size, false
-	}
-	defer rows.Close()
-
-	acc := newAccumulator()
-	for rows.Next() {
-		var (
-			created, reasoning                   sql.NullInt64
-			input, output, cacheRead, cacheWrite sql.NullInt64
-			model                                sql.NullString
-		)
-		if rows.Scan(&created, &model, &input, &output, &reasoning, &cacheRead, &cacheWrite) != nil {
-			continue
-		}
-		date := localDateMillis(created.Int64)
-		if date == "" {
-			continue
-		}
-		name := model.String
-		if name == "" {
-			name = "unknown"
-		}
-		acc.add(date, name, input.Int64, output.Int64+reasoning.Int64, cacheRead.Int64, cacheWrite.Int64)
-	}
-	return acc.tuples(), mtime, size, true
 }
 
 const zCodeQuery = `

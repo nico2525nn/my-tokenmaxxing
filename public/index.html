@@ -1035,7 +1035,8 @@ function updateSyncFooter() {
   const el = document.getElementById('footerMeta');
   if (!el) return;
   let text = 'Local data · auto refresh 60s' + (ALL_STATS && ALL_STATS.firstDate ? ' · ' + ALL_STATS.firstDate + ' – ' + ALL_STATS.lastDate : '');
-  if (lastSyncError) text += ' · update failed ' + lastSyncError;
+  if (DASH && DASH.partial) text += ' · archives still loading';
+  else if (lastSyncError) text += ' · update failed ' + lastSyncError;
   else if (lastSyncAt) text += ' · updated ' + new Date(lastSyncAt).toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
   el.textContent = text;
 }

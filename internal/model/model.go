@@ -81,4 +81,6 @@ type Payload struct {
 	Stamp string `json:"stamp"`
 	// Changed counts files/databases re-read to produce this snapshot.
 	Changed int `json:"changed"`
+	// Partial marks a snapshot published before every source finished.
+	Partial bool `json:"partial,omitempty"`
 }

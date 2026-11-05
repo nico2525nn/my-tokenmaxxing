@@ -104,7 +104,7 @@ func Lines(path string, markers Markers, fn func(Line) error) error {
 
 const (
 	newline   = 0x0a
-	readChunk = 1 << 20
+	readChunk = 1 << 17
 )
 
 // LinesRange scans [start, end) of a plain (uncompressed) file, reporting each

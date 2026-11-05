@@ -115,11 +115,7 @@ func parseCodex(path string) ([]cache.Tuple, error) {
 	acc := newAccumulator()
 	model := "unknown"
 	err := scan.Lines(path, codexMarkers, func(line scan.Line) error {
-		payload, ok := jsonx.Object(line, "payload")
-		if !ok {
-			return nil
-		}
-		if usage, isUsage := jsonx.Object(payload, "usage"); isUsage {
+		if usage, isUsage := jsonx.FindObject(line, "usage"); isUsage {
 			date := localDate(stringOf(line, "timestamp"))
 			if date == "" {
 				return nil
@@ -132,7 +128,7 @@ func parseCodex(path string) ([]cache.Tuple, error) {
 			acc.add(date, model, input, intOf(usage, "output_tokens"), cached, intOf(usage, "cache_write_input_tokens"))
 			return nil
 		}
-		if name, hasModel := jsonx.String(payload, "model"); hasModel && name != "" {
+		if name, hasModel := jsonx.FindString(line, "model"); hasModel && name != "" {
 			model = name
 		}
 		return nil
@@ -161,25 +157,22 @@ func parseSessionLogs(path string) ([]cache.Tuple, error) {
 	acc := newAccumulator()
 	model := "unknown"
 	err := scan.Lines(path, jsonlMarkers, func(line scan.Line) error {
-		message, ok := jsonx.Object(line, "message")
-		if !ok {
-			if name, has := jsonx.String(line, "modelId"); has && name != "" {
-				model = name
-			}
+		if name, has := jsonx.FindString(line, "modelId"); has && name != "" {
+			model = name
 			return nil
 		}
-		usage, isUsage := jsonx.Object(message, "usage")
+		usage, isUsage := jsonx.FindObject(line, "usage")
 		if !isUsage {
 			return nil
 		}
-		if role, hasRole := jsonx.String(message, "role"); hasRole && role != "assistant" {
+		if role, hasRole := jsonx.FindString(line, "role"); hasRole && role != "assistant" {
 			return nil
 		}
 		date := localDate(stringOf(line, "timestamp"))
 		if date == "" {
 			return nil
 		}
-		rowModel := stringOf(message, "model")
+		rowModel := stringOf(line, "model")
 		if rowModel == "" {
 			rowModel = model
 		}
@@ -210,4 +203,29 @@ func suffixes(includeZst bool) []string {
 func isCodexLog(path string) bool {
 	base := filepath.Base(path)
 	return filepath.Ext(base) == ".jsonl" || (len(base) > 4 && base[len(base)-4:] == ".zst")
+}
+
+// formatInt renders an int64 without pulling in fmt on a hot path.
+func formatInt(value int64) string {
+	if value == 0 {
+		return "0"
+	}
+	var digits [20]byte
+	index := len(digits)
+	for value > 0 {
+		index--
+		digits[index] = byte('0' + value%10)
+		value /= 10
+	}
+	return string(digits[index:])
+}
+
+// signatureID turns a textual signature into the numeric identity the cache
+// stores for non-file inputs.
+func signatureID(signature string) int64 {
+	var value int64
+	for index := 0; index < len(signature) && index < 18; index++ {
+		value = value*10 + int64(signature[index]-'0')
+	}
+	return value
 }

@@ -38,17 +38,24 @@ Reader spec: `token-reading-logic.md` (Japanese).
 
 ## Performance
 
-| | before (ccusage + Node) | now (Go) |
+| | before | now |
 |---|---|---|
-| First build, empty cache | 55s | **2.4s** |
-| Rebuild, warm cache | 1.2s | **0.8s** |
-| Refresh with no changes | 0.03s | **~0.02s** |
-| Resident memory | 37MB | **~14MB** |
-| Parse cache on disk | 282KB | **365KB** (capped at 8MB) |
+| First data on screen (empty cache) | 2.4s | **0.6s** |
+| Complete snapshot (empty cache) | 2.4s | **2.4s** |
+| Warm restart (nothing changed) | 2.4s rebuild | **~0.02s, no rebuild** |
+| Peak RSS (cold build) | 246MB | **126MB** |
+| Resident after build | 40MB | **7.6MB** |
+| Parse cache on disk | 365KB | **365KB** (capped at 8MB) |
 
-The win comes from three things: byte-level scanning that never decodes lines it
-does not need, splitting multi-gigabyte rollouts across cores, and caching each
-file's aggregated rows by mtime+size so unchanged logs are never re-read.
+Two passes share one worker pool: uncompressed logs are scheduled first and
+published immediately, then the immutable `.jsonl.zst` archives are folded in
+behind them. The page shows the early snapshot with "archives still loading"
+until the complete totals land.
+
+The win comes from four things: byte-level scanning that never decodes lines it
+does not need, splitting multi-gigabyte rollouts across cores, allocation-free
+JSON field extraction, and caching each file's aggregated rows by mtime+size so
+unchanged logs are never re-read.
 
 ## Layout
 
