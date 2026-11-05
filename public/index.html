@@ -9,28 +9,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="tmx.js"></script>
 <style>
-:root{
-  --background:0 0% 100%;
-  --foreground:240 10% 3.9%;
-  --card:0 0% 100%;
-  --card-foreground:240 10% 3.9%;
-  --popover:0 0% 100%;
-  --popover-foreground:240 10% 3.9%;
-  --primary:240 5.9% 10%;
-  --primary-foreground:0 0% 98%;
-  --secondary:240 4.8% 95.9%;
-  --secondary-foreground:240 5.9% 10%;
-  --muted:240 4.8% 95.9%;
-  --muted-foreground:240 3.8% 46.1%;
-  --accent:240 4.8% 95.9%;
-  --accent-foreground:240 5.9% 10%;
-  --destructive:0 84.2% 60.2%;
-  --destructive-foreground:0 0% 98%;
-  --border:240 5.9% 90%;
-  --input:240 5.9% 90%;
-  --ring:240 10% 3.9%;
-  --radius:.5rem;
-}
 .dark{
   --background:240 10% 3.9%;
   --foreground:0 0% 98%;
@@ -58,7 +36,6 @@ body{font-family:Inter,ui-sans-serif,system-ui,sans-serif;background:hsl(var(--b
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 a{color:inherit;text-decoration:none}
 :where(button,a,input,[tabindex]):focus-visible{outline:none;box-shadow:0 0 0 2px hsl(var(--background)),0 0 0 4px hsl(var(--ring))}
-.mono{font-family:"Geist Mono",ui-monospace,SFMono-Regular,Menlo,monospace}
 .topbar{position:sticky;top:0;z-index:50;border-bottom:1px solid hsl(var(--border));background:hsl(var(--background))}
 .topbar-inner{max-width:80rem;margin:0 auto;height:4rem;padding:0 2rem;display:flex;align-items:center;gap:1.5rem}
 .brand{display:flex;align-items:center;font-size:.875rem;font-weight:600;letter-spacing:-.01em}
@@ -164,12 +141,13 @@ button.legend-more:hover{color:hsl(var(--foreground));text-decoration:underline}
 .data-table tbody tr:hover{background:hsl(var(--muted) / .5)}
 .data-table tbody tr.off{opacity:.35}
 .data-table tbody tr.off .cell-name{text-decoration:line-through}
-.data-table tbody tr:focus-visible{outline:none;box-shadow:inset 0 0 0 2px hsl(var(--ring))}
 .data-table td{padding:.5rem;vertical-align:middle;overflow:hidden}
 .data-table thead th.num,.data-table tbody td.num{text-align:right;font-family:"Geist Mono",monospace;font-variant-numeric:tabular-nums}
 .cell-name{display:flex;align-items:center;gap:.5rem;min-width:0;font-weight:500}
 .cell-name .dot{width:8px;height:8px;border-radius:9999px;flex-shrink:0}
 .cell-name span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.cell-toggle{display:block;min-width:0;max-width:100%;padding:0;font:inherit;color:inherit;text-align:left;text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-radius:.125rem}
+.cell-toggle:hover{text-decoration:underline}
 .cell-muted{color:hsl(var(--muted-foreground))}
 .io-short{display:none}
 .io-short i{font-style:normal}
@@ -197,6 +175,18 @@ button.legend-more:hover{color:hsl(var(--foreground));text-decoration:underline}
 .dialog-actions{display:flex;gap:.5rem;justify-content:flex-end}
 .alert{display:flex;align-items:center;gap:.75rem;border:1px solid hsl(var(--destructive));border-radius:var(--radius);background:hsl(var(--destructive) / .1);padding:1rem;color:hsl(var(--foreground));font-size:.875rem}
 .alert button{margin-left:auto;flex-shrink:0}
+/* Loading placeholders (shadcn Skeleton: rounded, primary/10, pulse). */
+.skeleton{display:block;background:hsl(var(--primary) / .1);border-radius:calc(var(--radius) - 2px);animation:skeleton-pulse 2s cubic-bezier(.4,0,.6,1) infinite}
+@keyframes skeleton-pulse{0%,100%{opacity:1}50%{opacity:.45}}
+.sk-label{width:7rem;height:.875rem}
+.sk-num{width:9rem;height:1.75rem;margin-top:.75rem}
+.sk-sub{width:11rem;height:.75rem;margin-top:.75rem}
+.sk-chart{height:300px;width:100%}
+.sk-legend,.sk-table{display:flex;flex-direction:column;gap:.5rem}
+.sk-row{height:1.75rem;width:100%}
+.sk-table{padding:.25rem 0}
+/* No stray pills before the first render. */
+.range-group:empty,.tabs-list:empty{display:none}
 @media(max-width:1024px){
   .kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .chart-layout{flex-direction:column;align-items:stretch;gap:1rem}
@@ -267,12 +257,16 @@ button.legend-more:hover{color:hsl(var(--foreground));text-decoration:underline}
   .tabs-badge{font-size:.6875rem}
   canvas#tokenChart{height:240px}
   .chart-empty{height:240px}
+  .sk-chart{height:240px}
   .site-footer-inner{padding:1.5rem 1rem;gap:.75rem;font-size:.75rem}
   .site-footer nav{gap:1rem}
 }
 .table-scroll{position:relative;width:100%;overflow:auto}
 @media(min-width:641px){
   .table-scroll .data-table{min-width:34rem}
+}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important}
 }
 </style>
 </head>
@@ -304,7 +298,12 @@ button.legend-more:hover{color:hsl(var(--foreground));text-decoration:underline}
     </div>
   </div>
 
-  <div id="kpiGrid" class="kpi-grid"></div>
+  <div id="kpiGrid" class="kpi-grid">
+    <div class="card kpi-skeleton" aria-hidden="true"><div class="kpi-body"><span class="skeleton sk-label"></span><span class="skeleton sk-num"></span><span class="skeleton sk-sub"></span></div></div>
+    <div class="card kpi-skeleton" aria-hidden="true"><div class="kpi-body"><span class="skeleton sk-label"></span><span class="skeleton sk-num"></span><span class="skeleton sk-sub"></span></div></div>
+    <div class="card kpi-skeleton" aria-hidden="true"><div class="kpi-body"><span class="skeleton sk-label"></span><span class="skeleton sk-num"></span><span class="skeleton sk-sub"></span></div></div>
+    <div class="card kpi-skeleton" aria-hidden="true"><div class="kpi-body"><span class="skeleton sk-label"></span><span class="skeleton sk-num"></span><span class="skeleton sk-sub"></span></div></div>
+  </div>
 
   <section class="card chart-card" aria-labelledby="tokens-title">
     <div class="card-header">
@@ -318,10 +317,12 @@ button.legend-more:hover{color:hsl(var(--foreground));text-decoration:underline}
     </div>
     <div class="card-content">
       <div class="chart-layout">
-        <div class="chart-canvas"><canvas id="tokenChart" role="img" aria-label="Daily tokens by model. Use left and right arrows to inspect days." tabindex="0"></canvas></div>
+        <div class="chart-canvas"><span class="skeleton sk-chart" id="chartSkeleton" aria-hidden="true"></span><canvas id="tokenChart" role="img" aria-label="Daily tokens by model. Use left and right arrows to inspect days." tabindex="0"></canvas></div>
         <aside class="chart-key" aria-label="Models">
           <p class="chart-key-title">Top models</p>
-          <div id="chartLegend"></div>
+          <div id="chartLegend">
+            <div class="sk-legend" aria-hidden="true"><span class="skeleton sk-row"></span><span class="skeleton sk-row"></span><span class="skeleton sk-row"></span></div>
+          </div>
         </aside>
       </div>
     </div>
@@ -337,10 +338,11 @@ button.legend-more:hover{color:hsl(var(--foreground));text-decoration:underline}
         <div class="tabs-list" role="tablist" aria-label="Breakdown view" id="breakTabs"></div>
       </div>
     </div>
-    <div class="card-content" id="breakTableWrap" role="tabpanel" aria-labelledby="breakTabs"></div>
+    <div class="card-content" id="breakTableWrap" role="tabpanel" aria-labelledby="breakTabs"><div class="sk-table" aria-hidden="true"><span class="skeleton sk-row"></span><span class="skeleton sk-row"></span><span class="skeleton sk-row"></span><span class="skeleton sk-row"></span><span class="skeleton sk-row"></span></div></div>
   </section>
 
   <p class="page-meta sr-only" id="pageMeta" aria-live="polite"></p>
+  <p class="sr-only" id="chartAnnounce" aria-live="polite"></p>
 </main>
 
 <footer class="site-footer">
@@ -523,7 +525,7 @@ function renderBreakdown() {
       const share = (row.tokens / ALL_STATS.totalTokens * 100).toFixed(1);
       const cache = cacheHitText(row.input, row.cacheRead);
       return '<tr class="' + off.trim() + '" data-model="' + escapeHtml(row.model) + '" title="' + escapeHtml(row.model) + ' — cache hit ' + escapeHtml(cache) + ' of ' + escapeHtml(fmt(row.input + row.cacheRead)) + ' prompt tokens">'
-        + '<td><span class="cell-name"><span class="dot" style="background:' + color + '"></span><span>' + escapeHtml(row.model) + '</span></span></td>'
+        + '<td><span class="cell-name"><span class="dot" style="background:' + color + '"></span><button type="button" class="cell-toggle" data-model="' + escapeHtml(row.model) + '" aria-pressed="' + (!hiddenModels.has(row.model)) + '">' + escapeHtml(row.model) + '</button></span></td>'
         + '<td class="num">' + fmt(row.tokens) + '</td>'
         + '<td class="num">' + share + '%</td>'
         + '<td class="num">' + escapeHtml(cache) + '</td>'
@@ -531,13 +533,9 @@ function renderBreakdown() {
         + '</tr>';
     }).join('') + '</tbody></table></div>';
     wrap.querySelectorAll('tr[data-model]').forEach(function(tr) {
-      tr.tabIndex = 0;
-      tr.setAttribute('role', 'button');
-      tr.setAttribute('aria-pressed', String(!hiddenModels.has(tr.dataset.model)));
-      tr.onclick = function() { toggleModel(tr.dataset.model); };
-      tr.onkeydown = function(event) {
-        if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); toggleModel(tr.dataset.model); }
-      };
+      const control = tr.querySelector('.cell-toggle');
+      tr.onclick = function(event) { if (!event.target.closest('.cell-toggle')) toggleModel(tr.dataset.model); };
+      if (control) control.onclick = function(event) { event.stopPropagation(); toggleModel(tr.dataset.model); };
     });
   } else {
     const rows = ALL_STATS.sourceRows || [];
@@ -549,7 +547,7 @@ function renderBreakdown() {
       const share = (row.tokens / total * 100).toFixed(1);
       const cache = cacheHitText(row.input, row.cacheRead);
       return '<tr class="' + off.trim() + '" data-source="' + escapeHtml(row.source) + '"' + (row.source === 'dsh' ? ' title="DSH totals are session-level and attributed to the last-prompt day, so daily spikes are approximate"' : '') + '>'
-        + '<td><span class="cell-name"><span class="dot" style="background:' + color + '"></span><span>' + escapeHtml(sourceLabel(row.source)) + '</span></span></td>'
+        + '<td><span class="cell-name"><span class="dot" style="background:' + color + '"></span><button type="button" class="cell-toggle" data-source="' + escapeHtml(row.source) + '" aria-pressed="' + (!hiddenSources.has(row.source)) + '">' + escapeHtml(sourceLabel(row.source)) + '</button></span></td>'
         + '<td class="num">' + fmt(row.tokens) + '</td>'
         + '<td class="num">' + share + '%</td>'
         + '<td class="num">' + escapeHtml(cache) + '</td>'
@@ -557,13 +555,9 @@ function renderBreakdown() {
         + '</tr>';
     }).join('') + '</tbody></table></div>';
     wrap.querySelectorAll('tr[data-source]').forEach(function(tr) {
-      tr.tabIndex = 0;
-      tr.setAttribute('role', 'button');
-      tr.setAttribute('aria-pressed', String(!hiddenSources.has(tr.dataset.source)));
-      tr.onclick = function() { toggleSource(tr.dataset.source); };
-      tr.onkeydown = function(event) {
-        if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); toggleSource(tr.dataset.source); }
-      };
+      const control = tr.querySelector('.cell-toggle');
+      tr.onclick = function(event) { if (!event.target.closest('.cell-toggle')) toggleSource(tr.dataset.source); };
+      if (control) control.onclick = function(event) { event.stopPropagation(); toggleSource(tr.dataset.source); };
     });
   }
 }
@@ -625,7 +619,7 @@ function renderCalPop() {
   pop.querySelectorAll('[data-cal-nav]').forEach(function(btn) {
     btn.onclick = function() {
       const next = new Date(Date.UTC(parts[0], parts[1] - 1 + Number(btn.dataset.calNav), 1));
-      calCursor = isoDate(next).slice(0, 7);
+      calCursor = next.getUTCFullYear() + '-' + String(next.getUTCMonth() + 1).padStart(2, '0');
       renderCalPop();
     };
   });
@@ -742,13 +736,16 @@ function toggleAvatarMenu(force) {
 const CHART_RANGE_DAYS = 30;
 const CHART_RANGE_MIN_DAYS = 7;
 
+function formatBucketLabel(bucket) {
+  const step = chartView && chartView.calendar ? chartView.calendar.step : 1;
+  return step === 1 ? bucket.date : bucket.date + ' – ' + addDays(bucket.date, step - 1);
+}
+
 function chartTipHtml(index) {
   if (!chartView) return '';
   const bucket = chartView.buckets[index];
   if (!bucket) return '';
-  const start = bucket.date;
-  const step = chartView.calendar.step;
-  const label = step === 1 ? start : start + ' – ' + addDays(start, step - 1);
+  const label = formatBucketLabel(bucket);
   const rows = Object.entries(bucket.models)
     .filter(function(entry) { return entry[1] > 0 && !hiddenModels.has(entry[0]); })
     .sort(function(a, b) { return b[1] - a[1]; });
@@ -766,6 +763,20 @@ function chartTipHtml(index) {
   }
   html += '<p class="chart-tip-hint">' + (pinnedBucket === index ? 'Click to unpin' : 'Click to pin') + '</p>';
   return html;
+}
+
+function announceChart(index) {
+  const live = document.getElementById('chartAnnounce');
+  if (!live || !chartView) return;
+  const bucket = chartView.buckets[index];
+  if (!bucket) { live.textContent = ''; return; }
+  const label = formatBucketLabel(bucket);
+  const rows = Object.entries(bucket.models)
+    .filter(function(entry) { return entry[1] > 0 && !hiddenModels.has(entry[0]); })
+    .sort(function(a, b) { return b[1] - a[1]; })
+    .slice(0, 3)
+    .map(function(entry) { return shortModel(entry[0]) + ' ' + fmt(entry[1]); });
+  live.textContent = label + ': ' + fmt(bucket.total) + ' tokens' + (rows.length ? ', ' + rows.join(', ') : '');
 }
 
 function hideChartTip() {
@@ -789,6 +800,7 @@ function showChartTip(index, anchorX) {
     host.appendChild(tip);
   }
   tip.innerHTML = chartTipHtml(index);
+  announceChart(index);
   const x = chartView.pad.left + index * chartView.slotWidth + chartView.barWidth / 2;
   const tipWidth = tip.offsetWidth;
   const hostWidth = host.clientWidth;
@@ -843,7 +855,7 @@ function drawChart() {
     const pct = (entry[1] / (windowTotal || 1) * 100).toFixed(1) + '%';
     if (chipMode) return '<button class="chip' + off + '" data-model="' + escapeHtml(model) + '" aria-pressed="' + (!hiddenModels.has(model)) + '"><span class="dot" style="background:' + colors[model] + '"></span><span class="chip-name" title="' + escapeHtml(model) + '">' + escapeHtml(shortModel(model)) + '</span><span class="chip-val">' + pct + '</span></button>';
     return '<button class="legend-item' + off + '" data-model="' + escapeHtml(model) + '" aria-pressed="' + (!hiddenModels.has(model)) + '"><span class="legend-dot" style="background:' + colors[model] + '"></span><span class="legend-name" title="' + escapeHtml(model) + '">' + escapeHtml(shortModel(model)) + '</span><span class="legend-value">' + pct + '</span></button>';
-  }).join('') + '</div>' + (ranked.length > 8 ? '<button class="legend-more legend-toggle" id="legendToggle" aria-expanded="' + legendExpanded + '">' + (legendExpanded ? 'Show less' : '+' + (ranked.length - 8) + ' more') + '</button>' : '') + '<p class="legend-more">Shares of the plotted window</p>' : '<p class="card-desc">No model data</p>';
+  }).join('') + '</div>' + (ranked.length > 8 ? '<button class="legend-more legend-toggle" id="legendToggle" aria-expanded="' + legendExpanded + '">' + (legendExpanded ? 'Show less' : '+' + (ranked.length - 8) + ' more') + '</button>' : '') : '<p class="card-desc">No model data</p>';
   const legendToggle = document.getElementById('legendToggle');
   if (legendToggle) legendToggle.onclick = function() { legendExpanded = !legendExpanded; drawChart(); };
   legend.querySelectorAll('button[data-model]').forEach(function(btn) {
@@ -1005,6 +1017,7 @@ function drawChart() {
 function renderAll() {
   ALL_STATS = buildView(DASH, {hiddenSources, hiddenModels, statsPeriod, statsCustom});
   pinnedBucket = -1;
+  document.getElementById('chartSkeleton')?.remove();
   renderPeriod();
   renderKpis();
   renderChartCard();

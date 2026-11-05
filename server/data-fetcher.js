@@ -1,7 +1,8 @@
 import { execSync, execFileSync } from "child_process";
-import { readFileSync, readdirSync, existsSync, mkdirSync } from "fs";
+import { readFileSync, readdirSync, existsSync, mkdirSync, statSync } from "fs";
 import { homedir } from "os";
 import { join } from "path";
+import { readDirectSources, localIsoDate } from "./readers.js";
 
 const HOME = homedir();
 
@@ -81,62 +82,6 @@ function fetchFromCcusage() {
 }
 
 /**
- * Read OMP session files
- */
-function fetchFromOmp() {
-  console.log("[fetcher] Fetching from OMP sessions...");
-  const sessionsDir = join(HOME, ".omp", "agent", "sessions");
-  if (!existsSync(sessionsDir)) {
-    console.log("[fetcher] OMP dir not found");
-    return [];
-  }
-
-  const results = [];
-  const files = [];
-  collectFiles(sessionsDir, files, ".jsonl");
-
-  for (const file of files) {
-    try {
-      const content = readFileSync(file, "utf-8");
-      const lines = content.split("\n").filter(Boolean);
-      let currentModel = "unknown";
-
-      for (const line of lines) {
-        try {
-          const entry = JSON.parse(line);
-          if (entry.type === "model_change") {
-            currentModel = normalizeModel(entry.message?.model || entry.model || "unknown");
-          }
-          if (entry.type === "message" && entry.message?.role === "assistant" && entry.message?.usage) {
-            const u = entry.message.usage;
-            const date = (entry.timestamp || "").slice(0, 10);
-            if (!date) continue;
-            const model = normalizeModel(entry.message.model || currentModel);
-            results.push({
-              period: date,
-              agent: "omp",
-              modelName: model,
-              inputTokens: u.input || 0,
-              outputTokens: u.output || 0,
-              cacheReadTokens: u.cacheRead || 0,
-              cacheCreationTokens: u.cacheWrite || 0,
-              totalTokens: u.totalTokens || (u.input || 0) + (u.output || 0) + (u.cacheRead || 0) + (u.cacheWrite || 0),
-            });
-          }
-        } catch {
-          // skip malformed lines
-        }
-      }
-    } catch (e) {
-      console.error(`[fetcher] Error reading OMP file ${file}:`, e.message);
-    }
-  }
-
-  console.log(`[fetcher] OMP: ${results.length} entries`);
-  return results;
-}
-
-/**
  * Read ZCode SQLite database using bun:sqlite
  */
 async function fetchFromZCode() {
@@ -149,7 +94,7 @@ async function fetchFromZCode() {
 
   try {
     const query = `
-      SELECT date(started_at/1000,'unixepoch') as day, model_id,
+      SELECT date(started_at/1000,'unixepoch','localtime') as day, model_id,
              SUM(input_tokens) as input, SUM(output_tokens) as output,
              SUM(cache_read_input_tokens) as cache_read,
              SUM(cache_creation_input_tokens) as cache_creation,
@@ -235,7 +180,7 @@ function fetchFromReasonix() {
             const usage = entry.usage || (entry.message?.usage);
             if (usage && (usage.totalTokens || usage.completionTokens || usage.promptTokens || usage.input)) {
               found = true;
-              const date = (entry.ts || entry.timestamp || "").slice(0, 10);
+              const date = localIsoDate(entry.ts || entry.timestamp || "");
               const model = entry.model || entry.message?.model || "unknown";
               results.push({
                 period: date,
@@ -244,7 +189,11 @@ function fetchFromReasonix() {
                 inputTokens: usage.promptTokens || usage.input || 0,
                 outputTokens: usage.completionTokens || usage.output || 0,
                 cacheReadTokens: usage.cacheHitTokens || usage.cacheRead || 0,
-                cacheCreationTokens: usage.cacheMissTokens || usage.cacheWrite || 0,
+                // Reasonix reports `cacheMissTokens`, which is the prompt side it
+                // had to send (unlike cache *creation* elsewhere). Keeping it in a
+                // separate bucket would corrupt cache-hit math, so it is folded
+                // into the uncached input instead.
+                cacheCreationTokens: 0,
                 totalTokens: usage.totalTokens || (usage.promptTokens || 0) + (usage.completionTokens || 0),
               });
             }
@@ -277,7 +226,7 @@ function fetchFromReasonix() {
             inputTokens: usage.promptTokens || 0,
             outputTokens: usage.completionTokens || 0,
             cacheReadTokens: usage.cacheHitTokens || 0,
-            cacheCreationTokens: usage.cacheMissTokens || 0,
+            cacheCreationTokens: 0,
             totalTokens: usage.totalTokens || (usage.promptTokens || 0) + (usage.completionTokens || 0),
           });
         }
@@ -321,7 +270,7 @@ function fetchFromOpenGrok() {
         const dateValue = turn?.endedAt || session.updatedAt;
         const endedAt = new Date(dateValue);
         if (Number.isNaN(endedAt.getTime())) continue;
-        const date = endedAt.toISOString().slice(0, 10);
+        const date = localIsoDate(endedAt);
 
         const modelRows = turn?.modelUsage && typeof turn.modelUsage === "object"
           ? Object.entries(turn.modelUsage)
@@ -446,7 +395,7 @@ function fetchFromDsh() {
       const stamp = Number(rows.sessionListMetadata?.val?.lastPromptAt)
         || Number(record?.identity?.createdAt);
       if (!stamp) continue;
-      const period = new Date(stamp).toISOString().slice(0, 10);
+      const period = localIsoDate(new Date(stamp));
 
       const sessionId = (record?.identity?.id || file.replace(/\.json$/, "")).replace(/^session-/, "");
       let model = rows.modelSelection?.val?.lastUsed?.model;
@@ -534,18 +483,27 @@ function isValidDate(value) {
 }
 
 /**
- * Aggregate all sources into unified daily records
+ * Codex/OpenCode/pi: read the logs directly. ccusage stays available as an
+ * explicit opt-in (`TOKENMAXXING_CCUSAGE=1`) and as the automatic fallback when
+ * the direct readers recognize nothing, so an unknown log layout degrades to
+ * the previous behaviour instead of silently dropping those sources.
  */
-export async function aggregateAllData() {
-  const ccusageDays = fetchFromCcusage();
-  const ompEntries = fetchFromOmp();
-  const zcodeEntries = await fetchFromZCode();
-  const reasonixEntries = fetchFromReasonix();
-  const opengrokEntries = fetchFromOpenGrok();
-  const dshEntries = fetchFromDsh();
-  const allRecords = [];
+async function fetchCcusageFamily() {
+  if (process.env.TOKENMAXXING_CCUSAGE === "1") {
+    console.log("[fetcher] ccusage path forced by TOKENMAXXING_CCUSAGE=1");
+    return { records: ccusageDaysToRecords(fetchFromCcusage()), changedFiles: -1, produced: {} };
+  }
+  const { records, produced, changedFiles } = await readDirectSources();
+  if (records.length) {
+    console.log(`[fetcher] direct readers: ${JSON.stringify(produced)} (${changedFiles} changed files)`);
+    return { records, changedFiles, produced };
+  }
+  console.warn("[fetcher] direct readers found no records; falling back to ccusage");
+  return { records: ccusageDaysToRecords(fetchFromCcusage()), changedFiles: -1, produced: {} };
+}
 
-  // Process ccusage format into records
+function ccusageDaysToRecords(ccusageDays) {
+  const records = [];
   for (const day of ccusageDays) {
     if (day.agents) {
       for (const agent of day.agents) {
@@ -553,7 +511,7 @@ export async function aggregateAllData() {
         if (agent.modelBreakdowns) {
           for (const m of agent.modelBreakdowns) {
             const total = m.totalTokens || (m.inputTokens || 0) + (m.outputTokens || 0) + (m.cacheReadTokens || 0) + (m.cacheCreationTokens || 0);
-            allRecords.push({
+            records.push({
               date: day.period,
               source: agentName,
               model: m.modelName,
@@ -574,7 +532,7 @@ export async function aggregateAllData() {
       const agents = day.metadata?.agents || ["unknown"];
       const agentName = day.agent || (agents.length === 1 ? agents[0] : "unknown");
       for (const m of day.modelBreakdowns) {
-        allRecords.push({
+        records.push({
           date: day.period,
           source: agentName,
           model: m.modelName,
@@ -586,7 +544,7 @@ export async function aggregateAllData() {
         });
       }
     } else {
-      allRecords.push({
+      records.push({
         date: day.period,
         source: day.agent || "unknown",
         model: (day.modelsUsed || ["unknown"])[0],
@@ -598,20 +556,23 @@ export async function aggregateAllData() {
       });
     }
   }
+  return records;
+}
 
-  // Add OMP entries
-  for (const e of ompEntries) {
-    allRecords.push({
-      date: e.period,
-      source: "omp",
-      model: e.modelName,
-      inputTokens: e.inputTokens,
-      outputTokens: e.outputTokens,
-      cacheReadTokens: e.cacheReadTokens,
-      cacheCreationTokens: e.cacheCreationTokens,
-      totalTokens: e.totalTokens,
-    });
-  }
+/**
+ * Aggregate all sources into unified daily records.
+ *
+ * Codex/OpenCode/pi are read directly from their logs (ccusage is only a
+ * fallback when those readers find nothing) because shelling out re-scanned
+ * every historical session on each refresh.
+ */
+export async function aggregateAllData() {
+  const zcodeEntries = await fetchFromZCode();
+  const reasonixEntries = fetchFromReasonix();
+  const opengrokEntries = fetchFromOpenGrok();
+  const dshEntries = fetchFromDsh();
+  const { records: familyRecords, changedFiles, produced } = await fetchCcusageFamily();
+  const allRecords = familyRecords;
 
   // Add ZCode entries
   for (const e of zcodeEntries) {
@@ -746,7 +707,7 @@ export function summarizeDashboard(records) {
   const top = [...perModel.entries()].sort((a, b) => b[1] - a[1])[0];
 
   const dateSet = new Set(dates);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localIsoDate(new Date());
   let currentStreak = 0;
   if (dateSet.has(today)) {
     for (let back = 0; ; back++) {
@@ -792,9 +753,34 @@ export function summarizeDashboard(records) {
 }
 
 /**
+ * Cheap "has anything changed?" stamp: mtimes of the reader cache (which only
+ * moves when a log file changed) plus the sources read outside it.
+ */
+export function sourceStamp() {
+  const paths = [
+    join(homedir(), ".cache", "tokenmaxxing", "readers-cache.json"),
+    join(homedir(), ".zcode", "cli", "db", "db.sqlite"),
+    join(homedir(), ".zcode", "cli", "db", "db.sqlite-wal"),
+    join(process.env.DSH_HOME?.trim() || join(homedir(), ".dsh"), "storages", "session_projcache", "sessions"),
+    join(process.env.OPENGROK_HOME?.trim() || join(homedir(), ".opengrok"), "sessions"),
+    join(homedir(), ".reasonix", "sessions"),
+  ];
+  return paths.map((path) => {
+    try {
+      const st = statSync(path);
+      return `${st.mtimeMs}:${st.size}`;
+    } catch {
+      return "-";
+    }
+  }).join("|");
+}
+
+/**
  * Full pipeline: read every source, then collapse to the dashboard payload.
  */
 export async function buildDashboard() {
   const { records } = await aggregateAllData();
-  return summarizeDashboard(records);
+  const payload = summarizeDashboard(records);
+  payload.stamp = sourceStamp();
+  return payload;
 }

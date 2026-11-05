@@ -2,7 +2,7 @@
 // Consumed by public/index.html (single-file dashboard).
 const COLORS = ['#f59e0b','#10b981','#3b82f6','#ef4444','#8b5cf6','#ec4899','#06b6d4','#84cc16','#f97316','#6366f1','#14b8a6','#eab308','#f43f5e','#0ea5e9','#a3e635','#facc15','#c084fc','#5eead4','#fb923c','#93c5fd','#4ade80','#f87171','#2dd4bf','#a78bfa'];
 const SOURCE_COLORS = ['#94a3b8','#38bdf8','#34d399','#fbbf24','#a78bfa','#fb7185'];
-const SOURCE_LABELS = { opencode:'OpenCode', opengrok:'OpenGrok', omp:'OMP', zcode:'ZCode', reasonix:'Reasonix', dsh:'DSH' };
+const SOURCE_LABELS = { codex:'Codex', opencode:'OpenCode', pi:'pi', opengrok:'OpenGrok', omp:'OMP', zcode:'ZCode', reasonix:'Reasonix', dsh:'DSH' };
 const MODEL_COLORS = {};
 let colorIdx = 0;
 const SOURCE_COLOR_ASSIGN = {};
@@ -57,13 +57,22 @@ function dateFromIso(value) {
   const parts = value.split('-').map(Number);
   return new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
 }
-function isoDate(date) {
+// Date-only math stays on UTC so adding days never drifts across a DST edge.
+function isoFromUtcDate(date) {
   return date.toISOString().slice(0, 10);
+}
+// A real timestamp maps to the viewer's calendar day, which is what "today"
+// and the daily buckets mean to whoever is reading the dashboard.
+function isoDate(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return year + '-' + month + '-' + day;
 }
 function addDays(value, amount) {
   const date = dateFromIso(value);
   date.setUTCDate(date.getUTCDate() + amount);
-  return isoDate(date);
+  return isoFromUtcDate(date);
 }
 function daySpan(first, last) {
   if (!first || !last) return 0;

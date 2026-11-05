@@ -1,17 +1,33 @@
-import { mkdirSync, writeFileSync, renameSync } from "fs";
+import { mkdirSync, writeFileSync, renameSync, readFileSync } from "fs";
 import { join } from "path";
 import { homedir } from "os";
-import { buildDashboard } from "./data-fetcher.js";
+import { buildDashboard, sourceStamp } from "./data-fetcher.js";
 
-// Runs as a child process so the 15-20s of synchronous JSONL/CLI reading never
-// blocks the HTTP server. Writes atomically: readers only ever see a complete
-// file.
+// Runs as a child process so synchronous JSONL/db reading never blocks the HTTP
+// server. Writes atomically: readers only ever see a complete file.
 export const CACHE_DIR = join(homedir(), ".cache", "tokenmaxxing");
 export const CACHE_FILE = join(CACHE_DIR, "dashboard.json");
 
 const started = Date.now();
 
+function readPrevious() {
+  try {
+    return JSON.parse(readFileSync(CACHE_FILE, "utf-8"));
+  } catch {
+    return null;
+  }
+}
+
 try {
+  // Skip the whole rebuild when every input is untouched. Without this the
+  // minute timer re-aggregated unchanged history forever.
+  const previous = readPrevious();
+  const stamp = sourceStamp();
+  if (previous?.stamp && previous.stamp === stamp) {
+    console.log("[refresh] no source changes, keeping cached snapshot");
+    process.exit(0);
+  }
+
   const payload = await buildDashboard();
   mkdirSync(CACHE_DIR, { recursive: true });
   const tmp = `${CACHE_FILE}.${process.pid}.tmp`;

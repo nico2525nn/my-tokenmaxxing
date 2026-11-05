@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { summarizeDashboard } from "../server/data-fetcher.js";
+import { localIsoDate, aggregateTuples, tuplesToRecords } from "../server/readers.js";
 
 function loadTmx() {
   const src = readFileSync(new URL("../public/tmx.js", import.meta.url), "utf-8");
@@ -93,4 +94,40 @@ test("cacheHitText reports prompt-side share", () => {
 test("EMPTY_STATS exposes records instead of sessions", () => {
   assert.equal(EMPTY_STATS.records, 0);
   assert.equal("sessions" in EMPTY_STATS, false);
+});
+
+test("localIsoDate buckets on the viewer's calendar day", () => {
+  // 2026-01-01T15:30Z is still 01-01 in UTC but already 01-02 in JST.
+  const utc = new Date("2026-01-01T15:30:00Z");
+  const expected = `${utc.getFullYear()}-${String(utc.getMonth() + 1).padStart(2, "0")}-${String(utc.getDate()).padStart(2, "0")}`;
+  assert.equal(localIsoDate(utc), expected);
+  assert.equal(localIsoDate(""), "");
+});
+
+test("isoDate stays local while addDays keeps UTC date math", () => {
+  const src = readFileSync(new URL("../public/tmx.js", import.meta.url), "utf-8");
+  const fn = new Function(`${src}; return {isoDate, addDays};`)();
+  const local = new Date(2026, 0, 2, 0, 30);
+  assert.equal(fn.isoDate(local), "2026-01-02");
+  assert.equal(fn.addDays("2026-01-31", 1), "2026-02-01");
+  assert.equal(fn.addDays("2026-03-01", -1), "2026-02-28");
+});
+
+test("aggregateTuples collapses per-file rows by date and model", () => {
+  const tuples = aggregateTuples([
+    { period: "2026-10-28", modelName: "m1", inputTokens: 10, outputTokens: 1, cacheReadTokens: 0, cacheCreationTokens: 0, totalTokens: 11 },
+    { period: "2026-10-28", modelName: "m1", inputTokens: 5, outputTokens: 2, cacheReadTokens: 0, cacheCreationTokens: 0, totalTokens: 7 },
+    { period: "2026-10-28", modelName: "m2", inputTokens: 1, outputTokens: 0, cacheReadTokens: 0, cacheCreationTokens: 0, totalTokens: 1 },
+  ]);
+  assert.equal(tuples.length, 2);
+  const m1 = tuples.find((t) => t[1] === "m1");
+  assert.deepEqual(m1.slice(2), [15, 3, 0, 0, 18]);
+});
+
+test("tuplesToRecords emits the pipeline record shape", () => {
+  const records = tuplesToRecords([["2026-10-28", "m1", 10, 2, 3, 4, 19]], "codex");
+  assert.deepEqual(records, [{
+    date: "2026-10-28", source: "codex", model: "m1",
+    inputTokens: 10, outputTokens: 2, cacheReadTokens: 3, cacheCreationTokens: 4, totalTokens: 19,
+  }]);
 });
