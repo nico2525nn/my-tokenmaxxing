@@ -310,7 +310,9 @@ async function readOpenCode() {
  * `produced` reports which readers found data so the caller can decide whether
  * the ccusage fallback is needed.
  */
-export async function readDirectSources() {
+export async function readDirectSources(options = {}) {
+  const only = Array.isArray(options.only) ? new Set(options.only) : null;
+  const wants = (name) => !only || only.has(name);
   const cache = loadCache();
   const live = [];
   const records = [];
@@ -335,25 +337,25 @@ export async function readDirectSources() {
   };
 
   const codexDir = join(HOME, ".codex", "sessions");
-  if (existsSync(codexDir)) {
+  if (wants("codex") && existsSync(codexDir)) {
     await take("codex", collectFiles(codexDir, [".jsonl", ".jsonl.zst"]), parseCodex, "codex");
   }
   const codexArchive = join(HOME, ".codex", "archived_sessions");
-  if (existsSync(codexArchive)) {
+  if (wants("codex") && existsSync(codexArchive)) {
     await take("codex", collectFiles(codexArchive, [".jsonl", ".jsonl.zst"]), parseCodex, "codex");
   }
 
   const piDir = join(HOME, ".pi", "agent", "sessions");
-  if (existsSync(piDir)) {
+  if (wants("pi") && existsSync(piDir)) {
     await take("pi", collectFiles(piDir, [".jsonl", ".jsonl.zst"]), makeJsonlUsageParser("pi", "modelId"), "pi");
   }
 
   const ompDir = join(HOME, ".omp", "agent", "sessions");
-  if (existsSync(ompDir)) {
+  if (wants("omp") && existsSync(ompDir)) {
     await take("omp", collectFiles(ompDir, [".jsonl"]), makeJsonlUsageParser("omp"), "omp");
   }
 
-  const opencode = await readOpenCode();
+  const opencode = wants("opencode") ? await readOpenCode() : [];
   if (opencode.length) {
     for (const row of opencode) records.push(row);
     produced.opencode = opencode.length;

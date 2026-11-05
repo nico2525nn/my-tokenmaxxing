@@ -786,7 +786,7 @@ function hideChartTip() {
   if (canvas) canvas.classList.remove('active');
 }
 
-function showChartTip(index, anchorX) {
+function showChartTip(index, anchorX, announce) {
   const canvas = document.getElementById('tokenChart');
   if (!canvas || !chartView || index < 0 || index >= chartView.buckets.length) {
     hideChartTip();
@@ -800,7 +800,9 @@ function showChartTip(index, anchorX) {
     host.appendChild(tip);
   }
   tip.innerHTML = chartTipHtml(index);
-  announceChart(index);
+  // Only explicit keyboard/click navigation should speak; hover must not
+  // machine-gun the live region.
+  if (announce) announceChart(index);
   const x = chartView.pad.left + index * chartView.slotWidth + chartView.barWidth / 2;
   const tipWidth = tip.offsetWidth;
   const hostWidth = host.clientWidth;
@@ -989,7 +991,7 @@ function drawChart() {
         hideChartTip();
         return;
       }
-      showChartTip(pinnedBucket, event.clientX - canvas.getBoundingClientRect().left);
+      showChartTip(pinnedBucket, event.clientX - canvas.getBoundingClientRect().left, true);
     });
     canvas.addEventListener('keydown', function(event) {
       if (!chartView || !chartView.buckets.length) return;
@@ -1003,7 +1005,7 @@ function drawChart() {
       else return;
       event.preventDefault();
       pinnedBucket = next;
-      showChartTip(pinnedBucket, chartView.pad.left + pinnedBucket * chartView.slotWidth);
+      showChartTip(pinnedBucket, chartView.pad.left + pinnedBucket * chartView.slotWidth, true);
     });
     canvas.addEventListener('blur', function() {
       pinnedBucket = -1;

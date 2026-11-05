@@ -23,8 +23,12 @@ try {
   // minute timer re-aggregated unchanged history forever.
   const previous = readPrevious();
   const stamp = sourceStamp();
-  if (previous?.stamp && previous.stamp === stamp) {
-    console.log("[refresh] no source changes, keeping cached snapshot");
+  // A directory mtime cannot see an in-place append, so force a full sweep at
+  // least every MAX_SKIP_MS instead of trusting the stamp indefinitely.
+  const MAX_SKIP_MS = 10 * 60_000;
+  const age = previous?.generatedAt ? Date.now() - Date.parse(previous.generatedAt) : Infinity;
+  if (previous?.stamp && previous.stamp === stamp && age < MAX_SKIP_MS) {
+    console.log(`[refresh] no source changes (${Math.round(age / 1000)}s since last build), keeping cached snapshot`);
     process.exit(0);
   }
 

@@ -491,7 +491,13 @@ function isValidDate(value) {
 async function fetchCcusageFamily() {
   if (process.env.TOKENMAXXING_CCUSAGE === "1") {
     console.log("[fetcher] ccusage path forced by TOKENMAXXING_CCUSAGE=1");
-    return { records: ccusageDaysToRecords(fetchFromCcusage()), changedFiles: -1, produced: {} };
+    // OMP lives in the direct readers now, so keep feeding it either way.
+    const omp = await readDirectSources({ only: ["omp"] });
+    return {
+      records: [...ccusageDaysToRecords(fetchFromCcusage()), ...omp.records],
+      changedFiles: omp.changedFiles,
+      produced: omp.produced,
+    };
   }
   const { records, produced, changedFiles } = await readDirectSources();
   if (records.length) {
