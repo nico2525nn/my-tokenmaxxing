@@ -6,3 +6,6 @@ tc.js
 temp_*.js
 tmpc.js
 screenshot_*.webp
+
+# Go binary
+tokenmaxxing
