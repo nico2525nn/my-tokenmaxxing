@@ -662,6 +662,7 @@ let chartView = null;
 let lastSyncAt = 0;
 let lastSyncError = '';
 let lastDashboardId = '';
+let refreshing = false;
 let calTarget = 'from';
 let calCursor = '';
 
@@ -1327,15 +1328,21 @@ function updateSyncFooter() {
   const el = document.getElementById('footerMeta');
   if (!el) return;
   let text = 'Local data · auto refresh 60s' + (ALL_STATS && ALL_STATS.firstDate ? ' · ' + ALL_STATS.firstDate + ' – ' + ALL_STATS.lastDate : '');
-  if (DASH && DASH.partial) text += ' · archives still loading';
+  if (refreshing) text += ' · refreshing…';
+  else if (DASH && DASH.partial) text += ' · archives still loading';
   else if (lastSyncError) text += ' · update failed ' + lastSyncError;
   else if (lastSyncAt) text += ' · updated ' + new Date(lastSyncAt).toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
   el.textContent = text;
 }
 
-async function loadData() {
+async function loadData(options) {
+  const force = !!(options && options.force);
+  refreshing = true;
+  updateSyncFooter();
   try {
-    const response = await fetch('/api/dashboard', {cache:'no-store'});
+    // A forced load re-reads the logs server-side, so opening the page shows
+    // fresh numbers instead of waiting for the next scheduled pass.
+    const response = await fetch(force ? '/api/refresh' : '/api/dashboard', {cache:'no-store'});
     if (response.status === 503) throw Error('still building the first snapshot — retrying');
     if (!response.ok) throw Error('API error ' + response.status);
     DASH = await response.json();
@@ -1346,6 +1353,7 @@ async function loadData() {
       hiddenSources.clear();
       hasLoaded = true;
     }
+    refreshing = false;
     if (DASH.generatedAt && DASH.generatedAt === lastDashboardId) {
       updateSyncFooter();
       return;
@@ -1353,6 +1361,7 @@ async function loadData() {
     lastDashboardId = DASH.generatedAt || '';
     renderAll();
   } catch (error) {
+    refreshing = false;
     if (hasLoaded && DASH) {
       lastSyncError = new Date().toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
       updateSyncFooter();
@@ -1373,8 +1382,8 @@ document.addEventListener('keydown', function(event) {
   if (event.key === 'Escape') toggleAvatarMenu(false);
 });
 loadStatsPeriod();
-loadData();
-setInterval(loadData, 60000);
+loadData({force: true});
+setInterval(function() { loadData(); }, 60000);
 window.addEventListener('resize', function() { clearTimeout(window.__chartResize); window.__chartResize = setTimeout(function() { if (ALL_STATS) drawChart(); }, 150); });
 </script>
 </body>

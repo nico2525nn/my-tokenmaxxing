@@ -226,6 +226,11 @@ func ReadAll(maxCacheBytes int64, options ...Options) (Result, error) {
 	}
 
 	if opts.Cache == nil {
+		// The OpenCode entry is keyed by the database, not by a path under `live`, so
+		// it has to be protected from the path-based prune.
+		if openCodePresent {
+			live = append(live, openCodeKey)
+		}
 		removed := fileCache.Prune(live)
 		if result.Changed > 0 || removed > 0 {
 			if _, _, err := fileCache.Save(maxCacheBytes); err != nil {

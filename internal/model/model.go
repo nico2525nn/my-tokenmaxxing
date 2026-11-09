@@ -76,9 +76,6 @@ type Payload struct {
 	Sources        []SourceRow `json:"sources"`
 	Models         []ModelRow  `json:"models"`
 	Daily          []Day       `json:"daily"`
-	// Stamp is a cheap "did any input change?" digest; the refresh loop skips a
-	// rebuild when it matches the cached payload.
-	Stamp string `json:"stamp"`
 	// Changed counts files/databases re-read to produce this snapshot.
 	Changed int `json:"changed"`
 	// Partial marks a snapshot published before every source finished.

@@ -2,10 +2,7 @@
 package aggregate
 
 import (
-	"os"
-	"path/filepath"
 	"sort"
-	"strconv"
 	"time"
 
 	"github.com/nico2525nn/my-tokenmaxxing/internal/model"
@@ -173,38 +170,4 @@ func streaks(dates []string) (current, longest int) {
 		previous = parsed
 	}
 	return current, longest
-}
-
-// Stamp is a cheap "has anything changed?" digest over every input file.
-func Stamp() string {
-	home, _ := os.UserHomeDir()
-	paths := []string{
-		filepath.Join(home, ".cache", "tokenmaxxing", "readers-cache.json"),
-		filepath.Join(home, ".zcode", "cli", "db", "db.sqlite"),
-		filepath.Join(home, ".zcode", "cli", "db", "db.sqlite-wal"),
-		envOr("DSH_HOME", filepath.Join(home, ".dsh"), "storages", "session_projcache", "sessions"),
-		envOr("OPENGROK_HOME", filepath.Join(home, ".opengrok"), "sessions"),
-		filepath.Join(home, ".reasonix", "sessions"),
-	}
-	out := ""
-	for _, path := range paths {
-		if info, err := os.Stat(path); err == nil {
-			out += strconvFormat(info.ModTime().UnixMilli()) + ":" + strconvFormat(info.Size()) + "|"
-			continue
-		}
-		out += "-|"
-	}
-	return out
-}
-
-func envOr(key, fallback string, parts ...string) string {
-	base := os.Getenv(key)
-	if base == "" {
-		base = fallback
-	}
-	return filepath.Join(append([]string{base}, parts...)...)
-}
-
-func strconvFormat(value int64) string {
-	return strconv.FormatInt(value, 10)
 }
