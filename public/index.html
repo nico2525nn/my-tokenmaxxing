@@ -681,8 +681,17 @@ function loadStatsPeriod() {
     const saved = localStorage.getItem('tmx_stats_period');
     if (saved === '7' || saved === '30' || saved === '90' || saved === 'all' || saved === 'custom') statsPeriod = saved;
     const custom = JSON.parse(localStorage.getItem('tmx_stats_custom') || '{}');
-    if (/^\d{4}-\d{2}-\d{2}$/.test(custom.from || '') && /^\d{4}-\d{2}-\d{2}$/.test(custom.to || '')) statsCustom = {from:custom.from, to:custom.to};
-    else statsCustom = {from:'', to:''};
+    if (/^\d{4}-\d{2}-\d{2}$/.test(custom.from || '') && /^\d{4}-\d{2}-\d{2}$/.test(custom.to || '')) {
+      // Older builds defaulted Custom to a single day (the last one with data),
+      // which then persisted forever. Treat a one-day range as that leftover and
+      // fall back to the last week.
+      if (custom.from === custom.to) {
+        const today = isoDate(new Date());
+        statsCustom = {from:addDays(today, -6), to:today};
+      } else {
+        statsCustom = {from:custom.from, to:custom.to};
+      }
+    } else statsCustom = {from:'', to:''};
   } catch { statsPeriod = 'all'; statsCustom = {from:'', to:''}; }
 }
 const initialTab = new URLSearchParams(location.search).get('tab');
@@ -728,8 +737,9 @@ function setStatsPeriod(period) {
   }
   statsPeriod = period;
   if (period === 'custom' && (!statsCustom.from || !statsCustom.to)) {
-    const days = DASH ? DASH.daily || [] : [];
-    if (days.length) statsCustom = {from:days[days.length - 1].date, to:days[days.length - 1].date};
+    // Default to the last seven days ending today.
+    const today = isoDate(new Date());
+    statsCustom = {from:addDays(today, -6), to:today};
   }
   saveStatsPeriod();
   renderAll();
@@ -953,8 +963,10 @@ function bindStatsCustomRange() {
     input.dataset.bound = '1';
     input.addEventListener('focus', function() {
       calTarget = id === 'customTo' ? 'to' : 'from';
+      // Re-seed on every open so the calendar cannot stay stuck on a month
+      // visited earlier in the session.
       const seed = calTarget === 'to' ? statsCustom.to : statsCustom.from;
-      if (/^20\d\d-\d\d-\d\d$/.test(seed || '')) calCursor = seed.slice(0, 7);
+      calCursor = /^20\d\d-\d\d-\d\d$/.test(seed || '') ? seed.slice(0, 7) : isoDate(new Date()).slice(0, 7);
       renderCalPop();
     });
     input.addEventListener('change', applyStatsCustomRange);
