@@ -4,7 +4,7 @@ GO     := go
 # self-contained so `make` works from a clean checkout.
 export GOCACHE ?= $(HOME)/.cache/go-build
 
-.PHONY: all build run test tidy clean
+.PHONY: all build run test layout-test tidy clean
 
 all: build
 
@@ -16,6 +16,11 @@ run: build
 
 test:
 	$(GO) test ./...
+
+# Drives headless Chrome across 320-1440px and fails if anything paints outside
+# the viewport. Needs Chrome; no extra dependencies.
+layout-test: build
+	node test/layout.mjs
 
 tidy:
 	$(GO) mod tidy

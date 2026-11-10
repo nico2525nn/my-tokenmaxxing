@@ -326,6 +326,8 @@ func parseJobs(
 							delete(pending, item.owner)
 							tuples := mergeCodexChunks(entry.parts)
 							fileCache.Put(entry.path, entry.mtimeMS, entry.size, tuples)
+							// A chunked file is one change, counted when it finishes.
+							changed++
 							mu.Unlock()
 							collect(item.source, tuples)
 							finishPlain(entry.path)

@@ -15,6 +15,13 @@ Needs Go 1.26+.
 
 `-port`, `-host`, `-interval` (refresh, default 60s), `-cache-max-mb` (default 8).
 
+## Test
+
+```bash
+go test ./...      # parsing, aggregation, caching
+make layout-test   # overflow regression, 320–1440px × 4 UI states
+```
+
 ## Sources
 
 | Source | Read from |

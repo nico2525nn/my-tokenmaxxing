@@ -350,6 +350,8 @@ a{color:inherit;text-decoration:none}
 .custom-range.hidden{display:none}
 .custom-range input[type="date"]{height:2rem;padding:.25rem .5rem;background:hsl(var(--background));border:1px solid hsl(var(--input));border-radius:calc(var(--radius) - 2px);color:hsl(var(--foreground));font-family:"Geist Mono",monospace;font-size:.75rem;color-scheme:dark}
 .range-sep{color:hsl(var(--muted-foreground));font-size:.75rem}
+.date-field{display:flex;align-items:center;min-width:0;position:relative}
+.date-text{display:none}
 .cal-pop{position:absolute;top:calc(100% + 4px);right:0;z-index:31;min-width:260px;padding:.75rem;background:hsl(var(--popover));border:1px solid hsl(var(--border));border-radius:var(--radius);box-shadow:0 12px 32px hsl(0 0% 0% / .5)}
 .cal-head{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.5rem}
 .cal-title{font-size:.8125rem;font-weight:500}
@@ -490,8 +492,14 @@ button.legend-more:hover{color:hsl(var(--foreground));text-decoration:underline}
   .period-picker{width:auto;margin-left:auto}
   .period-picker .range-group{width:auto;height:2rem;justify-content:flex-start;padding:.25rem;gap:0}
   .period-picker .range-btn{flex:0 0 auto;min-width:0;height:auto;padding:.25rem .5rem;font-size:.75rem;line-height:1rem}
-  .custom-range{left:0;right:0;justify-content:center}
-  .cal-pop{left:50%;right:auto;transform:translateX(-50%);min-width:min(19rem,86vw)}
+  .custom-range{left:0;right:0;justify-content:center;gap:.25rem}
+  /* A native date field cannot shrink below its own three sub-fields, so on
+     phones it is replaced by a compact label with the real input layered on top
+     (read-only, so no OS picker appears). */
+  .date-field{flex:1 1 0;justify-content:center;min-height:2rem;padding:.25rem .5rem;border:1px solid hsl(var(--input));border-radius:calc(var(--radius) - 2px);background:hsl(var(--background));font-family:"Geist Mono",monospace;font-size:.8125rem}
+  .date-text{display:block}
+  .date-field input[type="date"]{position:absolute;inset:0;width:100%;height:100%;padding:0;border:0;opacity:0;cursor:pointer}
+  .cal-pop{left:auto;right:0;transform:none;min-width:0;width:min(19rem,calc(100vw - 2rem))}
   .cal-grid{grid-template-columns:repeat(7,minmax(0,1fr))}
   .kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem;margin-bottom:1rem}
   .kpi-body{padding:1rem;display:flex;flex-direction:column;min-height:7rem;height:100%}
@@ -579,9 +587,9 @@ button.legend-more:hover{color:hsl(var(--foreground));text-decoration:underline}
     <div class="period-picker">
       <div class="range-group" role="group" aria-label="Stats period" id="statsRangeGroup"></div>
       <div class="custom-range hidden" id="customRange">
-        <input type="date" id="customFrom" aria-label="From">
+        <label class="date-field"><span class="date-text" id="fromText">—</span><input type="date" id="customFrom" aria-label="From"></label>
         <span class="range-sep">–</span>
-        <input type="date" id="customTo" aria-label="To">
+        <label class="date-field"><span class="date-text" id="toText">—</span><input type="date" id="customTo" aria-label="To"></label>
       </div>
     </div>
   </div>
@@ -717,6 +725,7 @@ function renderPeriod() {
   if (show) {
     document.getElementById('customFrom').value = draft ? draft.from : statsCustom.from;
     document.getElementById('customTo').value = draft ? draft.to : statsCustom.to;
+    syncDateLabels();
     if (active) {
       const el = document.getElementById(active);
       if (el) el.focus({preventScroll:true});
@@ -941,6 +950,7 @@ function calPickDay(iso) {
   const toInput = document.getElementById('customTo');
   if (fromInput) fromInput.value = statsCustom.from;
   if (toInput) toInput.value = statsCustom.to;
+  syncDateLabels();
   statsPeriod = 'custom';
   closeCalPop();
   const range = document.getElementById('customRange');
@@ -956,7 +966,34 @@ function closeCustomPopover() {
   const range = document.getElementById('customRange');
   if (range) range.classList.add('hidden');
 }
+// Phones show the dates through a compact label; the real input is an invisible
+// overlay so the OS picker never opens on top of the in-page calendar.
+function syncDateLabels() {
+  const pairs = [['customFrom', 'fromText'], ['customTo', 'toText']];
+  for (const pair of pairs) {
+    const input = document.getElementById(pair[0]);
+    const text = document.getElementById(pair[1]);
+    if (!text) continue;
+    const value = input && input.value ? input.value : '';
+    text.textContent = value ? value.slice(5).replace('-', '/') : '—';
+  }
+}
 function bindStatsCustomRange() {
+  // On phones the browser also opens its own date picker on tap, which fights
+  // with this calendar. Read-only inputs do not summon it, and focus still fires,
+  // so the in-page calendar stays the only picker on small screens.
+  const compact = window.matchMedia('(max-width: 640px)');
+  const syncNativePicker = function() {
+    for (const id of ['customFrom', 'customTo']) {
+      const input = document.getElementById(id);
+      if (input) input.readOnly = compact.matches;
+    }
+  };
+  if (!document.body.dataset.pickerBound) {
+    document.body.dataset.pickerBound = '1';
+    compact.addEventListener('change', syncNativePicker);
+  }
+  syncNativePicker();
   for (const id of ['customFrom', 'customTo']) {
     const input = document.getElementById(id);
     if (!input || input.dataset.bound) continue;
