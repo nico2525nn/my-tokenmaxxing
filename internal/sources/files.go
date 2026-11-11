@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/nico2525nn/my-tokenmaxxing/internal/cache"
+	"github.com/nico2525nn/my-tokenmaxxing/internal/jsonx"
 	"github.com/nico2525nn/my-tokenmaxxing/internal/scan"
 )
 
@@ -330,9 +331,66 @@ func ReadDsh() []cache.Tuple {
 			model = rows.ModelSelection.Val.LastUsed.Model
 		}
 		if model == "" {
+			// Older sessions predate the modelSelection row; their model only
+			// exists in the event log's `request/context` lines. Projection files
+			// are named either `<id>.json` or `session-<id>.json`, while the log
+			// directory is always `session-<id>`.
+			id := strings.TrimSuffix(entry.Name(), ".json")
+			if projection.Record.Identity != nil && projection.Record.Identity.ID != "" {
+				id = projection.Record.Identity.ID
+			}
+			model = dshModelFromLog(home, strings.TrimPrefix(id, "session-"))
+		}
+		if model == "" {
 			model = "unknown"
 		}
 		acc.add(date, normalizeModel(model), totals.UncachedInput, totals.Output, totals.CacheRead, totals.CacheWrite)
 	}
 	return acc.tuples()
+}
+
+// dshModelFromLog finds the last `request/context` model in a session's event
+// log. Only used for sessions that predate the projection's modelSelection row,
+// so the extra decompression touches a handful of files.
+func dshModelFromLog(home, sessionID string) string {
+	if sessionID == "" {
+		return ""
+	}
+	sessionsDir := filepath.Join(home, "sessions")
+	var logPath string
+	_ = filepath.WalkDir(sessionsDir, func(path string, entry os.DirEntry, err error) error {
+		if err != nil || logPath != "" {
+			return nil
+		}
+		if entry.IsDir() && entry.Name() == "session-"+sessionID {
+			entries, readErr := os.ReadDir(path)
+			if readErr != nil {
+				return nil
+			}
+			for _, candidate := range entries {
+				if strings.HasSuffix(candidate.Name(), ".zstd") {
+					logPath = filepath.Join(path, candidate.Name())
+					break
+				}
+			}
+			return filepath.SkipAll
+		}
+		return nil
+	})
+	if logPath == "" {
+		return ""
+	}
+
+	model := ""
+	_ = scan.Lines(logPath, scan.New(`"request/context"`), func(line scan.Line) error {
+		data, ok := jsonx.FindObject(line, "data")
+		if !ok {
+			return nil
+		}
+		if name, has := jsonx.String(data, "model"); has && name != "" {
+			model = name
+		}
+		return nil
+	})
+	return model
 }

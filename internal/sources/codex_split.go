@@ -72,6 +72,11 @@ func mergeCodexChunks(parts []codexPart) []cache.Tuple {
 
 	acc := newAccumulator()
 	model := "unknown"
+	// Records that precede the first `turn_context` still belong to the session's
+	// model, so the first mark is the fallback rather than "unknown".
+	if len(marks) > 0 {
+		model = marks[0].model
+	}
 	mark := 0
 	for _, usage := range usages {
 		for mark < len(marks) && marks[mark].offset <= usage.offset {

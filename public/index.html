@@ -38,6 +38,15 @@ function escapeHtml(value) {
     return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];
   });
 }
+function fmtPercent(part, whole) {
+  const total = Number(whole) || 0;
+  if (total <= 0) return '0.0%';
+  const value = (Number(part) || 0) / total * 100;
+  // Anything that would print as 0.0% is still a real, non-zero row; say so
+  // rather than pretending it contributes nothing.
+  if (value > 0 && value < 0.05) return '<0.1%';
+  return value.toFixed(1) + '%';
+}
 function fmt(n) {
   n = Number(n) || 0;
   if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B';
@@ -844,12 +853,12 @@ function renderBreakdown() {
     wrap.innerHTML = '<div class="table-scroll"><table class="data-table">' + cols + '<thead><tr><th>Model</th><th class="num">Tokens</th><th class="num"><span class="th-full">Share</span><span class="th-abbr">Shr</span></th><th class="num"><span class="th-full">Cache</span><span class="th-abbr">Cch</span></th><th class="num"><span class="th-full">In / Out</span><span class="th-abbr">I/O</span></th></tr></thead><tbody>' + rows.map(function(row) {
       const off = hiddenModels.has(row.model) ? ' off' : '';
       const color = getModelColor(row.model);
-      const share = (row.tokens / ALL_STATS.totalTokens * 100).toFixed(1);
+      const share = fmtPercent(row.tokens, ALL_STATS.totalTokens);
       const cache = cacheHitText(row.input, row.cacheRead);
       return '<tr class="' + off.trim() + '" data-model="' + escapeHtml(row.model) + '" title="' + escapeHtml(row.model) + ' — cache hit ' + escapeHtml(cache) + ' of ' + escapeHtml(fmt(row.input + row.cacheRead)) + ' prompt tokens">'
         + '<td><span class="cell-name"><span class="dot" style="background:' + color + '"></span><button type="button" class="cell-toggle" data-model="' + escapeHtml(row.model) + '" aria-pressed="' + (!hiddenModels.has(row.model)) + '">' + escapeHtml(row.model) + '</button></span></td>'
         + '<td class="num">' + fmt(row.tokens) + '</td>'
-        + '<td class="num">' + share + '%</td>'
+        + '<td class="num">' + share + '</td>'
         + '<td class="num">' + escapeHtml(cache) + '</td>'
         + '<td class="num cell-muted"><span class="io-full">' + fmt(row.input) + ' / ' + fmt(row.output) + '</span><span class="io-short"><i>' + fmtShort(row.input) + '</i><i>' + fmtShort(row.output) + '</i></span></td>'
         + '</tr>';
@@ -866,12 +875,12 @@ function renderBreakdown() {
     wrap.innerHTML = '<div class="table-scroll"><table class="data-table">' + cols + '<thead><tr><th>Harness</th><th class="num">Tokens</th><th class="num"><span class="th-full">Share</span><span class="th-abbr">Shr</span></th><th class="num"><span class="th-full">Cache</span><span class="th-abbr">Cch</span></th><th class="num"><span class="th-full">In / Out</span><span class="th-abbr">I/O</span></th></tr></thead><tbody>' + rows.map(function(row) {
       const off = hiddenSources.has(row.source) ? ' off' : '';
       const color = getSourceColor(row.source);
-      const share = (row.tokens / total * 100).toFixed(1);
+      const share = fmtPercent(row.tokens, total);
       const cache = cacheHitText(row.input, row.cacheRead);
       return '<tr class="' + off.trim() + '" data-source="' + escapeHtml(row.source) + '"' + (row.source === 'dsh' ? ' title="DSH totals are session-level and attributed to the last-prompt day, so daily spikes are approximate"' : '') + '>'
         + '<td><span class="cell-name"><span class="dot" style="background:' + color + '"></span><button type="button" class="cell-toggle" data-source="' + escapeHtml(row.source) + '" aria-pressed="' + (!hiddenSources.has(row.source)) + '">' + escapeHtml(sourceLabel(row.source)) + '</button></span></td>'
         + '<td class="num">' + fmt(row.tokens) + '</td>'
-        + '<td class="num">' + share + '%</td>'
+        + '<td class="num">' + share + '</td>'
         + '<td class="num">' + escapeHtml(cache) + '</td>'
         + '<td class="num cell-muted"><span class="io-full">' + fmt(row.input) + ' / ' + fmt(row.output) + '</span><span class="io-short"><i>' + fmtShort(row.input) + '</i><i>' + fmtShort(row.output) + '</i></span></td>'
         + '</tr>';
@@ -1123,7 +1132,7 @@ function chartTipHtml(index) {
   } else {
     html += '<div class="chart-tip-list">';
     rows.slice(0, 8).forEach(function(entry) {
-      html += '<div class="chart-tip-row"><span class="dot" style="background:' + getModelColor(entry[0]) + '"></span><span class="chart-tip-name" title="' + escapeHtml(entry[0]) + '">' + escapeHtml(shortModel(entry[0])) + '</span><span class="chart-tip-value">' + fmt(entry[1]) + ' · ' + (entry[1] / total * 100).toFixed(1) + '%</span></div>';
+      html += '<div class="chart-tip-row"><span class="dot" style="background:' + getModelColor(entry[0]) + '"></span><span class="chart-tip-name" title="' + escapeHtml(entry[0]) + '">' + escapeHtml(shortModel(entry[0])) + '</span><span class="chart-tip-value">' + fmt(entry[1]) + ' · ' + fmtPercent(entry[1], total) + '</span></div>';
     });
     html += '</div>';
     if (rows.length > 8) html += '<p class="chart-tip-more">+' + (rows.length - 8) + ' more models</p>';
@@ -1221,7 +1230,7 @@ function drawChart() {
   legend.innerHTML = ranked.length ? '<div class="' + (chipMode ? 'chips' : 'chart-key-list' + (legendExpanded && ranked.length > 8 ? ' scroll' : '')) + '">' + shown.map(function(entry, index) {
     const model = entry[0];
     const off = hiddenModels.has(model) ? ' off' : '';
-    const pct = (entry[1] / (windowTotal || 1) * 100).toFixed(1) + '%';
+    const pct = fmtPercent(entry[1], windowTotal);
     if (chipMode) return '<button class="chip' + off + '" data-model="' + escapeHtml(model) + '" aria-pressed="' + (!hiddenModels.has(model)) + '"><span class="dot" style="background:' + colors[model] + '"></span><span class="chip-name" title="' + escapeHtml(model) + '">' + escapeHtml(shortModel(model)) + '</span><span class="chip-val">' + pct + '</span></button>';
     return '<button class="legend-item' + off + '" data-model="' + escapeHtml(model) + '" aria-pressed="' + (!hiddenModels.has(model)) + '"><span class="legend-dot" style="background:' + colors[model] + '"></span><span class="legend-name" title="' + escapeHtml(model) + '">' + escapeHtml(shortModel(model)) + '</span><span class="legend-value">' + pct + '</span></button>';
   }).join('') + '</div>' + (ranked.length > 8 ? '<button class="legend-more legend-toggle" id="legendToggle" aria-expanded="' + legendExpanded + '">' + (legendExpanded ? 'Show less' : '+' + (ranked.length - 8) + ' more') + '</button>' : '') : '<p class="card-desc">No model data</p>';

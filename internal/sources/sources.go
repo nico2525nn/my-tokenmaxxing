@@ -112,28 +112,33 @@ var codexMarkers = scan.New(`"type":"turn_context"`, `"type":"token_usage_record
 // Values are pulled with jsonx rather than encoding/json: the lines are short
 // but numerous, and reflection dominated the whole refresh.
 func parseCodex(path string) ([]cache.Tuple, error) {
-	acc := newAccumulator()
-	model := "unknown"
+	// Collect first, resolve models second: a usage record may appear before the
+	// `turn_context` that names the model, and the merge pass handles that.
+	var (
+		usages []codexUsage
+		marks  []codexModelMark
+		offset int64
+	)
 	err := scan.Lines(path, codexMarkers, func(line scan.Line) error {
 		if usage, isUsage := jsonx.FindObject(line, "usage"); isUsage {
-			date := localDate(stringOf(line, "timestamp"))
-			if date == "" {
-				return nil
-			}
-			cached := intOf(usage, "cached_input_tokens")
-			input := intOf(usage, "input_tokens") - cached
-			if input < 0 {
-				input = 0
-			}
-			acc.add(date, model, input, intOf(usage, "output_tokens"), cached, intOf(usage, "cache_write_input_tokens"))
-			return nil
+			usages = append(usages, codexUsage{
+				offset:        offset,
+				date:          localDate(stringOf(line, "timestamp")),
+				input:         intOf(usage, "input_tokens"),
+				output:        intOf(usage, "output_tokens"),
+				cached:        intOf(usage, "cached_input_tokens"),
+				cacheCreation: intOf(usage, "cache_write_input_tokens"),
+			})
+		} else if name, hasModel := jsonx.FindString(line, "model"); hasModel && name != "" {
+			marks = append(marks, codexModelMark{offset: offset, model: name})
 		}
-		if name, hasModel := jsonx.FindString(line, "model"); hasModel && name != "" {
-			model = name
-		}
+		offset++
 		return nil
 	})
-	return acc.tuples(), err
+	if err != nil {
+		return nil, err
+	}
+	return mergeCodexChunks([]codexPart{{usages: usages, marks: marks}}), nil
 }
 
 func stringOf(data []byte, key string) string {
@@ -157,12 +162,18 @@ func parseSessionLogs(path string) ([]cache.Tuple, error) {
 	acc := newAccumulator()
 	model := "unknown"
 	err := scan.Lines(path, jsonlMarkers, func(line scan.Line) error {
+		// `modelId` (pi) and `model` (OMP) both appear on model_change lines; the
+		// per-message model is nested under `message`, so it must be searched in
+		// the whole line rather than the top-level object.
 		if name, has := jsonx.FindString(line, "modelId"); has && name != "" {
 			model = name
 			return nil
 		}
 		usage, isUsage := jsonx.FindObject(line, "usage")
 		if !isUsage {
+			if name, has := jsonx.FindString(line, "model"); has && name != "" {
+				model = name
+			}
 			return nil
 		}
 		if role, hasRole := jsonx.FindString(line, "role"); hasRole && role != "assistant" {
@@ -172,8 +183,8 @@ func parseSessionLogs(path string) ([]cache.Tuple, error) {
 		if date == "" {
 			return nil
 		}
-		rowModel := stringOf(line, "model")
-		if rowModel == "" {
+		rowModel, hasModel := jsonx.FindString(line, "model")
+		if !hasModel || rowModel == "" {
 			rowModel = model
 		}
 		acc.addTotal(

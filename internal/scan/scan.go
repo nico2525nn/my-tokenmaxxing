@@ -11,6 +11,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/klauspost/compress/zstd"
 )
@@ -46,7 +47,7 @@ func Lines(path string, markers Markers, fn func(Line) error) error {
 	defer file.Close()
 
 	var reader io.Reader = file
-	if filepath.Ext(path) == ".zst" {
+	if compressed(path) {
 		decoder, derr := zstd.NewReader(file, zstd.WithDecoderConcurrency(1), zstd.WithDecoderLowmem(true))
 		if derr != nil {
 			return derr
@@ -106,6 +107,12 @@ const (
 	newline   = 0x0a
 	readChunk = 1 << 17
 )
+
+// compressed covers both spellings in the wild: Codex archives use .zst while
+// DSH session logs use .zstd.
+func compressed(path string) bool {
+	return strings.HasSuffix(path, ".zst") || strings.HasSuffix(path, ".zstd")
+}
 
 // LinesRange scans [start, end) of a plain (uncompressed) file, reporting each
 // matching line together with its absolute byte offset. Chunk boundaries are
