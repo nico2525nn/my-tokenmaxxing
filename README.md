@@ -35,6 +35,7 @@ make layout-test   # overflow regression, 320–1440px × 4 UI states
 | OpenGrok | `$OPENGROK_HOME/sessions` else `~/.opengrok/sessions` |
 | DSH | `$DSH_HOME/storages/session_projcache/sessions` else `~/.dsh` |
 | Antigravity | `$ANTIGRAVITY_HOME/brain` else `~/.gemini/antigravity-cli/brain` |
+| T3Code | `$T3_HOME/userdata/statev2.sqlite` else `~/.t3/userdata/statev2.sqlite` |
 
 Only sources that exist are read. Per-source token semantics: `docs/data-sources.md`.
 

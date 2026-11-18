@@ -18,6 +18,11 @@ Some logs do not report it that way:
   `cache_read_tokens` and `output_tokens` separately, so the buckets are
   additive unchanged. `chunks/` replays the same steps as the root transcript
   and is skipped.
+- **T3Code** — per-turn `inputTokens` is the whole prompt (cached prefix
+  included) and `outputTokens` already contains reasoning, so the cached part is
+  subtracted. Turns for providers whose logs a dedicated reader already counts
+  (Codex, OpenCode, pi) are skipped; Antigravity runs from a profile directory
+  T3Code owns, so those are counted here.
 - **DSH** — only session-level totals exist. They are attributed to the
   last-prompt day, so daily spikes from long sessions are approximate; the
   Harness table marks the row.

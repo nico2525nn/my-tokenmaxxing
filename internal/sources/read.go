@@ -221,6 +221,7 @@ func ReadAll(maxCacheBytes int64, options ...Options) (Result, error) {
 		collect("opengrok", ReadOpenGrok())
 		collect("dsh", ReadDsh())
 		collect("antigravity", ReadAntigravity())
+		collect("t3", ReadT3())
 	}
 	if os.Getenv("TOKENMAXXING_TRACE") != "" {
 		log.Printf("other sources: %s", time.Since(othersStart))
