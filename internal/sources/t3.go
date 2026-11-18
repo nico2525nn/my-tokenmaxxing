@@ -34,10 +34,14 @@ const t3Query = `
       ON r.run_id = a.run_id`
 
 // t3SharedProviders run against the same global store a dedicated reader
-// already counts — Codex defaults to `~/.codex`, OpenCode and pi to their own
-// shared homes — so their turns are skipped here instead of being counted
-// twice. Antigravity is not one of them: T3Code runs it from a profile
-// directory under its own state dir.
+// already counts, so their turns are skipped here instead of being counted
+// twice. T3Code does not sandbox them: Codex resolves CODEX_HOME to `~/.codex`
+// by default, and even a managed instance's shadow home symlinks `sessions`
+// back to the shared home (CodexHomeLayout.ts keeps only log/memories/tmp
+// local). pi and OpenCode have no T3 home override at all.
+//
+// Antigravity is the exception: its driver always resolves a profile directory
+// under T3Code's state dir, so those turns exist nowhere else.
 var t3SharedProviders = map[string]struct{}{
 	"codex":     {},
 	"opencode":  {},
