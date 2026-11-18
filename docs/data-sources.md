@@ -14,6 +14,10 @@ Some logs do not report it that way:
 - **OpenCode** — `tokens` is already additive; `reasoning` is folded into output.
 - **Reasonix** — `cacheMissTokens` is the prompt side the provider had to resend,
   not cache *creation*, so it stays inside the uncached input bucket.
+- **Antigravity** — each model step reports `input_tokens` (uncached),
+  `cache_read_tokens` and `output_tokens` separately, so the buckets are
+  additive unchanged. `chunks/` replays the same steps as the root transcript
+  and is skipped.
 - **DSH** — only session-level totals exist. They are attributed to the
   last-prompt day, so daily spikes from long sessions are approximate; the
   Harness table marks the row.

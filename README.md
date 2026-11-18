@@ -34,6 +34,7 @@ make layout-test   # overflow regression, 320–1440px × 4 UI states
 | Reasonix | `~/.reasonix/sessions`, `%APPDATA%/reasonix/projects` |
 | OpenGrok | `$OPENGROK_HOME/sessions` else `~/.opengrok/sessions` |
 | DSH | `$DSH_HOME/storages/session_projcache/sessions` else `~/.dsh` |
+| Antigravity | `$ANTIGRAVITY_HOME/brain` else `~/.gemini/antigravity-cli/brain` |
 
 Only sources that exist are read. Per-source token semantics: `docs/data-sources.md`.
 
